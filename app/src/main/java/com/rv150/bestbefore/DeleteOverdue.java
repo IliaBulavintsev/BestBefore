@@ -2,6 +2,7 @@ package com.rv150.bestbefore;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 
 import java.util.ArrayList;
@@ -42,7 +43,31 @@ public class DeleteOverdue {
                 long difference = currentDate.getTimeInMillis() - date.getTimeInMillis();
                 if (difference > 0) {
                     deleted.add(currentItem); // Кладем в deleted все просроченные продукты
-                    newOverdue.add(currentItem.getTitle()); // А в новые просроки название
+                    int days = (int) (difference / (1000 * 60 * 60 * 24));
+                    String title = currentItem.getTitle();
+                    if (days == 0) {
+                        title += " (сегодня)";
+                    }
+                    else
+                    if (days == 1) {
+                        title += " (вчера)";
+                    }
+                    else
+                    if ((days >= 10) && (days <= 20)) {
+                        title += " (" + days + " дней назад)";
+                    }
+                    else if ((days % 10 >= 2) && (days % 10 <= 4)) {
+                        title += " (" + days + " дня назад)";
+                    }
+                    else if (days % 10 == 1) {
+                        title += " (" + days + " день назад)";
+                    }
+                    else {
+                        title += " (" + days + " дней назад)";
+                    }
+
+
+                    newOverdue.add(title); // А в новые просроки название
                     iterator.remove();  // И удаляем из основого списка
                 }
             }

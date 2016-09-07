@@ -16,6 +16,7 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sPrefs;
     private int position = -1;
 
-    private boolean resumeWasNotCalled;
+    private boolean resumeWasNotCalled; // true, если onResume() еще не вызывался
 
 
 
@@ -74,6 +75,22 @@ public class MainActivity extends AppCompatActivity {
 
         resumeWasNotCalled = true;
 
+        SharedPreferences.Editor editor = sPrefs.edit();
+
+        // Что нового?
+        boolean showWhatsNewIn9 = sPrefs.getBoolean("showWhatsNewIn9", true);
+        if (showWhatsNewIn9) {
+            new AlertDialog.Builder(this).setTitle(R.string.whats_new).setMessage("Уважаемые пользователи! Теперь просроченные продукты будут сразу помещены в отдельный список, где их можно посмотреть. Нет нужды постоянно проверять его - при запуске программа сама уведомит о новой \"просрочке\".").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            }).show();
+        }
+
+        editor.putBoolean("showWhatsNewIn9", false);
+        editor.apply();
+
+
         // показ приветственного сообщения
         Boolean showWelcomeScreen = sPrefs.getBoolean("showWelcomeScreen", true);
         if (showWelcomeScreen) {
@@ -83,19 +100,9 @@ public class MainActivity extends AppCompatActivity {
                             dialog.dismiss();
                         }
                     }).show();
-            SharedPreferences.Editor editor = sPrefs.edit();
             editor.putBoolean("showWelcomeScreen", false);
-            editor.apply(); // Very important to save the preference
+            editor.apply();
         }
-        else {  // либо вывод информации о просроченных сегодня продуктах
-
-            //Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Просрочено сегодня: " + overdueToday, Snackbar.LENGTH_LONG);
-            // View sbView = snackbar.getView();
-            // sbView.setBackgroundColor(ContextCompat.getColor(this, R.color.black));
-            //snackbar.show();
-
-        }
-
 
 
         // Инкремент счетчика открываний приложения
@@ -103,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         if (needRate) {
             int timesOpened = sPrefs.getInt("timesOpened", 0);
             timesOpened++;
-            SharedPreferences.Editor editor = sPrefs.edit();
             editor.putInt("timesOpened", timesOpened);
             editor.apply();
         }
@@ -175,16 +181,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (needShowOverdue && resumeWasNotCalled && !newOverdue.isEmpty()) {
             resumeWasNotCalled = false;
-            StringBuilder array = new StringBuilder();
-            for (String item : newOverdue) {
-                array.append(item);
-                array.append('\n');
-            }
-            new AlertDialog.Builder(this).setTitle("Новые просроки").setMessage(array.toString()).setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                       dialog.dismiss();
-                }
-            }).show();
+            CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Недавно просроченные");
+            builder.setItems(cs, null);
+            builder.show();
         }
 
 
@@ -212,10 +213,25 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-//        StringWrapper s = new StringWrapper("unwwwewtil 4", new GregorianCalendar(2016, 8, 3));
-//        StringWrapper ss = new StringWrapper("untewewewil 5", new GregorianCalendar(2016,8,5));
+//        StringWrapper s = new StringWrapper("312", new GregorianCalendar(2016, 7, 26));
+//        StringWrapper ss = new StringWrapper("132", new GregorianCalendar(2016,7,27));
+//        StringWrapper sss = new StringWrapper("132", new GregorianCalendar(2016,7,28));
+//        StringWrapper sdd = new StringWrapper("132", new GregorianCalendar(2016,8,1));
+//        StringWrapper ssd = new StringWrapper("132", new GregorianCalendar(2016,8,2));
+//        StringWrapper ssf = new StringWrapper("132", new GregorianCalendar(2016,8,3));
+//        StringWrapper ssg = new StringWrapper("132", new GregorianCalendar(2016,8,4));
+//        StringWrapper ssj = new StringWrapper("5sept", new GregorianCalendar(2016,8,5));
+//        StringWrapper ssk = new StringWrapper("6sept", new GregorianCalendar(2016,8,6));
+//
 //        wrapperList.add(s);
 //        wrapperList.add(ss);
+//        wrapperList.add(sss);
+//                wrapperList.add(sdd);
+//        wrapperList.add(ssd);
+//        wrapperList.add(ssf);
+//        wrapperList.add(ssg);
+//        wrapperList.add(ssj);
+//        wrapperList.add(ssk);
 
 
 
