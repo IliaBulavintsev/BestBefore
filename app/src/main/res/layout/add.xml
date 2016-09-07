@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/name"
+        android:id="@+id/name"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="false"
+        android:layout_marginLeft="28dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="35dp"
+        android:textSize="16sp"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/enterName"
+        android:layout_alignBaseline="@+id/name"
+        android:layout_alignBottom="@+id/name"
+        android:layout_toRightOf="@+id/name"
+        android:layout_marginLeft="20dp"
+        android:inputType="text"
+        android:layout_alignRight="@+id/spinner"
+        android:layout_alignEnd="@+id/spinner" />
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/name"
+        android:layout_alignLeft="@+id/name"
+        android:layout_alignStart="@+id/name"
+        android:layout_marginTop="42dp"
+        android:id="@+id/radioGroup2">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dateOfMan"
+            android:id="@+id/radioButton1"
+            android:checked="true"
+            android:onClick="onRadioOneClick"
+            android:textSize="14sp"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/okayBefore"
+            android:id="@+id/radioButton2"
+            android:checked="false"
+            android:onClick="onRadioTwoClick"
+            android:textSize="14sp"/>
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/chooseDateOfExpiry"
+        android:id="@+id/chooseDate"
+        android:layout_below="@+id/radioGroup2"
+        android:layout_alignLeft="@+id/radioGroup2"
+        android:layout_alignStart="@+id/radioGroup2"
+        android:layout_marginTop="32dp"
+        android:visibility="invisible"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/chooseDateOfMan"
+        android:id="@+id/chooseDate2"
+        android:layout_below="@+id/chooseDate"
+        android:layout_alignLeft="@+id/chooseDate"
+        android:layout_alignStart="@+id/chooseDate"
+        android:visibility="visible"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/bestBefore"
+        android:id="@+id/bestBefore"
+        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/chooseDate2"
+        android:layout_alignStart="@+id/chooseDate2"
+        android:layout_below="@+id/chooseDate2"
+        android:layout_marginTop="20dp"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/date"
+        android:layout_alignBottom="@+id/chooseDate2"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="20dp"
+        android:onClick="onDateClick"
+        android:textSize="22sp" />
+
+
+
+
+    <EditText
+        android:layout_width="35dp"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal|numberSigned"
+        android:ems="10"
+        android:id="@+id/days"
+        android:layout_marginStart="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_toRightOf="@+id/bestBefore"
+        android:layout_below="@+id/chooseDate2"
+        android:layout_marginTop="8dp" />
+
+
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="200dp"
+        android:layout_alignTop="@+id/bestBefore"
+        android:layout_toRightOf="@+id/days"
+        android:layout_marginLeft="10dp"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"
+        android:layout_alignBottom="@+id/days"
+        android:layout_marginRight="20dp" />
+
+
+    <LinearLayout
+        android:id="@+id/btnLL"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/buttons_back"
+        android:divider="@drawable/vertical_divider"
+        android:dividerPadding="12dip"
+        android:showDividers="middle">
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onSaveClick"
+            android:text="Сохранить"
+            android:background="?android:attr/selectableItemBackground"/>
+
+        <Button
+            android:id="@+id/buttonCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onCancelClick"
+            android:text="Отмена"
+            android:background="?android:attr/selectableItemBackground"/>
+    </LinearLayout>
+
+
+</RelativeLayout>

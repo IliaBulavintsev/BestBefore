@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <PreferenceScreen
+            android:key="open_notifications"
+            android:title="@string/notifications"
+            android:persistent="false">
+            <PreferenceCategory
+                android:title="Первое напоминание"
+                android:key="first_group">
+
+                <SwitchPreference
+                    android:key="last_day"
+                    android:title="Включить"
+                    android:defaultValue="true" />
+
+                <com.vanniktech.vntnumberpickerpreference.VNTNumberPickerPreference
+                    android:defaultValue="1"
+                    android:key="days_in_first"
+                    android:title="За сколько дней напомнить"
+                    app:vnt_maxValue="365"
+                    app:vnt_minValue="1"
+                    android:dependency="last_day"/>
+
+                <com.rv150.bestbefore.TimePreference1
+                    android:name="Default notification time"
+                    android:dialogLayout="@layout/time_preference"
+                    android:key="time_in_first"
+                    android:dependency="last_day"
+                    android:title="Время напоминания"/>
+            </PreferenceCategory>
+
+
+
+
+            <PreferenceCategory
+                android:title="Второе напоминание"
+                android:key="second_group">
+                <SwitchPreference
+                    android:key="day_before"
+                    android:title="Включить"
+                    android:defaultValue="false" />
+
+                <com.vanniktech.vntnumberpickerpreference.VNTNumberPickerPreference
+                    android:defaultValue="2"
+                    android:key="days_in_second"
+                    android:title="За сколько дней напомнить"
+                    app:vnt_maxValue="365"
+                    app:vnt_minValue="1"
+                    android:dependency="day_before"/>
+
+                <com.rv150.bestbefore.TimePreference2
+                    android:name="Default notification time"
+                    android:dialogLayout="@layout/time_preference"
+                    android:key="time_in_second"
+                    android:dependency="day_before"
+                    android:title="Время напоминания"/>
+            </PreferenceCategory>
+
+
+
+            <PreferenceCategory
+                android:title="Третье напоминание"
+                android:key="third_group">
+                <SwitchPreference
+                    android:key="three_days"
+                    android:title="Включить"
+                    android:defaultValue="false" />
+
+                <com.vanniktech.vntnumberpickerpreference.VNTNumberPickerPreference
+                    android:defaultValue="3"
+                    android:key="days_in_third"
+                    android:title="За сколько дней напомнить"
+                    app:vnt_maxValue="365"
+                    app:vnt_minValue="1"
+                    android:dependency="three_days"/>
+
+                <com.rv150.bestbefore.TimePreference3
+                    android:name="Default notification time"
+                    android:dialogLayout="@layout/time_preference"
+                    android:key="time_in_third"
+                    android:dependency="three_days"
+                    android:title="Время напоминания"/>
+            </PreferenceCategory>
+
+        </PreferenceScreen>
+
+
+
+
+    <com.rv150.bestbefore.ListPreferenceWithSummary
+        android:entries="@array/listArray"
+        android:entryValues="@array/listValues"
+        android:key="how_to_sort"
+        android:title="Сортировка"
+        android:defaultValue="SPOILED_TO_FRESH">
+    </com.rv150.bestbefore.ListPreferenceWithSummary>
+
+    <CheckBoxPreference
+        android:key="needShowOverdue"
+        android:title="Предупреждение"
+        android:summary="Показывать при запуске окно с просроченными продуктами"
+        android:defaultValue="true" />
+
+</PreferenceScreen>

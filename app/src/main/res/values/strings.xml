@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Срок годности</string>
+    <string name="action_settings">Settings</string>
+    <string name="about_title">О программе</string>
+    <string name="name">Название</string>
+
+
+    <string name="title_activity_adding">adding</string>
+    <string name="adding_product">Добавление продукта</string>
+    <string name="enterName">Введите название продукта</string>
+    <string name="dateOfMan">Дата изготовления</string>
+    <string name="okayBefore">Годен до</string>
+    <string name="chooseDateOfMan">Дата изготовления</string>
+    <string name="chooseDateOfExpiry">Дата окончания</string>
+    <string name="chooseDateOfExpiry2">срока годности</string>
+    <string name="chooseBestBefore">Укажите срок хранения (в сутках)</string>
+    <string name="bestBefore">Срок хранения</string>
+    <string name="dney">суток</string>
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="notificationTime">17:00</string>
+    <string name="welcomeTitle">Добрый день!</string>
+    <string name="welcomeText">Спасибо, что установили приложение! Вы будете получать уведомления в последний день срока в 17:00. Настроить уведомления и сортировку можно в настройках. \nХорошего дня! </string>
+    <string name="overdue_products">Просроченные продукты</string>
+    <string name="list_is_empty">Список пуст!</string>
+    <string name="clear_list">Очистить список</string>
+    <string name="settings">Настройки</string>
+    <string name="rate_app">Оценить приложение</string>
+    <string name="help">Справка</string>
+    <string name="help_text">В этот список автоматически попадают просроченные продукты. Дата справа означает последний день, когда продукт был свежим.</string>
+    <string name="notifications">Напоминания</string>
+</resources>
