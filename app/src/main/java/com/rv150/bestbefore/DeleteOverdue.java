@@ -15,7 +15,7 @@ import java.util.Queue;
 
 /**
  * Created by Ivan on 06.07.2016.
- * Класс получает на вход список и удаляет элементы, просроченные более чем на один день
+ * Класс получает на вход список и переносит просроченные в отдельную коллекцию
  */
 public class DeleteOverdue {
     private List<StringWrapper> wrapperList;

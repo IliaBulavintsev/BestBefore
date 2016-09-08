@@ -93,14 +93,14 @@
         android:entries="@array/listArray"
         android:entryValues="@array/listValues"
         android:key="how_to_sort"
-        android:title="Сортировка"
+        android:title="@string/sort"
         android:defaultValue="SPOILED_TO_FRESH">
     </com.rv150.bestbefore.ListPreferenceWithSummary>
 
     <CheckBoxPreference
         android:key="needShowOverdue"
         android:title="Предупреждение"
-        android:summary="Показывать при запуске окно с просроченными продуктами"
+        android:summary="Показывать при запуске окно с недавно просроченными продуктами"
         android:defaultValue="true" />
 
 </PreferenceScreen>
