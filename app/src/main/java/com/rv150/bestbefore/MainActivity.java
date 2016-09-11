@@ -7,15 +7,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
+
 
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -33,14 +31,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Queue;
 
 
 // Все настройки чистятся в UpdatePreferences() и в классе DeleteOverdue
 
-// Добавить напоминание оценить приложение, выводить после выхода из приложения...
 // Перевести дни в месяцы
 
 public class MainActivity extends AppCompatActivity {
@@ -52,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
     private int position = -1;
 
     private boolean resumeWasNotCalled; // true, если onResume() еще не вызывался
-
 
 
     @Override
@@ -78,21 +72,21 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sPrefs.edit();
 
         // Что нового?
-        boolean showWhatsNewIn9 = sPrefs.getBoolean("showWhatsNewIn9", true);
+        boolean showWhatsNewIn9 = sPrefs.getBoolean(Resources.PREF_WHATSNEW_9, true);
         if (showWhatsNewIn9) {
-            new AlertDialog.Builder(this).setTitle(R.string.whats_new).setMessage("Уважаемые пользователи! Теперь просроченные продукты будут сразу помещены в отдельный список, где их можно посмотреть. Нет нужды постоянно проверять его - при запуске программа сама уведомит о новой \"просрочке\".").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            new AlertDialog.Builder(this).setTitle(R.string.whats_new).setMessage("Уважаемые пользователи! Теперь просроченные продукты будут сразу помещены в отдельный список, где их можно посмотреть. Нет нужды постоянно проверять его - при запуске программа сама уведомит вас о новой \"просрочке\".").setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
                 }
             }).show();
         }
 
-        editor.putBoolean("showWhatsNewIn9", false);
+        editor.putBoolean(Resources.PREF_WHATSNEW_9, false);
         editor.apply();
 
 
         // показ приветственного сообщения
-        Boolean showWelcomeScreen = sPrefs.getBoolean("showWelcomeScreen", true);
+        Boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
         if (showWelcomeScreen) {
             String whatsNewText = getResources().getString(R.string.welcomeText);
             new AlertDialog.Builder(this).setTitle(R.string.welcomeTitle).setMessage(whatsNewText).setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -100,17 +94,26 @@ public class MainActivity extends AppCompatActivity {
                             dialog.dismiss();
                         }
                     }).show();
-            editor.putBoolean("showWelcomeScreen", false);
+            editor.putBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, false);
+
+            Calendar installedAt = new GregorianCalendar();
+            int installDay = installedAt.get(Calendar.DAY_OF_MONTH);
+            int installMonth = installedAt.get(Calendar.MONTH);
+            int installYear = installedAt.get(Calendar.YEAR);
+            editor.putInt(Resources.PREF_INSTALL_DAY, installDay);
+            editor.putInt(Resources.PREF_INSTALL_MONTH, installMonth);
+            editor.putInt(Resources.PREF_INSTALL_YEAR, installYear);
+
             editor.apply();
         }
 
 
         // Инкремент счетчика открываний приложения
-        boolean needRate = sPrefs.getBoolean("needRate", true);
+        boolean needRate = sPrefs.getBoolean(Resources.PREF_NEED_RATE, true);
         if (needRate) {
-            int timesOpened = sPrefs.getInt("timesOpened", 0);
+            int timesOpened = sPrefs.getInt(Resources.PREF_TIMES_OPENED, 0);
             timesOpened++;
-            editor.putInt("timesOpened", timesOpened);
+            editor.putInt(Resources.PREF_TIMES_OPENED, timesOpened);
             editor.apply();
         }
 
@@ -183,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
             resumeWasNotCalled = false;
             CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Недавно просроченные");
+            builder.setTitle(R.string.last_overdue);
             builder.setItems(cs, null);
             builder.show();
         }
@@ -196,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Сортировка
         if (wrapperList.size() >= 2) {
-            String howToSort = sPrefs.getString("how_to_sort", STANDART);
+            String howToSort = sPrefs.getString(Resources.PREF_HOW_TO_SORT, STANDART);
             switch (howToSort) {
                 case STANDART:
                     Collections.sort(wrapperList, StringWrapper.getStandartComparator());
@@ -212,26 +215,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
-//        StringWrapper s = new StringWrapper("312", new GregorianCalendar(2016, 7, 26));
-//        StringWrapper ss = new StringWrapper("132", new GregorianCalendar(2016,7,27));
-//        StringWrapper sss = new StringWrapper("132", new GregorianCalendar(2016,7,28));
-//        StringWrapper sdd = new StringWrapper("132", new GregorianCalendar(2016,8,1));
-//        StringWrapper ssd = new StringWrapper("132", new GregorianCalendar(2016,8,2));
-//        StringWrapper ssf = new StringWrapper("132", new GregorianCalendar(2016,8,3));
-//        StringWrapper ssg = new StringWrapper("132", new GregorianCalendar(2016,8,4));
-//        StringWrapper ssj = new StringWrapper("5sept", new GregorianCalendar(2016,8,5));
-//        StringWrapper ssk = new StringWrapper("6sept", new GregorianCalendar(2016,8,6));
-//
-//        wrapperList.add(s);
-//        wrapperList.add(ss);
-//        wrapperList.add(sss);
-//                wrapperList.add(sdd);
-//        wrapperList.add(ssd);
-//        wrapperList.add(ssf);
-//        wrapperList.add(ssg);
-//        wrapperList.add(ssj);
-//        wrapperList.add(ssk);
 
 
 
@@ -251,20 +234,20 @@ public class MainActivity extends AppCompatActivity {
             isEmpty.setVisibility(View.INVISIBLE);
         }
 
-        boolean alarm_set = sPrefs.getBoolean("alarm_set_flag", false);
-        boolean last_day = sPrefs.getBoolean("last_day", true);
-        boolean day_before = sPrefs.getBoolean("day_before", false);
-        boolean three_days = sPrefs.getBoolean("three_days", false);
+        boolean alarm_set = sPrefs.getBoolean(Resources.PREF_ALARM_SET, false);
+        boolean firstNotif = sPrefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
+        boolean secondNotif = sPrefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
+        boolean thirdNotif = sPrefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
         SharedPreferences.Editor editor = sPrefs.edit();
         if (wrapperList.isEmpty()) {
             AlarmReceiver am = new AlarmReceiver();
             am.cancelAlarm(this);
-            editor.putBoolean("alarm_set_flag", false);
+            editor.putBoolean(Resources.PREF_ALARM_SET, false);
         }
-        else if(!alarm_set && (last_day || day_before || three_days)){
+        else if(!alarm_set && (firstNotif || secondNotif || thirdNotif)){
             AlarmReceiver am = new AlarmReceiver();
             am.setAlarm(this);
-            editor.putBoolean("alarm_set_flag", true); // value to store
+            editor.putBoolean(Resources.PREF_ALARM_SET, true);
         }
         editor.apply();
     }
@@ -486,16 +469,33 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        boolean needRate = sPrefs.getBoolean("needRate", true);
-        int timesOpened = sPrefs.getInt("timesOpened", 0);
+        boolean needRate = sPrefs.getBoolean(Resources.PREF_NEED_RATE, true);
+        int timesOpened = sPrefs.getInt(Resources.PREF_TIMES_OPENED, 0);
         if (needRate && timesOpened >= 10) {
-                SharedPreferences.Editor editor = sPrefs.edit();
-                editor.putBoolean("needRate", false);
-                editor.apply();
 
-                // Вызов окна с предложением оценить приложение
-                DialogFragment dialog = new RateAppDialog();
-                dialog.show(getFragmentManager(), "RateApp");
+                int installDay = sPrefs.getInt(Resources.PREF_INSTALL_DAY, 11);
+                int installMonth = sPrefs.getInt(Resources.PREF_INSTALL_MONTH, 8);
+                int installYear = sPrefs.getInt(Resources.PREF_INSTALL_YEAR, 2016);
+                Calendar installedAt = new GregorianCalendar(installYear, installMonth, installDay);
+                Calendar now = new GregorianCalendar();
+                final int MILLI_TO_HOUR = 1000 * 60 * 60;
+                int hours = (int) ((now.getTimeInMillis() - installedAt.getTimeInMillis()) / MILLI_TO_HOUR);
+
+                if (hours >= 24) {
+                    SharedPreferences.Editor editor = sPrefs.edit();
+                    editor.putBoolean(Resources.PREF_NEED_RATE, false);
+                    editor.remove(Resources.PREF_INSTALL_YEAR);
+                    editor.remove(Resources.PREF_INSTALL_MONTH);
+                    editor.remove(Resources.PREF_INSTALL_DAY);
+                    editor.apply();
+
+                    // Вызов окна с предложением оценить приложение
+                    DialogFragment dialog = new RateAppDialog();
+                    dialog.show(getFragmentManager(), "RateApp");
+                }
+                else {
+                    finish();
+                }
         }
         else {
             finish();
