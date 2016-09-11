@@ -62,14 +62,14 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         am.cancel(pi3); // Тормозим все напоминания, а потом устанавливаем только те, что действительно включены
 
 
-        boolean last_day = sPrefs.getBoolean("last_day", true);
-        boolean day_before = sPrefs.getBoolean("day_before", false);
-        boolean three_days = sPrefs.getBoolean("three_days", false);
+        boolean firstNotif = sPrefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
+        boolean secondNotif = sPrefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
+        boolean thirdNotif = sPrefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
 
         // Если активировано 1-ое напоминание
-        if (last_day) {
-            int hour = sPrefs.getInt("first_hour", 17);
-            int minute = sPrefs.getInt("first_minute", 0);
+        if (firstNotif) {
+            int hour = sPrefs.getInt(Resources.PREF_FIRST_HOUR, 17);
+            int minute = sPrefs.getInt(Resources.PREF_FIRST_MINUTE, 0);
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(System.currentTimeMillis());
             calendar.set(Calendar.HOUR_OF_DAY, hour);
@@ -88,9 +88,9 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         }
 
         // Второе
-        if (day_before) {
-            int hour = sPrefs.getInt("second_hour", 17);
-            int minute = sPrefs.getInt("second_minute", 0);
+        if (secondNotif) {
+            int hour = sPrefs.getInt(Resources.PREF_SECOND_HOUR, 17);
+            int minute = sPrefs.getInt(Resources.PREF_SECOND_MINUTE, 0);
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(System.currentTimeMillis());
             calendar.set(Calendar.HOUR_OF_DAY, hour);
@@ -110,9 +110,9 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
 
 
         // Третье
-        if (three_days) {
-            int hour = sPrefs.getInt("third_hour", 17);
-            int minute = sPrefs.getInt("third_minute", 0);
+        if (thirdNotif) {
+            int hour = sPrefs.getInt(Resources.PREF_THIRD_HOUR, 17);
+            int minute = sPrefs.getInt(Resources.PREF_THIRD_MINUTE, 0);
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(System.currentTimeMillis());
             calendar.set(Calendar.HOUR_OF_DAY, hour);
@@ -134,17 +134,14 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
     public void cancelAlarm (Context context) {
         AlarmManager am =( AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         Intent i1 = new Intent(context, AlarmReceiver.class);
-      //  i1.putExtra("id", 1);
         i1.setAction("first");
         PendingIntent pi1 = PendingIntent.getBroadcast(context, 1, i1, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent i2 = new Intent(context, AlarmReceiver.class);
-      //  i2.putExtra("id", 2);
         i2.setAction("second");
         PendingIntent pi2 = PendingIntent.getBroadcast(context, 2, i2, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent i3 = new Intent(context, AlarmReceiver.class);
-       // i3.putExtra("id", 1);
         i3.setAction("third");
         PendingIntent pi3 = PendingIntent.getBroadcast(context, 3, i3, PendingIntent.FLAG_UPDATE_CURRENT);
 

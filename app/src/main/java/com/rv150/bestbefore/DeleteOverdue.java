@@ -2,16 +2,13 @@ package com.rv150.bestbefore;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 /**
  * Created by Ivan on 06.07.2016.
@@ -22,12 +19,9 @@ public class DeleteOverdue {
     private List<StringWrapper> deleted;
     private SharedPreferences sPrefs;
 
-    private Queue<String> queue;
-
     DeleteOverdue(List<StringWrapper> list, Context context) {
         wrapperList = list;
         deleted = new ArrayList<>();
-        queue = new LinkedList<>();
         sPrefs = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
@@ -42,7 +36,7 @@ public class DeleteOverdue {
                 Calendar currentDate = new GregorianCalendar();
                 long difference = currentDate.getTimeInMillis() - date.getTimeInMillis();
                 if (difference > 0) {
-                    deleted.add(currentItem); // Кладем в deleted все просроченные продукты
+                    deleted.add(0, currentItem); // Кладем в deleted все просроченные продукты
                     int days = (int) (difference / (1000 * 60 * 60 * 24));
                     String title = currentItem.getTitle();
                     if (days == 0) {

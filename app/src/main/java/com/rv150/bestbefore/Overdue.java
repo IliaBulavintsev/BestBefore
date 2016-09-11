@@ -1,7 +1,6 @@
 package com.rv150.bestbefore;
 
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Point;
@@ -21,13 +20,13 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 /**
  * Created by Rudnev on 06.09.2016.
  */
+
+// Активити "просроченные продукты"
 public class Overdue extends AppCompatActivity {
     private CustomAdapter customAdapter;
     private List<StringWrapper> overdueList;

@@ -27,7 +27,7 @@ public class MyNotification {
         Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         String text;
         if (days == 1) {
-            text = "Cегодня последний день!";
+            text = res.getString(R.string.today_is_the_last_day);
         }
         else {
             text = "Осталось " + days + " дня";

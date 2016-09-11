@@ -97,18 +97,18 @@ public class Preferences extends PreferenceActivity  {
         int hour, minute;
         switch (ID) {
             case 1: {
-                hour = prefs.getInt("first_hour", 17);
-                minute = prefs.getInt("first_minute", 0);
+                hour = prefs.getInt(Resources.PREF_FIRST_HOUR, 17);
+                minute = prefs.getInt(Resources.PREF_FIRST_MINUTE, 0);
                 break;
             }
             case 2: {
-                hour = prefs.getInt("second_hour", 17);
-                minute = prefs.getInt("second_minute", 0);
+                hour = prefs.getInt(Resources.PREF_SECOND_HOUR, 17);
+                minute = prefs.getInt(Resources.PREF_SECOND_MINUTE, 0);
                 break;
             }
             case 3: {
-                hour = prefs.getInt("third_hour", 17);
-                minute = prefs.getInt("third_minute", 0);
+                hour = prefs.getInt(Resources.PREF_THIRD_HOUR, 17);
+                minute = prefs.getInt(Resources.PREF_THIRD_MINUTE, 0);
                 break;
             }
             default: {
@@ -130,18 +130,18 @@ public class Preferences extends PreferenceActivity  {
         super.onPause();
         SharedPreferences prefs =
                 PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        boolean last_day = prefs.getBoolean("last_day", true);
-        boolean day_before = prefs.getBoolean("day_before", false);
-        boolean three_days = prefs.getBoolean("three_days", false);
+        boolean firstNotif = prefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
+        boolean secondNotif = prefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
+        boolean thirdNotif = prefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
         AlarmReceiver alarmReceiver = new AlarmReceiver();
         SharedPreferences.Editor editor = prefs.edit();
 
 
-        if (!last_day && !day_before && !three_days) {
-            editor.putBoolean("alarm_set_flag", false);
+        if (!firstNotif && !secondNotif && !thirdNotif) {
+            editor.putBoolean(Resources.PREF_ALARM_SET, false);
             alarmReceiver.cancelAlarm(this);
         } else {
-            editor.putBoolean("alarm_set_flag", true);
+            editor.putBoolean(Resources.PREF_ALARM_SET, true);
             alarmReceiver.setAlarm(this);
         }
         editor.apply();

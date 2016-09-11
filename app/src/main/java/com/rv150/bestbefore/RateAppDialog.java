@@ -34,7 +34,7 @@ public class RateAppDialog extends DialogFragment {
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("Оценить приложение в Google Play?").setPositiveButton("Да", dialogClickListener).setNegativeButton("Нет", dialogClickListener);
+        builder.setMessage(R.string.rate_app_msg).setPositiveButton(R.string.rate, dialogClickListener).setNegativeButton(R.string.no, dialogClickListener);
         return builder.create();
     }
 }
