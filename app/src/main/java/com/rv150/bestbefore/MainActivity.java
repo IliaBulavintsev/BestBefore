@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sPrefs;
     private int position = -1;
 
-    private boolean resumeWasNotCalled; // true, если onResume() еще не вызывался
 
 
     @Override
@@ -66,8 +65,6 @@ public class MainActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-
-        resumeWasNotCalled = true;
 
         SharedPreferences.Editor editor = sPrefs.edit();
 
@@ -182,8 +179,7 @@ public class MainActivity extends AppCompatActivity {
         List<String> newOverdue = deleteOverdue.delete();
         boolean needShowOverdue = sPrefs.getBoolean("needShowOverdue", true);
 
-        if (needShowOverdue && resumeWasNotCalled && !newOverdue.isEmpty()) {
-            resumeWasNotCalled = false;
+        if (needShowOverdue  && !newOverdue.isEmpty()) {
             CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.last_overdue);
