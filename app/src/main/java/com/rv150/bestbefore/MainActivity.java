@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
         // Удаление просроченных
         DeleteOverdue deleteOverdue = new DeleteOverdue(wrapperList, this);
         List<String> newOverdue = deleteOverdue.delete();
-        boolean needShowOverdue = sPrefs.getBoolean("needShowOverdue", true);
+        boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
 
         if (needShowOverdue  && !newOverdue.isEmpty()) {
             CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);
@@ -188,22 +188,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        final String STANDART = "STANDART";
-        final String SPOILED_TO_FRESH = "SPOILED_TO_FRESH";
-        final String FRESH_TO_SPOILED = "FRESH_TO_SPOILED";
+
 
 
         // Сортировка
         if (wrapperList.size() >= 2) {
-            String howToSort = sPrefs.getString(Resources.PREF_HOW_TO_SORT, STANDART);
+            String howToSort = sPrefs.getString(Resources.PREF_HOW_TO_SORT, Resources.STANDART);
             switch (howToSort) {
-                case STANDART:
+                case Resources.STANDART:
                     Collections.sort(wrapperList, StringWrapper.getStandartComparator());
                     break;
-                case SPOILED_TO_FRESH:
+                case Resources.SPOILED_TO_FRESH:
                     Collections.sort(wrapperList, StringWrapper.getSpoiledToFreshComparator());
                     break;
-                case FRESH_TO_SPOILED:
+                case Resources.FRESH_TO_SPOILED:
                     Collections.sort(wrapperList, StringWrapper.getFreshToSpoiledComparator());
                     break;
                 default:
@@ -261,14 +259,14 @@ public class MainActivity extends AppCompatActivity {
         switch (option) {
             case MODIFY:
                 Intent intent = new Intent(MainActivity.this, Add.class);
-                intent.putExtra("name", wrapperList.get(position).getTitle());
+                intent.putExtra(Resources.NAME, wrapperList.get(position).getTitle());
                 Calendar date = wrapperList.get(position).getDate();
                 int myDay = date.get(Calendar.DAY_OF_MONTH);
-                int myMonty = date.get(Calendar.MONTH);
+                int myMonth = date.get(Calendar.MONTH);
                 int myYear = date.get(Calendar.YEAR);
-                intent.putExtra("myDay", myDay);
-                intent.putExtra("myMonth", myMonty);
-                intent.putExtra("myYear", myYear);
+                intent.putExtra(Resources.MY_DAY, myDay);
+                intent.putExtra(Resources.MY_MONTH, myMonth);
+                intent.putExtra(Resources.MY_YEAR, myYear);
 
                 Calendar createdAt = wrapperList.get(position).createdAt();
                 int DayCreated = createdAt.get(Calendar.DAY_OF_MONTH);
@@ -277,12 +275,12 @@ public class MainActivity extends AppCompatActivity {
                 int HourCreated = createdAt.get(Calendar.HOUR_OF_DAY);
                 int MinuteCreated = createdAt.get(Calendar.MINUTE);
                 int SecondCreated = createdAt.get(Calendar.SECOND);
-                intent.putExtra("DayCreated", DayCreated);
-                intent.putExtra("MonthCreated", MonthCreated);
-                intent.putExtra("YearCreated", YearCreated);
-                intent.putExtra("HourCreated", HourCreated);
-                intent.putExtra("MinuteCreated", MinuteCreated);
-                intent.putExtra("SecondCreated", SecondCreated);
+                intent.putExtra(Resources.DAY_CREATED, DayCreated);
+                intent.putExtra(Resources.MONTH_CREATED, MonthCreated);
+                intent.putExtra(Resources.YEAR_CREATED, YearCreated);
+                intent.putExtra(Resources.HOUR_CREATED, HourCreated);
+                intent.putExtra(Resources.MINUTE_CREATED, MinuteCreated);
+                intent.putExtra(Resources.SECOND_CREATED, SecondCreated);
 
                 startActivityForResult(intent, RequestCode);
                 break;
@@ -373,18 +371,17 @@ public class MainActivity extends AppCompatActivity {
         Calendar date;
 
         if (requestCode == RequestCode) {
+            name = data.getExtras().getString(Resources.NAME);
+            date = (Calendar) data.getExtras().get(Resources.DATE);
+            Calendar createdAt = (Calendar) data.getExtras().get(Resources.CREATED_AT);
+
             if (resultCode == 1) {                              // Добавление
-                name = data.getExtras().getString("name");
-                date = (Calendar) data.getExtras().get("date");
-                Calendar createdAt = (Calendar) data.getExtras().get("createdAt");
                 wrapperList.add(new StringWrapper(name, date, createdAt));
             } else if (resultCode == 2) {                       // Изменение
-                name = data.getExtras().getString("name");
-                date = (Calendar) data.getExtras().get("date");
-                Calendar createdAt = (Calendar) data.getExtras().get("createdAt");
                 wrapperList.set(position, new StringWrapper(name, date, createdAt));
                 position = -1;
             }
+
             customAdapter.setData(wrapperList);
             customAdapter.notifyDataSetChanged();
             UpdatePreferences();

@@ -107,16 +107,16 @@ public class Add extends AppCompatActivity {
             isChanging = true;
             String nameStr = extras.getString("name");
             enterName.setText(nameStr);
-            myDay = extras.getInt("myDay");
-            myMonth = extras.getInt("myMonth");
-            myYear = extras.getInt("myYear");
+            myDay = extras.getInt(Resources.MY_DAY);
+            myMonth = extras.getInt(Resources.MY_MONTH);
+            myYear = extras.getInt(Resources.MY_YEAR);
 
-            DayCreated = extras.getInt("DayCreated");
-            MonthCreated = extras.getInt("MonthCreated");
-            YearCreated = extras.getInt("YearCreated");
-            HourCreated = extras.getInt("HourCreated");
-            MinuteCreated = extras.getInt("MinuteCreated");
-            SecondCreated = extras.getInt("SecondCreated");
+            DayCreated = extras.getInt(Resources.DAY_CREATED);
+            MonthCreated = extras.getInt(Resources.MONTH_CREATED);
+            YearCreated = extras.getInt(Resources.YEAR_CREATED);
+            HourCreated = extras.getInt(Resources.HOUR_CREATED);
+            MinuteCreated = extras.getInt(Resources.MINUTE_CREATED);
+            SecondCreated = extras.getInt(Resources.SECOND_CREATED);
 
 
 
@@ -195,7 +195,7 @@ public class Add extends AppCompatActivity {
     public void onSaveClick(View view) {
         if ((enterName.getText().toString().equals("")) || (radio1.isChecked() && days.getText().toString().equals(""))) {
             Toast toast = Toast.makeText(getApplicationContext(),
-                    "Заполните все поля!", Toast.LENGTH_SHORT);
+                    R.string.please_fill_all_fields, Toast.LENGTH_SHORT);
             toast.show();
             return;
         }
@@ -214,12 +214,10 @@ public class Add extends AppCompatActivity {
         }
 
 
-
-
         if (radio1.isChecked()) {
             if (compare(date, currentDate) > 0) {
                 Toast toast = Toast.makeText(getApplicationContext(),
-                        "Неверная дата!", Toast.LENGTH_SHORT);
+                        R.string.wrong_date, Toast.LENGTH_SHORT);
                 toast.show();
                 return;
             }
@@ -227,7 +225,7 @@ public class Add extends AppCompatActivity {
             double term = Double.parseDouble(days.getText().toString());
             if (term <= 0 || term % 0.5 != 0) {
                 Toast toast = Toast.makeText(getApplicationContext(),
-                        "Неверный срок хранения!", Toast.LENGTH_SHORT);
+                        R.string.wrong_best_before, Toast.LENGTH_SHORT);
                 toast.show();
                 return;
             }
@@ -245,7 +243,7 @@ public class Add extends AppCompatActivity {
 
             if (compare(date, currentDate) < 0) {
                 Toast toast = Toast.makeText(getApplicationContext(),
-                        "Товар просрочен!", Toast.LENGTH_SHORT);
+                        R.string.product_is_expired, Toast.LENGTH_SHORT);
                 toast.show();
                 return;
             }
@@ -254,7 +252,7 @@ public class Add extends AppCompatActivity {
         else {
             if (compare(date, currentDate) < 0) {
                 Toast toast = Toast.makeText(getApplicationContext(),
-                        "Неверная дата!", Toast.LENGTH_SHORT);
+                        R.string.wrong_date, Toast.LENGTH_SHORT);
                 toast.show();
                 return;
             }
@@ -262,16 +260,16 @@ public class Add extends AppCompatActivity {
 
 
         Intent intent = new Intent();
-        intent.putExtra("name", enterName.getText().toString());
-        intent.putExtra("date", date);
+        intent.putExtra(Resources.NAME, enterName.getText().toString());
+        intent.putExtra(Resources.DATE, date);
         if (isChanging) {
             Calendar createdAt = new GregorianCalendar(YearCreated, MonthCreated, DayCreated, HourCreated, MinuteCreated, SecondCreated);
-            intent.putExtra("createdAt", createdAt);
+            intent.putExtra(Resources.CREATED_AT, createdAt);
             setResult(2, intent);   // Изменениe
         }
         else {
             Calendar createdAt = new GregorianCalendar();
-            intent.putExtra("createdAt", createdAt);
+            intent.putExtra(Resources.CREATED_AT, createdAt);
             setResult(1, intent);   // Добавление
         }
         finish();

@@ -36,4 +36,8 @@
     <string name="rate">Оценить</string>
     <string name="no">Нет</string>
     <string name="today_is_the_last_day">Сегодня последний день!</string>
+    <string name="please_fill_all_fields">Заполните все поля!</string>
+    <string name="wrong_date">Неверная дата!</string>
+    <string name="wrong_best_before">Неверный срок хранения!</string>
+    <string name="product_is_expired">Товар просрочен!</string>
 </resources>

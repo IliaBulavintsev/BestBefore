@@ -22,4 +22,21 @@ public final class Resources {
     public static final String PREF_FIRST_NOTIF = "last_day";
     public static final String PREF_SECOND_NOTIF = "day_before";
     public static final String PREF_THIRD_NOTIF = "three_days";
+    public static final String STANDART = "STANDART";
+    public static final String SPOILED_TO_FRESH = "SPOILED_TO_FRESH";
+    public static final String FRESH_TO_SPOILED = "FRESH_TO_SPOILED";
+    public static final String SHOW_OVERDUE_DIALOG = "needShowOverdue";
+    public static final String DAY_CREATED = "DayCreated";
+    public static final String MONTH_CREATED = "MonthCreated";
+    public static final String YEAR_CREATED = "YearCreated";
+    public static final String HOUR_CREATED = "HourCreated";
+    public static final String MINUTE_CREATED = "MinuteCreated";
+    public static final String SECOND_CREATED = "SecondCreated";
+    public static final String MY_DAY = "myDay";
+    public static final String MY_MONTH = "myMonth";
+    public static final String MY_YEAR = "myYear";
+    public static final String CREATED_AT = "createdAt";
+    public static final String NAME = "name";
+    public static final String DATE = "date";
+    public static final String SHOW_HELP = "needHelp";
 }

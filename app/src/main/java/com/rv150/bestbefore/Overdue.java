@@ -65,11 +65,11 @@ public class Overdue extends AppCompatActivity {
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
 
-        Boolean needHelp = sPrefs.getBoolean("needHelp", true);
+        Boolean needHelp = sPrefs.getBoolean(Resources.SHOW_HELP, true);
         if (needHelp) {
             showHelp();
             SharedPreferences.Editor editor = sPrefs.edit();
-            editor.putBoolean("needHelp", false);
+            editor.putBoolean(Resources.SHOW_HELP, false);
             editor.apply();
         }
     }
