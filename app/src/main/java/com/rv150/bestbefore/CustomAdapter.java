@@ -82,8 +82,6 @@ public class CustomAdapter extends BaseAdapter {
         }
 
         else {
-
-
             Calendar currentDate = new GregorianCalendar();
             long difference = date.getTimeInMillis() - currentDate.getTimeInMillis();
             Integer days = (int) (difference / (24 * 60 * 60 * 1000));
@@ -130,6 +128,4 @@ public class CustomAdapter extends BaseAdapter {
 
         return view;
     }
-
-
 }

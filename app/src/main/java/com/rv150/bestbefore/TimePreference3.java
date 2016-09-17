@@ -41,8 +41,8 @@ public class TimePreference3 extends DialogPreference {
     public void onBindDialogView(View view) {
         super.onBindDialogView(view);
         timePicker = (TimePicker) view.findViewById(R.id.prefTimePicker);
-        timePicker.setCurrentHour(getSharedPreferences().getInt("third_hour", DEFAULT_HOUR));
-        timePicker.setCurrentMinute(getSharedPreferences().getInt("third_minute", DEFAULT_MINUTE));
+        timePicker.setCurrentHour(getSharedPreferences().getInt(Resources.PREF_THIRD_HOUR, DEFAULT_HOUR));
+        timePicker.setCurrentMinute(getSharedPreferences().getInt(Resources.PREF_THIRD_MINUTE, DEFAULT_MINUTE));
         timePicker.setIs24HourView(DateFormat.is24HourFormat(timePicker.getContext()));
     }
 
@@ -62,8 +62,8 @@ public class TimePreference3 extends DialogPreference {
             int hour = timePicker.getCurrentHour();
             int minute = timePicker.getCurrentMinute();
             SharedPreferences.Editor editor = getEditor();
-            editor.putInt("third_hour", hour);
-            editor.putInt("third_minute", minute);
+            editor.putInt(Resources.PREF_THIRD_HOUR, hour);
+            editor.putInt(Resources.PREF_THIRD_MINUTE, minute);
             editor.apply();
             if (callChangeListener(get_summary())) {
                 persistString(get_summary());

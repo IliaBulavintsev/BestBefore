@@ -36,7 +36,7 @@ public class MyNotification {
                 .setSmallIcon(R.drawable.notify)
                 // большая картинка
                 .setLargeIcon(BitmapFactory.decodeResource(res, R.drawable.rrrr))
-                .setTicker("Срок годности истекает")
+                .setTicker(res.getString(R.string.best_before_expires))
                 .setWhen(System.currentTimeMillis())
                 .setAutoCancel(true)
                 .setContentTitle(name)

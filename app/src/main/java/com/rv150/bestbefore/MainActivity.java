@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // показ приветственного сообщения
-        Boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
+        boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
         if (showWelcomeScreen) {
             String whatsNewText = getResources().getString(R.string.welcomeText);
             new AlertDialog.Builder(this).setTitle(R.string.welcomeTitle).setMessage(whatsNewText).setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -367,12 +367,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        String name;
-        Calendar date;
 
         if (requestCode == RequestCode) {
-            name = data.getExtras().getString(Resources.NAME);
-            date = (Calendar) data.getExtras().get(Resources.DATE);
+            String name = data.getExtras().getString(Resources.NAME);
+            Calendar date = (Calendar) data.getExtras().get(Resources.DATE);
             Calendar createdAt = (Calendar) data.getExtras().get(Resources.CREATED_AT);
 
             if (resultCode == 1) {                              // Добавление
