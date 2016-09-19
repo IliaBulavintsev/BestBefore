@@ -20,7 +20,7 @@ public class ItemDialog extends DialogFragment
     {
 
 
-        final String[] options ={"Редактировать", "Удалить", "Удалить все"};
+        final String[] options ={"Редактировать", "Удалить"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setItems(options, new DialogInterface.OnClickListener() {
                     @Override

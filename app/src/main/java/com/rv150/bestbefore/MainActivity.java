@@ -40,7 +40,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private ListView listView;
-    static final private int RequestCode = 0;
     private CustomAdapter customAdapter;
     private List<StringWrapper> wrapperList;
     private SharedPreferences sPrefs;
@@ -210,7 +209,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
+//        for (int i = 0; i < 100; i++) {
+//            Calendar now = new GregorianCalendar();
+//            now.add(Calendar.DAY_OF_MONTH, i);
+//            StringWrapper s = new StringWrapper("#" + i, now);
+//            wrapperList.add(s);
+//        }
 
 
         UpdatePreferences(); // Сохраняем возможные изменения
@@ -255,7 +259,6 @@ public class MainActivity extends AppCompatActivity {
     public void OptionChoosed(int option) {
         final int MODIFY = 0;
         final int DELETE = 1;
-        final int DELETE_ALL = 2;
         switch (option) {
             case MODIFY:
                 Intent intent = new Intent(MainActivity.this, Add.class);
@@ -282,17 +285,12 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(Resources.MINUTE_CREATED, MinuteCreated);
                 intent.putExtra(Resources.SECOND_CREATED, SecondCreated);
 
-                startActivityForResult(intent, RequestCode);
+                startActivityForResult(intent, Resources.ADD_ACTIVITY);
                 break;
 
             case DELETE:
                 DialogFragment dialog = new YesNoDialog();
                 dialog.show(getFragmentManager(), "YesNo");
-                break;
-
-            case DELETE_ALL:
-                DialogFragment dialog_delete_all = new DeleteAllDialog();
-                dialog_delete_all.show(getFragmentManager(), "DeleteAll");
                 break;
 
             default:
@@ -343,10 +341,16 @@ public class MainActivity extends AppCompatActivity {
         }
         if (id == R.id.action_rate) {
             rateApp();
+            return true;
         }
         if (id == R.id.action_overdue) {
             Intent intent = new Intent(this, Overdue.class);
             startActivity(intent);
+            return true;
+        }
+        if (id == R.id.action_delete_all) {
+            DialogFragment dialog_delete_all = new DeleteAllDialog();
+            dialog_delete_all.show(getFragmentManager(), "DeleteAll");
             return true;
         }
 
@@ -361,21 +365,21 @@ public class MainActivity extends AppCompatActivity {
 
     public void onFabClick(View view) {
         Intent intent = new Intent(MainActivity.this, Add.class);
-        startActivityForResult(intent, RequestCode);
+        startActivityForResult(intent, Resources.ADD_ACTIVITY);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == RequestCode) {
+        if (requestCode == Resources.ADD_ACTIVITY && resultCode != Resources.RESULT_EXIT) {
             String name = data.getExtras().getString(Resources.NAME);
             Calendar date = (Calendar) data.getExtras().get(Resources.DATE);
             Calendar createdAt = (Calendar) data.getExtras().get(Resources.CREATED_AT);
 
-            if (resultCode == 1) {                              // Добавление
+            if (resultCode == Resources.RESULT_ADD) {                              // Добавление
                 wrapperList.add(new StringWrapper(name, date, createdAt));
-            } else if (resultCode == 2) {                       // Изменение
+            } else if (resultCode == Resources.RESULT_MODIFY) {                       // Изменение
                 wrapperList.set(position, new StringWrapper(name, date, createdAt));
                 position = -1;
             }

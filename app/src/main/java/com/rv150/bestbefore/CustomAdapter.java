@@ -89,20 +89,23 @@ public class CustomAdapter extends BaseAdapter {
             if (difference < 0) {
                 date_text.setText("Просрочен!");
             } else if (days == 0)
-                date_text.setText("Последний день!");
+                date_text.setText(R.string.last_day);
+
             else {
                 days++;
-                String text = days.toString();
-                if ((days >= 10) && (days <= 20))
-                    text += " дней";
-                else if ((days % 10 >= 2) && (days % 10 <= 4))
-                    text += " дня";
-                else if (days % 10 == 1)
-                    text += " день";
-                else
-                    text += " дней";
+//                String text = days.toString();
+//                if ((days >= 10) && (days <= 20))
+//                    text += " дней";
+//                else if ((days % 10 >= 2) && (days % 10 <= 4))
+//                    text += " дня";
+//                else if (days % 10 == 1)
+//                    text += " день";
+//                else
+//                    text += " дней";
 
-                date_text.setText(text);
+               // date_text.setText(text);
+
+                date_text.setText(context.getResources().getQuantityString(R.plurals.numberOfDaysLeft, days, days));
             }
 
             if (difference < 0) {

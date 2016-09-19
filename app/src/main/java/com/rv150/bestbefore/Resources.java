@@ -39,4 +39,8 @@ public final class Resources {
     public static final String NAME = "name";
     public static final String DATE = "date";
     public static final String SHOW_HELP = "needHelp";
+    public static final int ADD_ACTIVITY = 0;
+    public static final int RESULT_ADD = 1;
+    public static final int RESULT_MODIFY = 2;
+    public static final int RESULT_EXIT = 0;
 }

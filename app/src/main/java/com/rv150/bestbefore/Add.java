@@ -265,12 +265,12 @@ public class Add extends AppCompatActivity {
         if (isChanging) {
             Calendar createdAt = new GregorianCalendar(YearCreated, MonthCreated, DayCreated, HourCreated, MinuteCreated, SecondCreated);
             intent.putExtra(Resources.CREATED_AT, createdAt);
-            setResult(2, intent);   // Изменениe
+            setResult(Resources.RESULT_MODIFY, intent);   // Изменениe
         }
         else {
             Calendar createdAt = new GregorianCalendar();
             intent.putExtra(Resources.CREATED_AT, createdAt);
-            setResult(1, intent);   // Добавление
+            setResult(Resources.RESULT_ADD, intent);   // Добавление
         }
         finish();
     }
