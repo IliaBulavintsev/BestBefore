@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private int position = -1;
 
 
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,16 +68,15 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sPrefs.edit();
 
         // Что нового?
-        boolean showWhatsNewIn9 = sPrefs.getBoolean(Resources.PREF_WHATSNEW_9, true);
-        if (showWhatsNewIn9) {
-            new AlertDialog.Builder(this).setTitle(R.string.whats_new).setMessage("Уважаемые пользователи! Теперь просроченные продукты будут сразу помещены в отдельный список, где их можно посмотреть. Нет нужды постоянно проверять его - при запуске программа сама уведомит вас о новой \"просрочке\".").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        boolean showWhatsNewIn11 = sPrefs.getBoolean(Resources.PREF_WHATSNEW_11, true);
+        if (showWhatsNewIn11) {
+            new AlertDialog.Builder(this).setTitle(R.string.whats_new).setMessage("В настройках теперь можно выбрать отображение даты окончания срока годности продукта вместо количества оставшихся дней.").setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
                 }
             }).show();
         }
-
-        editor.putBoolean(Resources.PREF_WHATSNEW_9, false);
+        editor.putBoolean(Resources.PREF_WHATSNEW_11, false);
         editor.apply();
 
 

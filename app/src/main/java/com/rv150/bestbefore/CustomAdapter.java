@@ -1,8 +1,10 @@
 package com.rv150.bestbefore;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,66 +71,66 @@ public class CustomAdapter extends BaseAdapter {
         int day = date.get(Calendar.DAY_OF_MONTH);
         date.set(year, month, day, 23, 59);
 
-        TextView date_text = (TextView) view.findViewById(R.id.date);
+        TextView dateText = (TextView) view.findViewById(R.id.date);
         // Если нужно всегда показывать дату окончания срока (в Overdue)
-        if (always_show_date) {
+
+        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean showDateExceptDaysLeft = sPrefs.getBoolean(Resources.showDateExceptDaysLeft, false);
+
+        Calendar currentDate = new GregorianCalendar();
+        long difference = date.getTimeInMillis() - currentDate.getTimeInMillis();
+        int days = (int) (difference / (24 * 60 * 60 * 1000));
+
+
+        if (always_show_date || showDateExceptDaysLeft) {
             if (month < 9) {
-                date_text.setText(day + "." + "0" + (month + 1) + "." + year);
+                dateText.setText(day + "." + "0" + (month + 1) + "." + year);
             }
             else {
-                date_text.setText(day + "." + (month + 1) + "." + year);
+                dateText.setText(day + "." + (month + 1) + "." + year);
             }
-            date_text.setTextColor(0xffbdbdbd);
+            setColor(dateText, difference, days);
         }
 
         else {
-            Calendar currentDate = new GregorianCalendar();
-            long difference = date.getTimeInMillis() - currentDate.getTimeInMillis();
-            Integer days = (int) (difference / (24 * 60 * 60 * 1000));
-
             if (difference < 0) {
-                date_text.setText("Просрочен!");
+                dateText.setText("Просрочен!");
             } else if (days == 0)
-                date_text.setText(R.string.last_day);
+                dateText.setText(R.string.last_day);
 
             else {
                 days++;
-//                String text = days.toString();
-//                if ((days >= 10) && (days <= 20))
-//                    text += " дней";
-//                else if ((days % 10 >= 2) && (days % 10 <= 4))
-//                    text += " дня";
-//                else if (days % 10 == 1)
-//                    text += " день";
-//                else
-//                    text += " дней";
-
-               // date_text.setText(text);
-
-                date_text.setText(context.getResources().getQuantityString(R.plurals.numberOfDaysLeft, days, days));
+                dateText.setText(context.getResources().getQuantityString(R.plurals.numberOfDaysLeft, days, days));
             }
 
-            if (difference < 0) {
-                date_text.setTextColor(0xffbdbdbd); // просрочен
-            } else if (days == 0) {
-                date_text.setTextColor(0xffff0000); // последний день
-            } else if (days > 0 && days <= 3) {
-                date_text.setTextColor(Color.rgb(220, 180, 0));   // 1-3 дня
-            } else {
-                date_text.setTextColor(Color.rgb(21, 153, 74));
-            }
+
+            setColor(dateText, difference, days);
         }
 
         TextView name = (TextView) view.findViewById(R.id.name);
         name.setText(currentItem.getTitle());
 
         name.setMaxWidth (40 * width / 100 );
-        date_text.setMaxWidth( 50 * width / 100 );
+        dateText.setMaxWidth( 50 * width / 100 );
 
         Typeface font = Typeface.createFromAsset(context.getAssets(), "san.ttf");
         name.setTypeface(font);
-        date_text.setTypeface(font);
+        dateText.setTypeface(font);
 
         return view;
     }
+
+    private void setColor (TextView textView, long difference, int days) {
+        if (difference < 0) {
+            textView.setTextColor(0xffbdbdbd); // просрочен
+        } else if (days == 0) {
+            textView.setTextColor(0xffff0000); // последний день
+        } else if (days > 0 && days <= 3) {
+            textView.setTextColor(Color.rgb(220, 180, 0));   // 1-3 дня
+        } else {
+            textView.setTextColor(Color.rgb(21, 153, 74));  // свежее
+        }
+    }
+
+   
 }
