@@ -57,4 +57,5 @@
     </plurals>
     <string name="best_before_expires">Срок годности истекает!</string>
     <string name="last_day">Последний день!</string>
+    <string name="overdue">Просрочен!</string>
 </resources>
