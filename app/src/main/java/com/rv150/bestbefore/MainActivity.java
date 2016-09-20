@@ -208,13 +208,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-//        for (int i = 0; i < 100; i++) {
-//            Calendar now = new GregorianCalendar();
-//            now.add(Calendar.DAY_OF_MONTH, i);
-//            StringWrapper s = new StringWrapper("#" + i, now);
-//            wrapperList.add(s);
-//        }
-
 
         UpdatePreferences(); // Сохраняем возможные изменения
         customAdapter.setData(wrapperList);
@@ -475,7 +468,8 @@ public class MainActivity extends AppCompatActivity {
                 final int MILLI_TO_HOUR = 1000 * 60 * 60;
                 int hours = (int) ((now.getTimeInMillis() - installedAt.getTimeInMillis()) / MILLI_TO_HOUR);
 
-                if (hours >= 24) {
+                // кол-во часов с момента установки должно превысить 48
+                if (hours >= 48) {
                     SharedPreferences.Editor editor = sPrefs.edit();
                     editor.putBoolean(Resources.PREF_NEED_RATE, false);
                     editor.remove(Resources.PREF_INSTALL_YEAR);
