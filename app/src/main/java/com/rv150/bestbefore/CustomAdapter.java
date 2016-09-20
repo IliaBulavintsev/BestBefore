@@ -93,17 +93,8 @@ public class CustomAdapter extends BaseAdapter {
         }
 
         else {
-            if (difference < 0) {
-                dateText.setText("Просрочен!");
-            } else if (days == 0)
-                dateText.setText(R.string.last_day);
 
-            else {
-                days++;
-                dateText.setText(context.getResources().getQuantityString(R.plurals.numberOfDaysLeft, days, days));
-            }
-
-
+            dateText.setText(getDaysLeft(date));
             setColor(dateText, difference, days);
         }
 
@@ -132,5 +123,49 @@ public class CustomAdapter extends BaseAdapter {
         }
     }
 
-   
+    private String getDaysLeft (Calendar sourceDate) {
+        Calendar currentDate = new GregorianCalendar();
+        long difference = sourceDate.getTimeInMillis() - currentDate.getTimeInMillis();
+        int days = (int) (difference / (24 * 60 * 60 * 1000));
+
+        if (difference < 0) {
+            context.getString(R.string.overdue);
+        } else if (days == 0) {
+            return context.getString(R.string.last_day);
+        }
+
+        int months = 0;
+        while (days >= 28) {
+            currentDate.add(Calendar.MONTH, 1);
+            difference = sourceDate.getTimeInMillis() - currentDate.getTimeInMillis();
+            if (difference > 0) {
+                months++;
+                days = (int) (difference / (24 * 60 * 60 * 1000));
+            }
+            else {
+                break;
+            }
+        }
+
+        StringBuilder result = new StringBuilder();
+
+
+        if (months != 0) {
+            String str = months + " мес.";
+            result.append(str);
+        }
+
+        if (days == 0) {
+            return result.toString();   // Например, 3 мес.
+        }
+
+        // Если присутсвуют месяцы, то плюсовать дни не надо. Если месяцев 0, то days++
+        if (months == 0) {
+            days++;
+        }
+
+        result.append(' ');
+        result.append(context.getResources().getQuantityString(R.plurals.numberOfDaysLeft, days, days));
+        return result.toString();
+    }
 }
