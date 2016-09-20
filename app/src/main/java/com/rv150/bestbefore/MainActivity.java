@@ -69,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Что нового?
         boolean showWhatsNewIn11 = sPrefs.getBoolean(Resources.PREF_WHATSNEW_11, true);
-        if (showWhatsNewIn11) {
+        boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
+        if (showWhatsNewIn11 && !showWelcomeScreen) {
             new AlertDialog.Builder(this).setTitle(R.string.whats_new).setMessage("В настройках теперь можно выбрать отображение даты окончания срока годности продукта вместо количества оставшихся дней.").setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
@@ -81,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         // показ приветственного сообщения
-        boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
         if (showWelcomeScreen) {
             String whatsNewText = getResources().getString(R.string.welcomeText);
             new AlertDialog.Builder(this).setTitle(R.string.welcomeTitle).setMessage(whatsNewText).setPositiveButton("OK", new DialogInterface.OnClickListener() {
