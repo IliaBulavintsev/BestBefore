@@ -18,7 +18,7 @@
     <string name="cancel">Отмена</string>
     <string name="notificationTime">17:00</string>
     <string name="welcomeTitle">Добрый день!</string>
-    <string name="welcomeText">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продукта в 17:00. Настроить напоминания и сортировку можно в настройках. \nХорошего дня! </string>
+    <string name="welcomeText">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продукта в 17:00. Настроить напоминания и другие параметры можно в настройках. \nХорошего дня! </string>
     <string name="overdue_products">Просроченные продукты</string>
     <string name="list_is_empty">Список пуст!</string>
     <string name="clear_list">Очистить список</string>
