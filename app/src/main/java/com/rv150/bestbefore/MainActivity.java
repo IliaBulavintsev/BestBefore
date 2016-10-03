@@ -12,6 +12,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 
 
@@ -27,6 +28,15 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -34,16 +44,19 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 
+
 // Все настройки чистятся в UpdatePreferences() и в классе DeleteOverdue
 
 // Перевести дни в месяцы
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     private ListView listView;
     private CustomAdapter customAdapter;
     private List<StringWrapper> wrapperList;
     private SharedPreferences sPrefs;
     private int position = -1;
+
+    private GoogleApiClient mGoogleApiClient;
 
 
     
@@ -159,7 +172,57 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+
+
+
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.CLIENT_ID))
+                .requestEmail()
+                .build();
+
+        // Build a GoogleApiClient with access to the Google Sign-In API and the
+        // options specified by gso.
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+        SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
+        signInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+                startActivityForResult(signInIntent, Resources.RC_SIGN_IN);
+            }
+        });
     }
+
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.i("Google API", "connectionResult.getErrorMessage()");
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     @Override
@@ -277,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(Resources.MINUTE_CREATED, MinuteCreated);
                 intent.putExtra(Resources.SECOND_CREATED, SecondCreated);
 
-                startActivityForResult(intent, Resources.ADD_ACTIVITY);
+                startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
                 break;
 
             case DELETE:
@@ -357,14 +420,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void onFabClick(View view) {
         Intent intent = new Intent(MainActivity.this, Add.class);
-        startActivityForResult(intent, Resources.ADD_ACTIVITY);
+        startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Resources.ADD_ACTIVITY && resultCode != Resources.RESULT_EXIT) {
+        if (requestCode == Resources.RC_ADD_ACTIVITY && resultCode != Resources.RESULT_EXIT) {
             String name = data.getExtras().getString(Resources.NAME);
             Calendar date = (Calendar) data.getExtras().get(Resources.DATE);
             Calendar createdAt = (Calendar) data.getExtras().get(Resources.CREATED_AT);
@@ -387,8 +450,31 @@ public class MainActivity extends AppCompatActivity {
                 isEmpty.setVisibility(View.INVISIBLE);
             }
         }
+
+
+        if (requestCode == Resources.RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            handleSignInResult(result);
+        }
     }
 
+    private void handleSignInResult(GoogleSignInResult result) {
+        if (result.isSuccess()) {
+            // Signed in successfully, show authenticated UI.
+            GoogleSignInAccount acct = result.getSignInAccount();
+            try {
+                Log.i("SIGNED IN", acct.getDisplayName());
+                Log.i("SIGNED IN", "TOKEN: " + acct.getIdToken());
+                final String idToken = acct.getIdToken();
+                new AsyncHttpPost().execute(idToken);
+            }
+            catch (Exception e) {return;}
+
+        } else {
+            // Signed out, show unauthenticated UI.
+            Log.i("SIGNED IN", "result is not success");
+        }
+    }
 
 
 

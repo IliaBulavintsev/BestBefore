@@ -58,4 +58,5 @@
     <string name="best_before_expires">Срок годности истекает!</string>
     <string name="last_day">Последний день!</string>
     <string name="overdue">Просрочен!</string>
+    <string name="CLIENT_ID">606388056260-2qa08pggc5i53q8r6akall6rs6irbnpv.apps.googleusercontent.com</string>
 </resources>
