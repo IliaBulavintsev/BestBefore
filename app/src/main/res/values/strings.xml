@@ -64,12 +64,12 @@
     <string name="auth_via_google">Авторизоваться через Google аккаунт</string>
     <string name="make_backup">Сохранить данные на сервере</string>
     <string name="restore">Восстановить данные</string>
-    <string name="auth_success">Авторизация успешна</string>
     <string name="backup_success">Бекап успешно создан</string>
     <string name="restore_success">Восстановление завершено</string>
     <string name="auth_failed">Не удалось авторизоваться</string>
     <string name="log_out">Выйти из аккаунта</string>
     <string name="internal_error_has_occured">Произошла внутренняя ошибка</string>
-    <string name="error_has_occured_try_to_relogin">Произошла ошибка, попробуйте перезайти в аккаунт</string>
+    <string name="error_has_occured_try_to_relogin">Произошла ошибка, попробуйте авторизоваться заново</string>
     <string name="backup_failed">Ошибка при создании бекапа</string>
+    <string name="error_timeout">Превышено время ожидания ответа</string>
 </resources>

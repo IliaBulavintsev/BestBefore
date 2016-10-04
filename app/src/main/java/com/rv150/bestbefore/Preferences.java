@@ -254,9 +254,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     idToken = acct.getIdToken();
                     auth.setTitle(R.string.log_out);
                     auth.setSummary("");
-                    Toast toast = Toast.makeText(getApplicationContext(),
-                            R.string.auth_success, Toast.LENGTH_SHORT);
-                    toast.show();
                     Log.i("SIGN IN", "SUCCESS");
                     setAuthFlag(true);
                 }

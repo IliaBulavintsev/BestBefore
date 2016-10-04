@@ -9,11 +9,13 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -27,9 +29,11 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
 
     private String responseStr = null;
     private Context context;
+    private String error;
 
     AsyncHttpPost(Context context) {
         this.context = context;
+        error =  context.getString(R.string.backup_failed);
     }
 
     @Override
@@ -52,6 +56,7 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
             connection.setUseCaches(false);
             connection.setDoInput(true);
             connection.setDoOutput(true);
+            connection.setConnectTimeout(5000);
 
 
 // Send request
@@ -74,11 +79,15 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
             responseStr = response.toString();
              Log.d("Server response", responseStr);
 
-        } catch (Exception e) {
+        }
+        catch (SocketTimeoutException e) {
+            error = context.getString(R.string.error_timeout);
+        }
+        catch (IOException e) {
+            error =  context.getString(R.string.backup_failed);
+        }
 
-            e.printStackTrace();
-
-        } finally {
+        finally {
 
             if (connection != null) {
                 connection.disconnect();
@@ -97,7 +106,7 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
             return;
         }
         Toast toast = Toast.makeText(context,
-                R.string.backup_failed, Toast.LENGTH_SHORT);
+                error, Toast.LENGTH_SHORT);
         toast.show();
 
     }
