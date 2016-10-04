@@ -34,7 +34,7 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        String dataUrl = "http://192.168.1.49:8080/backup";
+        String dataUrl = "http://192.168.1.51:8080/backup";
         URL url;
         HttpURLConnection connection = null;
         try {
@@ -53,14 +53,9 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
 
 // Send request
 
-
-            // debug
-            String body =jsonParam.toString();
-
-
             DataOutputStream wr = new DataOutputStream(
                     connection.getOutputStream());
-            wr.writeBytes(URLEncoder.encode(jsonParam.toString(),"UTF-8"));
+            wr.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
             wr.flush();
             wr.close();
 // Get Response
