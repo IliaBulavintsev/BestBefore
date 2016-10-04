@@ -53,14 +53,12 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
             connection.setDoInput(true);
             connection.setDoOutput(true);
 
-            JSONObject jsonParam = new JSONObject();
-            jsonParam.put("idToken", params[0]);
 
 // Send request
 
             DataOutputStream wr = new DataOutputStream(
                     connection.getOutputStream());
-            wr.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
+            wr.writeBytes(URLEncoder.encode(params[0], "UTF-8"));
             wr.flush();
             wr.close();
 // Get Response
@@ -70,11 +68,11 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
             StringBuilder response = new StringBuilder();
             while ((line = rd.readLine()) != null) {
                 response.append(line);
-                response.append('\r');
+                //response.append('\r');
             }
             rd.close();
-            String responseStr = response.toString();
-            Log.d("Server response", responseStr);
+            responseStr = response.toString();
+             Log.d("Server response", responseStr);
 
         } catch (Exception e) {
 
@@ -92,14 +90,15 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
-        if (responseStr == null || responseStr.equals("Error")) {
+        if (responseStr != null && responseStr.equals("OK")) {
             Toast toast = Toast.makeText(context,
-                    R.string.backup_failed, Toast.LENGTH_SHORT);
+                    R.string.backup_success, Toast.LENGTH_SHORT);
             toast.show();
             return;
         }
         Toast toast = Toast.makeText(context,
-                R.string.backup_success, Toast.LENGTH_SHORT);
+                R.string.backup_failed, Toast.LENGTH_SHORT);
         toast.show();
+
     }
 }

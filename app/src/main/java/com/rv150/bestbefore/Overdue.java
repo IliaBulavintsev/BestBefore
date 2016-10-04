@@ -1,6 +1,7 @@
 package com.rv150.bestbefore;
 
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Point;
@@ -87,7 +88,8 @@ public class Overdue extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadFromPreferences(); // обновляем overdueList в соотв. с сохраненными данными
+
+        overdueList = getOverdueProducts(this); // обновляем overdueList в соотв. с сохраненными данными
 
         customAdapter.setData(overdueList);
         customAdapter.notifyDataSetChanged();
@@ -102,20 +104,21 @@ public class Overdue extends AppCompatActivity {
     }
 
 
-    void loadFromPreferences() {
-        overdueList.clear();
-        for (int i = 0; sPrefs.contains("del" + String.valueOf(i)); ++i) {
-            if (sPrefs.getString("del" + String.valueOf(i), "").equals("") || i >= 1000) {
+    public static List<StringWrapper> getOverdueProducts(Context context) {
+        List<StringWrapper> list = new ArrayList<>();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        for (int i = 0; prefs.contains("del" + String.valueOf(i)); ++i) {
+            if (prefs.getString("del" + String.valueOf(i), "").equals("") || i >= 1000) {
                 break;
             }
-            final String title = sPrefs.getString("del" + String.valueOf(i), "");
-            final String date = sPrefs.getString("del" + String.valueOf(i + 1000), "0.0.0");
+            final String title = prefs.getString("del" + String.valueOf(i), "");
+            final String date = prefs.getString("del" + String.valueOf(i + 1000), "0.0.0");
             String[] array = date.split("\\.");
             int myDay = Integer.parseInt(array[0]);
             int myMonth = Integer.parseInt(array[1]);
             int myYear = Integer.parseInt(array[2]);
 
-            final String createdAtStr = sPrefs.getString("del" + String.valueOf(i + 2000), "0.0.0.0.0.0");
+            final String createdAtStr = prefs.getString("del" + String.valueOf(i + 2000), "0.0.0.0.0.0");
             String[] createdAtSplit = createdAtStr.split("\\.");
             int YearCreated = Integer.parseInt(createdAtSplit[0]);
             int MonthCreated = Integer.parseInt(createdAtSplit[1]);
@@ -125,8 +128,9 @@ public class Overdue extends AppCompatActivity {
             int SecondCreated = Integer.parseInt(createdAtSplit[5]);
 
             StringWrapper temp = new StringWrapper(title, new GregorianCalendar(myYear, myMonth, myDay), new GregorianCalendar(YearCreated, MonthCreated, DayCreated, HourCreated, MinuteCreated, SecondCreated));
-            overdueList.add(temp);
+            list.add(temp);
         }
+        return list;
     }
 
 

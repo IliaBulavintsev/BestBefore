@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         NotificationManager notifManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notifManager.cancelAll();
 
-        wrapperList = getMainList(this); // обновляем wrapperList в соотв. с сохраненными данными
+        wrapperList = getFreshProducts(this); // обновляем wrapperList в соотв. с сохраненными данными
 
 
         // Удаление просроченных
@@ -472,7 +472,7 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    public static List<StringWrapper> getMainList(Context context) {
+    public static List<StringWrapper> getFreshProducts(Context context) {
         List<StringWrapper> list = new ArrayList<>();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         for (int i = 0; prefs.contains(String.valueOf(i)); ++i) {

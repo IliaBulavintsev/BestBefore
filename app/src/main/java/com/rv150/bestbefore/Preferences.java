@@ -9,7 +9,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -118,6 +117,9 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 .addOnConnectionFailedListener(this)
                 .build();
 
+
+
+
         auth = findPreference("auth");
         if (isAuthenticated()) {
             auth.setTitle(R.string.log_out);
@@ -134,8 +136,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                    setAuthFlag(false);
                 } else {
                     // Авторизация и кнопка "Выйти"
-                    Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-                    startActivityForResult(signInIntent, Resources.RC_SIGN_IN);
+                    signIn();
                 }
                 return true;
             }
@@ -160,6 +161,13 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             }
         });
 
+        Preference syncButton = findPreference("sync");
+        syncButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                signIn();
+                return true;
+            }
+        });
 
 
 
@@ -175,20 +183,25 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        // ...
+                        idToken = null;
                     }
                 });
     }
 
+    private void signIn() {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, Resources.RC_SIGN_IN);
+    }
+
 
     private void backup() {
-        List<StringWrapper> freshFood = MainActivity.getMainList(getApplicationContext());
+        List<StringWrapper> freshFood = MainActivity.getFreshProducts(getApplicationContext());
+        List<StringWrapper> overdueFood = Overdue.getOverdueProducts(getApplicationContext());
 
         // Отсылаемый jsonArray
-        JSONArray array = new JSONArray();
 
-        JSONObject token = new JSONObject();
 
+        JSONObject result = new JSONObject();
         try {
             if (idToken == null) {
                 Toast toast = Toast.makeText(getApplicationContext(),
@@ -196,13 +209,26 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 toast.show();
                 return;
             }
-            token.put("idToken", idToken);
-            array.put(token);
+            result.put("idToken", idToken);
 
+            // Массив свежих продуктов
+            JSONArray freshProducts = new JSONArray();
             for (StringWrapper item : freshFood) {
                 JSONObject json = item.getJSON();
-                array.put(json);
+                freshProducts.put(json);
             }
+
+            // Массив просроченных
+            JSONArray overdueProducts = new JSONArray();
+            for (StringWrapper item : overdueFood) {
+                JSONObject json = item.getJSON();
+                freshProducts.put(json);
+            }
+
+
+            result.put("fresh", freshProducts);
+            result.put("overdue", overdueProducts);
+
         }
         catch (JSONException e) {
             Toast toast = Toast.makeText(getApplicationContext(),
@@ -211,7 +237,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             return;
         }
 
-        new AsyncHttpPost(this).execute(idToken);
+
+        new AsyncHttpPost(this).execute(result.toString());
     }
 
 
