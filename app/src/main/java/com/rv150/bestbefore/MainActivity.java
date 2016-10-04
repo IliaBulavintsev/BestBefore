@@ -12,7 +12,6 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 
 
@@ -29,14 +28,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.GoogleApiClient;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -49,14 +40,14 @@ import java.util.List;
 
 // Перевести дни в месяцы
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity {
     private ListView listView;
     private CustomAdapter customAdapter;
     private List<StringWrapper> wrapperList;
     private SharedPreferences sPrefs;
     private int position = -1;
 
-    private GoogleApiClient mGoogleApiClient;
+
 
 
     
@@ -172,51 +163,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 }
             }
         });
-
-
-
-
-
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.CLIENT_ID))
-                .requestEmail()
-                .build();
-
-        // Build a GoogleApiClient with access to the Google Sign-In API and the
-        // options specified by gso.
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-
-        SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
-        signInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-                startActivityForResult(signInIntent, Resources.RC_SIGN_IN);
-            }
-        });
     }
-
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.i("Google API", "connectionResult.getErrorMessage()");
-
-    }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -232,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         NotificationManager notifManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notifManager.cancelAll();
 
-        loadFromPreferences(); // обновляем wrapperList в соотв. с сохраненными данными
+        wrapperList = getMainList(this); // обновляем wrapperList в соотв. с сохраненными данными
 
 
         // Удаление просроченных
@@ -442,43 +389,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             customAdapter.setData(wrapperList);
             customAdapter.notifyDataSetChanged();
             UpdatePreferences();
-            TextView isEmpty = (TextView)findViewById(R.id.isEmptyText);
+            TextView isEmpty = (TextView) findViewById(R.id.isEmptyText);
             if (wrapperList.isEmpty()) {
                 isEmpty.setVisibility(View.VISIBLE);
-            }
-            else {
+            } else {
                 isEmpty.setVisibility(View.INVISIBLE);
             }
         }
-
-
-        if (requestCode == Resources.RC_SIGN_IN) {
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            handleSignInResult(result);
-        }
     }
-
-    private void handleSignInResult(GoogleSignInResult result) {
-        if (result.isSuccess()) {
-            // Signed in successfully, show authenticated UI.
-            GoogleSignInAccount acct = result.getSignInAccount();
-            try {
-                Log.i("SIGNED IN", acct.getDisplayName());
-                Log.i("SIGNED IN", "TOKEN: " + acct.getIdToken());
-                final String idToken = acct.getIdToken();
-                new AsyncHttpPost().execute(idToken);
-            }
-            catch (Exception e) {return;}
-
-        } else {
-            // Signed out, show unauthenticated UI.
-            Log.i("SIGNED IN", "result is not success");
-        }
-    }
-
-
-
-
 
 
 
@@ -512,33 +430,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
         editor.putString(String.valueOf(wrapperList.size()), ""); // признак конца списка
         editor.apply();
-    }
-
-    void loadFromPreferences() {
-        wrapperList.clear();
-        for (int i = 0; sPrefs.contains(String.valueOf(i)) ; ++i) {
-            if (sPrefs.getString(String.valueOf(i), "").equals("") || i >= 500) {
-                break;
-            }
-            final String title = sPrefs.getString(String.valueOf(i), "");
-            final String date = sPrefs.getString(String.valueOf(i + 500), "0.0.0");
-            String[] array = date.split("\\.");
-            int myDay = Integer.parseInt(array[0]);
-            int myMonth = Integer.parseInt(array[1]);
-            int myYear = Integer.parseInt(array[2]);
-
-            final String createdAtStr = sPrefs.getString(String.valueOf(i + 1000), "0.0.0.0.0.0");
-            String[] createdAtSplit = createdAtStr.split("\\.");
-            int YearCreated = Integer.parseInt(createdAtSplit[0]);
-            int MonthCreated = Integer.parseInt(createdAtSplit[1]);
-            int DayCreated = Integer.parseInt(createdAtSplit[2]);
-            int HourCreated = Integer.parseInt(createdAtSplit[3]);
-            int MinuteCreated = Integer.parseInt(createdAtSplit[4]);
-            int SecondCreated = Integer.parseInt(createdAtSplit[5]);
-
-            StringWrapper temp = new StringWrapper(title, new GregorianCalendar(myYear, myMonth, myDay), new GregorianCalendar(YearCreated, MonthCreated, DayCreated, HourCreated, MinuteCreated, SecondCreated));
-            wrapperList.add(temp);
-        }
     }
 
     @Override
@@ -577,7 +468,36 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
     }
 
-    public void closeApp() {
+    public void finishAct() {
         finish();
+    }
+
+    public static List<StringWrapper> getMainList(Context context) {
+        List<StringWrapper> list = new ArrayList<>();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        for (int i = 0; prefs.contains(String.valueOf(i)); ++i) {
+            if (prefs.getString(String.valueOf(i), "").equals("") || i >= 500) {
+                break;
+            }
+            final String title = prefs.getString(String.valueOf(i), "");
+            final String date = prefs.getString(String.valueOf(i + 500), "0.0.0");
+            String[] array = date.split("\\.");
+            int myDay = Integer.parseInt(array[0]);
+            int myMonth = Integer.parseInt(array[1]);
+            int myYear = Integer.parseInt(array[2]);
+
+            final String createdAtStr = prefs.getString(String.valueOf(i + 1000), "0.0.0.0.0.0");
+            String[] createdAtSplit = createdAtStr.split("\\.");
+            int YearCreated = Integer.parseInt(createdAtSplit[0]);
+            int MonthCreated = Integer.parseInt(createdAtSplit[1]);
+            int DayCreated = Integer.parseInt(createdAtSplit[2]);
+            int HourCreated = Integer.parseInt(createdAtSplit[3]);
+            int MinuteCreated = Integer.parseInt(createdAtSplit[4]);
+            int SecondCreated = Integer.parseInt(createdAtSplit[5]);
+
+            StringWrapper temp = new StringWrapper(title, new GregorianCalendar(myYear, myMonth, myDay), new GregorianCalendar(YearCreated, MonthCreated, DayCreated, HourCreated, MinuteCreated, SecondCreated));
+            list.add(temp);
+        }
+        return list;
     }
 }

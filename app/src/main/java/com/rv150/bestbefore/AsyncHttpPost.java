@@ -26,6 +26,11 @@ import java.util.Iterator;
 public class AsyncHttpPost extends AsyncTask<String, String, String> {
 
     private String responseStr = null;
+    private Context context;
+
+    AsyncHttpPost(Context context) {
+        this.context = context;
+    }
 
     @Override
     protected void onPreExecute() {
@@ -87,8 +92,14 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
-        if (responseStr != null) {
-            //
+        if (responseStr == null || responseStr.equals("Error")) {
+            Toast toast = Toast.makeText(context,
+                    R.string.backup_failed, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
         }
+        Toast toast = Toast.makeText(context,
+                R.string.backup_success, Toast.LENGTH_SHORT);
+        toast.show();
     }
 }

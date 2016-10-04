@@ -1,5 +1,8 @@
 package com.rv150.bestbefore;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
@@ -7,42 +10,71 @@ import java.util.GregorianCalendar;
 /**
  * Created by rv150 on 06.01.2016.
  */
-public class StringWrapper {
+class StringWrapper {
     private String mTitle;
     private Calendar mDate;
     private Calendar mCreatedAt;
 
 
-    public StringWrapper(String mTitle, Calendar mDate) {
+    StringWrapper(String mTitle, Calendar mDate) {
         this.mTitle = mTitle;
         this.mDate = mDate;
         this.mCreatedAt = new GregorianCalendar();
     }
 
-    public StringWrapper(String mTitle, Calendar mDate, Calendar mCreatedAt) {
+    StringWrapper(String mTitle, Calendar mDate, Calendar mCreatedAt) {
         this.mTitle = mTitle;
         this.mDate = mDate;
         this.mCreatedAt = mCreatedAt;
     }
 
 
-    public String getTitle() {
+    String getTitle() {
         return mTitle;
     }
 
-    public void setTitle(String mTitle) {
+    void setTitle(String mTitle) {
         this.mTitle = mTitle;
     }
 
-    public Calendar getDate() {
+    Calendar getDate() {
         return mDate;
     }
 
-    public Calendar createdAt() { return mCreatedAt; }
+    Calendar createdAt() { return mCreatedAt; }
 
-    public void setDate(Calendar mDate) {
+    void setDate(Calendar mDate) {
         this.mDate = mDate;
     }
+
+    JSONObject getJSON() throws JSONException {
+        JSONObject result = new JSONObject();
+
+        result.put("name", mTitle);
+
+        int myYear = mDate.get(Calendar.YEAR);
+        int myMonth = mDate.get(Calendar.MONTH);
+        int myDay = mDate.get(Calendar.DAY_OF_MONTH);
+        String str;
+        if (myMonth < 9) {
+            str = myDay + "." + "0" + myMonth + "." + myYear;
+        } else {
+            str = myDay + "." + myMonth + "." + myYear;
+        }
+        result.put("date", str);
+
+        int DayCreated =  mCreatedAt.get(Calendar.DAY_OF_MONTH);
+        int MonthCreated = mCreatedAt.get(Calendar.MONTH);
+        int YearCreated = mCreatedAt.get(Calendar.YEAR);
+        int HourCreated = mCreatedAt.get(Calendar.HOUR_OF_DAY);
+        int MinuteCreated = mCreatedAt.get(Calendar.MINUTE);
+        int SecondCreated = mCreatedAt.get(Calendar.SECOND);
+        String createdAtStr = YearCreated + "." + MonthCreated + "." + DayCreated  + "." + HourCreated + "." + MinuteCreated + "." + SecondCreated;
+        result.put("createdAt", createdAtStr);
+        return result;
+    }
+
+
 
 
     static Comparator<StringWrapper> getFreshToSpoiledComparator() {

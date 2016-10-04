@@ -26,7 +26,7 @@ public class RateAppDialog extends DialogFragment {
                         ((MainActivity) getActivity()).rateApp();
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
-                        ((MainActivity) getActivity()).closeApp();
+                        ((MainActivity) getActivity()).finishAct();
                         break;
                 }
             }
