@@ -59,4 +59,9 @@
     <string name="last_day">Последний день!</string>
     <string name="overdue">Просрочен!</string>
     <string name="CLIENT_ID">606388056260-2qa08pggc5i53q8r6akall6rs6irbnpv.apps.googleusercontent.com</string>
+    <string name="sync">Синхронизация</string>
+    <string name="signin">Войти</string>
+    <string name="auth_via_google">Авторизоваться через Google аккаунт</string>
+    <string name="make_backup">Сохранить данные на сервере</string>
+    <string name="restore">Восстановить данные</string>
 </resources>

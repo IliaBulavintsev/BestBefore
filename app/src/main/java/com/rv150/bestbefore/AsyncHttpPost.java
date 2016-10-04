@@ -34,7 +34,7 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        String dataUrl = "http://192.168.1.51:8080/backup";
+        String dataUrl = "http://192.168.1.52:8080/backup";
         URL url;
         HttpURLConnection connection = null;
         try {

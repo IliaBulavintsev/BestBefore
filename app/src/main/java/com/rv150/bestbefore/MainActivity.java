@@ -483,6 +483,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
 
 
+
     private void UpdatePreferences() {
         SharedPreferences.Editor editor = sPrefs.edit();
         for (int i = 0; i < wrapperList.size(); ++i) {

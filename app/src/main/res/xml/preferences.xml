@@ -111,6 +111,24 @@
 
 
 
+    <PreferenceScreen
+        android:key="sync"
+        android:title="@string/sync"
+        android:persistent="false">
+        <Preference
+            android:title="@string/signin"
+            android:summary="@string/auth_via_google"
+            android:key="auth" />
+        <Preference
+            android:title="@string/make_backup"
+            android:key="backup" />
+        <Preference
+            android:title="@string/restore"
+            android:key="restore" />
+        </PreferenceScreen>
+
+
+
 
 
 </PreferenceScreen>
