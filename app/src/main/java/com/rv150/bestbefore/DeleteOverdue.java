@@ -25,7 +25,7 @@ public class DeleteOverdue {
         sPrefs = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
-    public List<String> delete() {
+    List<String> delete() {
         loadDeleted(); // Подгружаем ранее просроченные продукты
         List<String> newOverdue = new ArrayList<>();
             for (Iterator<StringWrapper> iterator = wrapperList.iterator(); iterator.hasNext(); ) {
@@ -61,7 +61,7 @@ public class DeleteOverdue {
                     }
 
 
-                    newOverdue.add(title); // А в новые просроки название
+                    newOverdue.add(0, title); // А в новые просроки название
                     iterator.remove();  // И удаляем из основого списка
                 }
             }

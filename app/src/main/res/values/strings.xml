@@ -72,4 +72,6 @@
     <string name="error_has_occured_try_to_relogin">Произошла ошибка, попробуйте авторизоваться заново</string>
     <string name="backup_failed">Ошибка при создании бекапа</string>
     <string name="error_timeout">Превышено время ожидания ответа</string>
+    <string name="restore_failed">Ошибка при восстановлении данных</string>
+    <string name="data_not_found">Данные не найдены</string>
 </resources>

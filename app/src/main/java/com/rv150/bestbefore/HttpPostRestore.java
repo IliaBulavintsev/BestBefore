@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -12,28 +13,24 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Iterator;
 
 /**
- * Created by Администратор on 03.10.2016.
+ * Created by Rudnev on 05.10.2016.
  */
 
-public class AsyncHttpPost extends AsyncTask<String, String, String> {
+class HttpPostRestore extends AsyncTask<String, String, String> {
 
     private String responseStr = null;
     private Context context;
     private String error;
 
-    AsyncHttpPost(Context context) {
+    HttpPostRestore(Context context) {
         this.context = context;
-        error =  context.getString(R.string.backup_failed);
+        error =  context.getString(R.string.restore_failed);
     }
 
     @Override
@@ -43,7 +40,7 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        String dataUrl = "http://192.168.1.52:8080/backup";
+        String dataUrl = "http://192.168.43.244:8080/restore";
         URL url;
         HttpURLConnection connection = null;
         try {
@@ -77,14 +74,14 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
             }
             rd.close();
             responseStr = response.toString();
-             Log.d("Server response", responseStr);
+            Log.d("Server response", responseStr);
 
         }
         catch (SocketTimeoutException e) {
             error = context.getString(R.string.error_timeout);
         }
         catch (IOException e) {
-            error =  context.getString(R.string.backup_failed);
+            error =  context.getString(R.string.restore_failed);
         }
 
         finally {
@@ -99,15 +96,41 @@ public class AsyncHttpPost extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
-        if (responseStr != null && responseStr.equals("OK")) {
+
+        if (responseStr == null) {
             Toast toast = Toast.makeText(context,
-                    R.string.backup_success, Toast.LENGTH_SHORT);
+                    error, Toast.LENGTH_SHORT);
             toast.show();
             return;
         }
-        Toast toast = Toast.makeText(context,
-                error, Toast.LENGTH_SHORT);
-        toast.show();
 
+        if (responseStr.equals("no data")) {
+            Toast toast = Toast.makeText(context,
+                    R.string.data_not_found, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+        parseResult(responseStr);
+    }
+
+
+
+    private void parseResult (String input) {
+        try {
+            final JSONObject inputJson = new JSONObject(input);
+            JSONArray fresh = inputJson.getJSONArray("fresh");
+            JSONArray overdue = inputJson.getJSONArray("overdue");
+
+
+
+        }
+
+
+
+
+
+        Toast toast = Toast.makeText(context,
+                R.string.restore_success, Toast.LENGTH_SHORT);
+        toast.show();
     }
 }

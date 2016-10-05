@@ -151,12 +151,10 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             }
         });
 
-        Preference restore = findPreference("restore");
+        final Preference restore = findPreference("restore");
         restore.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        R.string.restore_success, Toast.LENGTH_SHORT);
-                toast.show();
+                restore();
                 return true;
             }
         });
@@ -238,7 +236,31 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         }
 
 
-        new AsyncHttpPost(this).execute(result.toString());
+        new HttpPostBackup(this).execute(result.toString());
+    }
+
+
+    void restore() {
+        JSONObject result = new JSONObject();
+        try {
+            if (idToken == null) {
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        R.string.error_has_occured_try_to_relogin, Toast.LENGTH_SHORT);
+                toast.show();
+                return;
+            }
+            result.put("idToken", idToken);
+        }
+        catch (JSONException e) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
+
+        new HttpPostRestore(this).execute(result.toString());
+
     }
 
 
