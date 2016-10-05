@@ -36,6 +36,7 @@ import java.util.List;
 
 
 
+
 // Все настройки чистятся в UpdatePreferences() и в классе DeleteOverdue
 
 // Перевести дни в месяцы
@@ -177,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         NotificationManager notifManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notifManager.cancelAll();
 
-        wrapperList = getFreshProducts(this); // обновляем wrapperList в соотв. с сохраненными данными
+        wrapperList = SharedPrefsManager.getFreshProducts(this); // обновляем wrapperList в соотв. с сохраненными данными
 
 
         // Удаление просроченных
@@ -215,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        UpdatePreferences(); // Сохраняем возможные изменения
+        SharedPrefsManager.saveFreshProducts(wrapperList, this); // Сохраняем возможные изменения
         customAdapter.setData(wrapperList);
         customAdapter.notifyDataSetChanged();
 
@@ -308,14 +309,14 @@ public class MainActivity extends AppCompatActivity {
         }
         customAdapter.setData(wrapperList);
         customAdapter.notifyDataSetChanged();
-        UpdatePreferences();
+        SharedPrefsManager.saveFreshProducts(wrapperList, this);
     }
 
     public void DeleteAll() {
         wrapperList.clear();
         customAdapter.setData(wrapperList);
         customAdapter.notifyDataSetChanged();
-        UpdatePreferences();
+        SharedPrefsManager.saveFreshProducts(wrapperList, this);
         TextView isEmpty = (TextView)findViewById(R.id.isEmptyText);
         isEmpty.setVisibility(View.VISIBLE);
     }
@@ -384,7 +385,7 @@ public class MainActivity extends AppCompatActivity {
 
             customAdapter.setData(wrapperList);
             customAdapter.notifyDataSetChanged();
-            UpdatePreferences();
+            SharedPrefsManager.saveFreshProducts(wrapperList, this);    // Сохраняем настройки
             TextView isEmpty = (TextView) findViewById(R.id.isEmptyText);
             if (wrapperList.isEmpty()) {
                 isEmpty.setVisibility(View.VISIBLE);
@@ -398,35 +399,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    private void UpdatePreferences() {
-        SharedPreferences.Editor editor = sPrefs.edit();
-        for (int i = 0; i < wrapperList.size(); ++i) {
-            Calendar temp = wrapperList.get(i).getDate();
-            int myYear = temp.get(Calendar.YEAR);
-            int myMonth = temp.get(Calendar.MONTH);
-            int myDay = temp.get(Calendar.DAY_OF_MONTH);
-            String str;
-            if (myMonth < 9) {
-                str = myDay + "." + "0" + myMonth + "." + myYear;
-            } else {
-                str = myDay + "." + myMonth + "." + myYear;
-            }
-            editor.putString(String.valueOf(i), wrapperList.get(i).getTitle());
-            editor.putString(String.valueOf(i + 500), str);
 
-            Calendar createdAt = wrapperList.get(i).createdAt();
-            int DayCreated =  createdAt.get(Calendar.DAY_OF_MONTH);
-            int MonthCreated = createdAt.get(Calendar.MONTH);
-            int YearCreated = createdAt.get(Calendar.YEAR);
-            int HourCreated = createdAt.get(Calendar.HOUR_OF_DAY);
-            int MinuteCreated = createdAt.get(Calendar.MINUTE);
-            int SecondCreated = createdAt.get(Calendar.SECOND);
-            String createdAtStr = YearCreated + "." + MonthCreated + "." + DayCreated  + "." + HourCreated + "." + MinuteCreated + "." + SecondCreated;
-            editor.putString(String.valueOf(i + 1000), createdAtStr);
-        }
-        editor.putString(String.valueOf(wrapperList.size()), ""); // признак конца списка
-        editor.apply();
-    }
 
     @Override
     public void onBackPressed() {
@@ -468,32 +441,5 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    public static List<StringWrapper> getFreshProducts(Context context) {
-        List<StringWrapper> list = new ArrayList<>();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        for (int i = 0; prefs.contains(String.valueOf(i)); ++i) {
-            if (prefs.getString(String.valueOf(i), "").equals("") || i >= 500) {
-                break;
-            }
-            final String title = prefs.getString(String.valueOf(i), "");
-            final String date = prefs.getString(String.valueOf(i + 500), "0.0.0");
-            String[] array = date.split("\\.");
-            int myDay = Integer.parseInt(array[0]);
-            int myMonth = Integer.parseInt(array[1]);
-            int myYear = Integer.parseInt(array[2]);
 
-            final String createdAtStr = prefs.getString(String.valueOf(i + 1000), "0.0.0.0.0.0");
-            String[] createdAtSplit = createdAtStr.split("\\.");
-            int YearCreated = Integer.parseInt(createdAtSplit[0]);
-            int MonthCreated = Integer.parseInt(createdAtSplit[1]);
-            int DayCreated = Integer.parseInt(createdAtSplit[2]);
-            int HourCreated = Integer.parseInt(createdAtSplit[3]);
-            int MinuteCreated = Integer.parseInt(createdAtSplit[4]);
-            int SecondCreated = Integer.parseInt(createdAtSplit[5]);
-
-            StringWrapper temp = new StringWrapper(title, new GregorianCalendar(myYear, myMonth, myDay), new GregorianCalendar(YearCreated, MonthCreated, DayCreated, HourCreated, MinuteCreated, SecondCreated));
-            list.add(temp);
-        }
-        return list;
-    }
 }

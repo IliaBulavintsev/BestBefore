@@ -193,7 +193,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void backup() {
-        List<StringWrapper> freshFood = MainActivity.getFreshProducts(getApplicationContext());
+        List<StringWrapper> freshFood = SharedPrefsManager.getFreshProducts(getApplicationContext());
         List<StringWrapper> overdueFood = Overdue.getOverdueProducts(getApplicationContext());
 
         // Отсылаемый jsonArray
