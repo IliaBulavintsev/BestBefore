@@ -193,8 +193,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void backup() {
-        List<StringWrapper> freshFood = SharedPrefsManager.getFreshProducts(getApplicationContext());
-        List<StringWrapper> overdueFood = Overdue.getOverdueProducts(getApplicationContext());
+        List<StringWrapper> freshFood = SharedPrefsManager.getFreshProducts(this);
+        List<StringWrapper> overdueFood = SharedPrefsManager.getOverdueProducts(this);
 
         // Отсылаемый jsonArray
 
@@ -220,13 +220,12 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             JSONArray overdueProducts = new JSONArray();
             for (StringWrapper item : overdueFood) {
                 JSONObject json = item.getJSON();
-                freshProducts.put(json);
+                overdueProducts.put(json);
             }
 
 
             result.put("fresh", freshProducts);
             result.put("overdue", overdueProducts);
-
         }
         catch (JSONException e) {
             Toast toast = Toast.makeText(getApplicationContext(),
@@ -241,7 +240,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     void restore() {
-        JSONObject result = new JSONObject();
+        JSONObject request = new JSONObject();
         try {
             if (idToken == null) {
                 Toast toast = Toast.makeText(getApplicationContext(),
@@ -249,7 +248,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 toast.show();
                 return;
             }
-            result.put("idToken", idToken);
+            request.put("idToken", idToken);
         }
         catch (JSONException e) {
             Toast toast = Toast.makeText(getApplicationContext(),
@@ -258,9 +257,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             return;
         }
 
-
-        new HttpPostRestore(this).execute(result.toString());
-
+        new HttpPostRestore(this).execute(request.toString());
     }
 
 

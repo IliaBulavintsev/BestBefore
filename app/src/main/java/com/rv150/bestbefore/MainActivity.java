@@ -180,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
 
         wrapperList = SharedPrefsManager.getFreshProducts(this); // обновляем wrapperList в соотв. с сохраненными данными
 
-
         // Удаление просроченных
         DeleteOverdue deleteOverdue = new DeleteOverdue(wrapperList, this);
         List<String> newOverdue = deleteOverdue.delete();
@@ -442,4 +441,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+
+    private void insertSmth() {
+        StringWrapper old = new StringWrapper("Кефирчик", new GregorianCalendar(2016,9,4));
+        wrapperList.add(old);
+    }
 }

@@ -31,7 +31,6 @@ import java.util.List;
 public class Overdue extends AppCompatActivity {
     private CustomAdapter customAdapter;
     private List<StringWrapper> overdueList;
-    private SharedPreferences sPrefs;
     private TextView isEmpty;
     private int position = -1;
 
@@ -47,7 +46,6 @@ public class Overdue extends AppCompatActivity {
         int width = size.x;
 
         customAdapter = new CustomAdapter(this, width, true);
-        overdueList = new ArrayList<>();
 
         isEmpty = (TextView) findViewById(R.id.isEmptyOverdue);
         ListView listView = (ListView) findViewById(R.id.overdue_list);
@@ -63,8 +61,7 @@ public class Overdue extends AppCompatActivity {
         });
 
 
-        sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
+        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         Boolean needHelp = sPrefs.getBoolean(Resources.SHOW_HELP, true);
         if (needHelp) {
@@ -89,7 +86,7 @@ public class Overdue extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        overdueList = getOverdueProducts(this); // обновляем overdueList в соотв. с сохраненными данными
+        overdueList = SharedPrefsManager.getOverdueProducts(this); // обновляем overdueList в соотв. с сохраненными данными
 
         customAdapter.setData(overdueList);
         customAdapter.notifyDataSetChanged();
@@ -103,35 +100,6 @@ public class Overdue extends AppCompatActivity {
         }
     }
 
-
-    public static List<StringWrapper> getOverdueProducts(Context context) {
-        List<StringWrapper> list = new ArrayList<>();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        for (int i = 0; prefs.contains("del" + String.valueOf(i)); ++i) {
-            if (prefs.getString("del" + String.valueOf(i), "").equals("") || i >= 1000) {
-                break;
-            }
-            final String title = prefs.getString("del" + String.valueOf(i), "");
-            final String date = prefs.getString("del" + String.valueOf(i + 1000), "0.0.0");
-            String[] array = date.split("\\.");
-            int myDay = Integer.parseInt(array[0]);
-            int myMonth = Integer.parseInt(array[1]);
-            int myYear = Integer.parseInt(array[2]);
-
-            final String createdAtStr = prefs.getString("del" + String.valueOf(i + 2000), "0.0.0.0.0.0");
-            String[] createdAtSplit = createdAtStr.split("\\.");
-            int YearCreated = Integer.parseInt(createdAtSplit[0]);
-            int MonthCreated = Integer.parseInt(createdAtSplit[1]);
-            int DayCreated = Integer.parseInt(createdAtSplit[2]);
-            int HourCreated = Integer.parseInt(createdAtSplit[3]);
-            int MinuteCreated = Integer.parseInt(createdAtSplit[4]);
-            int SecondCreated = Integer.parseInt(createdAtSplit[5]);
-
-            StringWrapper temp = new StringWrapper(title, new GregorianCalendar(myYear, myMonth, myDay), new GregorianCalendar(YearCreated, MonthCreated, DayCreated, HourCreated, MinuteCreated, SecondCreated));
-            list.add(temp);
-        }
-        return list;
-    }
 
 
     @Override
@@ -182,37 +150,17 @@ public class Overdue extends AppCompatActivity {
 
         customAdapter.setData(overdueList);
         customAdapter.notifyDataSetChanged();
-        savePreferences();
+        SharedPrefsManager.saveOverdueProducts(overdueList, this);
     }
 
-    private void savePreferences() {
-        SharedPreferences.Editor editor = sPrefs.edit();
-        for (int i = 0; i < overdueList.size(); ++i) {
-            Calendar temp = overdueList.get(i).getDate();
-            int myYear = temp.get(Calendar.YEAR);
-            int myMonth = temp.get(Calendar.MONTH);
-            int myDay = temp.get(Calendar.DAY_OF_MONTH);
-            String str;
-            if (myMonth < 9) {
-                str = myDay + "." + "0" + myMonth + "." + myYear;
-            } else {
-                str = myDay + "." + myMonth + "." + myYear;
-            }
-            editor.putString("del" + String.valueOf(i), overdueList.get(i).getTitle());
-            editor.putString("del" + String.valueOf(i + 1000), str);
-        }
-        editor.putString("del" + String.valueOf(overdueList.size()), ""); // признак конца списка
-        editor.apply();
-    }
 
 
     public void clearList() {
         overdueList.clear();
-        savePreferences();
+        SharedPrefsManager.saveOverdueProducts(overdueList, this);
         customAdapter.setData(overdueList);
         customAdapter.notifyDataSetChanged();
         isEmpty.setVisibility(View.VISIBLE);
     }
-
 }
 

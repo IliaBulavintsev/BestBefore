@@ -13,8 +13,8 @@ import java.util.List;
  * Created by Rudnev on 05.10.2016.
  */
 
-public class SharedPrefsManager {
-    public static List<StringWrapper> getFreshProducts(Context context) {
+class SharedPrefsManager {
+    static List<StringWrapper> getFreshProducts(Context context) {
         List<StringWrapper> list = new ArrayList<>();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         for (int i = 0; prefs.contains(String.valueOf(i)); ++i) {
@@ -23,27 +23,15 @@ public class SharedPrefsManager {
             }
             final String title = prefs.getString(String.valueOf(i), "");
             final String date = prefs.getString(String.valueOf(i + 500), "0.0.0");
-            String[] array = date.split("\\.");
-            int myDay = Integer.parseInt(array[0]);
-            int myMonth = Integer.parseInt(array[1]);
-            int myYear = Integer.parseInt(array[2]);
+            final String createdAt = prefs.getString(String.valueOf(i + 1000), "0.0.0.0.0.0");
 
-            final String createdAtStr = prefs.getString(String.valueOf(i + 1000), "0.0.0.0.0.0");
-            String[] createdAtSplit = createdAtStr.split("\\.");
-            int YearCreated = Integer.parseInt(createdAtSplit[0]);
-            int MonthCreated = Integer.parseInt(createdAtSplit[1]);
-            int DayCreated = Integer.parseInt(createdAtSplit[2]);
-            int HourCreated = Integer.parseInt(createdAtSplit[3]);
-            int MinuteCreated = Integer.parseInt(createdAtSplit[4]);
-            int SecondCreated = Integer.parseInt(createdAtSplit[5]);
-
-            StringWrapper temp = new StringWrapper(title, new GregorianCalendar(myYear, myMonth, myDay), new GregorianCalendar(YearCreated, MonthCreated, DayCreated, HourCreated, MinuteCreated, SecondCreated));
+            StringWrapper temp = new StringWrapper(title, date, createdAt);
             list.add(temp);
         }
         return list;
     }
 
-    public static void saveFreshProducts(List<StringWrapper> list, Context context) {
+    static void saveFreshProducts(List<StringWrapper> list, Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
         for (int i = 0; i < list.size(); ++i) {
@@ -71,6 +59,43 @@ public class SharedPrefsManager {
             editor.putString(String.valueOf(i + 1000), createdAtStr);
         }
         editor.putString(String.valueOf(list.size()), ""); // признак конца списка
+        editor.apply();
+    }
+
+    static List<StringWrapper> getOverdueProducts(Context context) {
+        List<StringWrapper> list = new ArrayList<>();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        for (int i = 0; prefs.contains("del" + String.valueOf(i)); ++i) {
+            if (prefs.getString("del" + String.valueOf(i), "").equals("") || i >= 1000) {
+                break;
+            }
+            final String title = prefs.getString("del" + String.valueOf(i), "");
+            final String date = prefs.getString("del" + String.valueOf(i + 1000), "0.0.0");
+
+            list.add(new StringWrapper(title, date));
+        }
+        return list;
+    }
+
+
+    static void saveOverdueProducts(List<StringWrapper> list, Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        for (int i = 0; i < list.size(); ++i) {
+            Calendar temp = list.get(i).getDate();
+            int myYear = temp.get(Calendar.YEAR);
+            int myMonth = temp.get(Calendar.MONTH);
+            int myDay = temp.get(Calendar.DAY_OF_MONTH);
+            String str;
+            if (myMonth < 9) {
+                str = myDay + "." + "0" + myMonth + "." + myYear;
+            } else {
+                str = myDay + "." + myMonth + "." + myYear;
+            }
+            editor.putString("del" + String.valueOf(i), list.get(i).getTitle());
+            editor.putString("del" + String.valueOf(i + 1000), str);
+        }
+        editor.putString("del" + String.valueOf(list.size()), ""); // признак конца списка
         editor.apply();
     }
 }

@@ -17,15 +17,42 @@ class StringWrapper {
 
 
     StringWrapper(String mTitle, Calendar mDate) {
-        this.mTitle = mTitle;
-        this.mDate = mDate;
-        this.mCreatedAt = new GregorianCalendar();
+        this(mTitle, mDate, new GregorianCalendar());
     }
 
     StringWrapper(String mTitle, Calendar mDate, Calendar mCreatedAt) {
         this.mTitle = mTitle;
         this.mDate = mDate;
         this.mCreatedAt = mCreatedAt;
+    }
+
+    StringWrapper (String title, String date) {
+        this(title, date, null);
+    }
+
+    StringWrapper (String title, String date, String createdAt) {
+        this.mTitle = title;
+
+        String[] array = date.split("\\.");
+        int myDay = Integer.parseInt(array[0]);
+        int myMonth = Integer.parseInt(array[1]);
+        int myYear = Integer.parseInt(array[2]);
+        this.mDate = new GregorianCalendar(myYear, myMonth, myDay);
+
+        if (createdAt == null) {
+            this.mCreatedAt = new GregorianCalendar();
+        }
+        else {
+            String[] createdAtSplit = createdAt.split("\\.");
+            int Year = Integer.parseInt(createdAtSplit[0]);
+            int Month = Integer.parseInt(createdAtSplit[1]);
+            int Day = Integer.parseInt(createdAtSplit[2]);
+            int Hour = Integer.parseInt(createdAtSplit[3]);
+            int Minute = Integer.parseInt(createdAtSplit[4]);
+            int Second = Integer.parseInt(createdAtSplit[5]);
+            this.mCreatedAt = new GregorianCalendar
+                    (Year, Month, Day, Hour, Minute, Second);
+        }
     }
 
 

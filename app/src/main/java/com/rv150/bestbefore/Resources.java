@@ -45,4 +45,5 @@ final class Resources {
     static final int RESULT_MODIFY = 2;
     static final int RESULT_EXIT = 0;
     static final String showDateExceptDaysLeft = "showDateInsteadDaysLeft";
+    static final String SERVER_URL = "http://192.168.1.39:8080/";
 }
