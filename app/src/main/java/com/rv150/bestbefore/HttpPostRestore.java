@@ -1,6 +1,11 @@
 package com.rv150.bestbefore;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.DialogFragment;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -30,15 +35,21 @@ class HttpPostRestore extends AsyncTask<String, String, String> {
     private String responseStr = null;
     private Context context;
     private String error;
+    private ProgressDialog dialog;
 
     HttpPostRestore(Context context) {
         this.context = context;
         error =  context.getString(R.string.restore_failed);
+        dialog = new ProgressDialog(context);
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
+        dialog.setMessage(context.getString(R.string.fetching_data));
+        dialog.setCancelable(false);
+        dialog.setInverseBackgroundForced(false);
+        dialog.show();
     }
 
     @Override
@@ -99,6 +110,7 @@ class HttpPostRestore extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
+        dialog.hide();
 
         if (responseStr == null) {
             Toast toast = Toast.makeText(context,
@@ -122,27 +134,24 @@ class HttpPostRestore extends AsyncTask<String, String, String> {
 
         JSONArray freshJson;
         JSONArray overdueJson;
-        List<StringWrapper> fresh = new ArrayList<>();
-        List<StringWrapper> overdue = new ArrayList<>();
+        final List<StringWrapper> fresh = new ArrayList<>();
+        final List<StringWrapper> overdue = new ArrayList<>();
         try {
             final JSONObject inputJson = new JSONObject(input);
             freshJson = inputJson.getJSONArray("fresh");
             overdueJson = inputJson.getJSONArray("overdue");
-
-
-
 
             // Заполнение списков...
             for (int i = 0; i < freshJson.length(); ++i) {
                 JSONObject item = freshJson.getJSONObject(i);
                 String name = item.getString("name");
                 String date = item.getString("date");
-                String createdAt = item.getString("createdAt");
+                String createdAt = item.getString("getCreatedAt");
                 StringWrapper product = new StringWrapper(name, date, createdAt);
                 fresh.add(product);
             }
 
-            // Поле createdAt передается по сети, но не имеет смысла
+            // Поле getCreatedAt передается по сети, но не имеет смысла
             for (int i = 0; i < overdueJson.length(); ++i) {
                 JSONObject item = overdueJson.getJSONObject(i);
                 String name = item.getString("name");
@@ -150,9 +159,6 @@ class HttpPostRestore extends AsyncTask<String, String, String> {
                 StringWrapper product = new StringWrapper(name, date);
                 overdue.add(product);
             }
-
-
-
         }
         catch (JSONException e) {
             Toast toast = Toast.makeText(context,
@@ -162,6 +168,28 @@ class HttpPostRestore extends AsyncTask<String, String, String> {
         }
 
 
+        List<StringWrapper> currentFresh = SharedPrefsManager.getFreshProducts(context);
+        List<StringWrapper> currentOverdue = SharedPrefsManager.getOverdueProducts(context);
+        if (!currentFresh.isEmpty() || !currentOverdue.isEmpty()) {
+            new AlertDialog.Builder(context)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle(R.string.warning)
+                    .setMessage(R.string.do_you_want_to_overwite_existing)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            saveRestored(fresh, overdue);
+                        }
+
+                    })
+                    .setNegativeButton(R.string.no, null)
+                    .show();
+        }
+        saveRestored(fresh, overdue);
+    }
+
+    private void saveRestored(List<StringWrapper> fresh, List<StringWrapper> overdue) {
         SharedPrefsManager.saveFreshProducts(fresh, context);
         SharedPrefsManager.saveOverdueProducts(overdue, context);
         Toast toast = Toast.makeText(context,

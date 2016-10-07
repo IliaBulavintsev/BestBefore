@@ -24,7 +24,6 @@ class SharedPrefsManager {
             final String title = prefs.getString(String.valueOf(i), "");
             final String date = prefs.getString(String.valueOf(i + 500), "0.0.0");
             final String createdAt = prefs.getString(String.valueOf(i + 1000), "0.0.0.0.0.0");
-
             StringWrapper temp = new StringWrapper(title, date, createdAt);
             list.add(temp);
         }
@@ -35,28 +34,10 @@ class SharedPrefsManager {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
         for (int i = 0; i < list.size(); ++i) {
-            Calendar temp = list.get(i).getDate();
-            int myYear = temp.get(Calendar.YEAR);
-            int myMonth = temp.get(Calendar.MONTH);
-            int myDay = temp.get(Calendar.DAY_OF_MONTH);
-            String str;
-            if (myMonth < 9) {
-                str = myDay + "." + "0" + myMonth + "." + myYear;
-            } else {
-                str = myDay + "." + myMonth + "." + myYear;
-            }
-            editor.putString(String.valueOf(i), list.get(i).getTitle());
-            editor.putString(String.valueOf(i + 500), str);
-
-            Calendar createdAt = list.get(i).createdAt();
-            int DayCreated =  createdAt.get(Calendar.DAY_OF_MONTH);
-            int MonthCreated = createdAt.get(Calendar.MONTH);
-            int YearCreated = createdAt.get(Calendar.YEAR);
-            int HourCreated = createdAt.get(Calendar.HOUR_OF_DAY);
-            int MinuteCreated = createdAt.get(Calendar.MINUTE);
-            int SecondCreated = createdAt.get(Calendar.SECOND);
-            String createdAtStr = YearCreated + "." + MonthCreated + "." + DayCreated  + "." + HourCreated + "." + MinuteCreated + "." + SecondCreated;
-            editor.putString(String.valueOf(i + 1000), createdAtStr);
+            StringWrapper item = list.get(i);
+            editor.putString(String.valueOf(i), item.getTitle());
+            editor.putString(String.valueOf(i + 500), item.getDateStr());
+            editor.putString(String.valueOf(i + 1000), item.getCreatedAtStr());
         }
         editor.putString(String.valueOf(list.size()), ""); // признак конца списка
         editor.apply();
@@ -71,7 +52,6 @@ class SharedPrefsManager {
             }
             final String title = prefs.getString("del" + String.valueOf(i), "");
             final String date = prefs.getString("del" + String.valueOf(i + 1000), "0.0.0");
-
             list.add(new StringWrapper(title, date));
         }
         return list;
@@ -82,18 +62,9 @@ class SharedPrefsManager {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
         for (int i = 0; i < list.size(); ++i) {
-            Calendar temp = list.get(i).getDate();
-            int myYear = temp.get(Calendar.YEAR);
-            int myMonth = temp.get(Calendar.MONTH);
-            int myDay = temp.get(Calendar.DAY_OF_MONTH);
-            String str;
-            if (myMonth < 9) {
-                str = myDay + "." + "0" + myMonth + "." + myYear;
-            } else {
-                str = myDay + "." + myMonth + "." + myYear;
-            }
-            editor.putString("del" + String.valueOf(i), list.get(i).getTitle());
-            editor.putString("del" + String.valueOf(i + 1000), str);
+            StringWrapper item = list.get(i);
+            editor.putString("del" + String.valueOf(i), item.getTitle());
+            editor.putString("del" + String.valueOf(i + 1000), item.getDateStr());
         }
         editor.putString("del" + String.valueOf(list.size()), ""); // признак конца списка
         editor.apply();

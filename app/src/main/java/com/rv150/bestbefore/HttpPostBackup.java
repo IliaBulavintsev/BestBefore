@@ -1,5 +1,6 @@
 package com.rv150.bestbefore;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -30,15 +31,21 @@ class HttpPostBackup extends AsyncTask<String, String, String> {
     private String responseStr = null;
     private Context context;
     private String error;
+    private ProgressDialog dialog;
 
     HttpPostBackup(Context context) {
         this.context = context;
+        dialog = new ProgressDialog(context);
         error =  context.getString(R.string.backup_failed);
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
+        dialog.setMessage(context.getString(R.string.backup_is_saving));
+        dialog.setCancelable(false);
+        dialog.setInverseBackgroundForced(false);
+        dialog.show();
     }
 
     @Override
@@ -99,15 +106,16 @@ class HttpPostBackup extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
+        dialog.hide();
         if (responseStr != null && responseStr.equals("OK")) {
             Toast toast = Toast.makeText(context,
                     R.string.backup_success, Toast.LENGTH_SHORT);
             toast.show();
             return;
         }
+
         Toast toast = Toast.makeText(context,
                 error, Toast.LENGTH_SHORT);
         toast.show();
-
     }
 }

@@ -75,7 +75,7 @@ public class CustomAdapter extends BaseAdapter {
         // Если нужно всегда показывать дату окончания срока (в Overdue)
 
         SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean showDateExceptDaysLeft = sPrefs.getBoolean(Resources.showDateExceptDaysLeft, false);
+        boolean showDateExceptDaysLeft = sPrefs.getBoolean(Resources.SHOW_DATE_INSTEAD_DAYS_LEFT, false);
 
         Calendar currentDate = new GregorianCalendar();
         long difference = date.getTimeInMillis() - currentDate.getTimeInMillis();

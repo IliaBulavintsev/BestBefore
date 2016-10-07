@@ -9,6 +9,7 @@ final class Resources {
     static final String PREF_ALARM_SET = "alarm_set_flag";
     static final String PREF_WHATSNEW_11 = "showWhatsNewIn11";
     static final String PREF_SHOW_WELCOME_SCREEN = "showWelcomeScreen";
+    static final String PREF_SHOW_HELP_AFTER_FIRST_ADD = "showHelpAfterFirstAdd";
     static final String PREF_INSTALL_DAY = "install_day";
     static final String PREF_INSTALL_MONTH = "install_month";
     static final String PREF_INSTALL_YEAR = "install_year";
@@ -35,7 +36,7 @@ final class Resources {
     static final String MY_DAY = "myDay";
     static final String MY_MONTH = "myMonth";
     static final String MY_YEAR = "myYear";
-    static final String CREATED_AT = "createdAt";
+    static final String CREATED_AT = "getCreatedAt";
     static final String NAME = "name";
     static final String DATE = "date";
     static final String SHOW_HELP = "needHelp";
@@ -44,6 +45,6 @@ final class Resources {
     static final int RESULT_ADD = 1;
     static final int RESULT_MODIFY = 2;
     static final int RESULT_EXIT = 0;
-    static final String showDateExceptDaysLeft = "showDateInsteadDaysLeft";
-    static final String SERVER_URL = "http://192.168.1.39:8080/";
+    static final String SHOW_DATE_INSTEAD_DAYS_LEFT = "showDateInsteadDaysLeft";
+    static final String SERVER_URL = "http://192.168.43.244:8080/";
 }

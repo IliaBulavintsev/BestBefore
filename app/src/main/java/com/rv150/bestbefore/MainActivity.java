@@ -168,9 +168,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -269,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(Resources.MY_MONTH, myMonth);
                 intent.putExtra(Resources.MY_YEAR, myYear);
 
-                Calendar createdAt = wrapperList.get(position).createdAt();
+                Calendar createdAt = wrapperList.get(position).getCreatedAt();
                 int DayCreated = createdAt.get(Calendar.DAY_OF_MONTH);
                 int MonthCreated = createdAt.get(Calendar.MONTH);
                 int YearCreated = createdAt.get(Calendar.YEAR);
@@ -377,6 +374,15 @@ public class MainActivity extends AppCompatActivity {
 
             if (resultCode == Resources.RESULT_ADD) {                              // Добавление
                 wrapperList.add(new StringWrapper(name, date, createdAt));
+
+                // Показ справки об оставшихся днях в 1 раз
+                Boolean needHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
+                if (needHelp) {
+                    showHelp();
+                    SharedPreferences.Editor editor = sPrefs.edit();
+                    editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
+                    editor.apply();
+                }
             } else if (resultCode == Resources.RESULT_MODIFY) {                       // Изменение
                 wrapperList.set(position, new StringWrapper(name, date, createdAt));
                 position = -1;
@@ -441,6 +447,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void showHelp() {
+        String whatsNewText = getResources().getString(R.string.help_add);
+        new AlertDialog.Builder(this).setTitle(R.string.help).setMessage(whatsNewText).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        }).show();
+    }
 
 
     private void insertSmth() {

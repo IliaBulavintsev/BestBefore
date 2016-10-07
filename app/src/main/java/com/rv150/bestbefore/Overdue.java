@@ -1,7 +1,6 @@
 package com.rv150.bestbefore;
 
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Point;
@@ -18,9 +17,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -73,7 +69,7 @@ public class Overdue extends AppCompatActivity {
     }
 
     private void showHelp() {
-        String whatsNewText = getResources().getString(R.string.help_text);
+        String whatsNewText = getResources().getString(R.string.help_overdue);
         new AlertDialog.Builder(this).setTitle(R.string.help).setMessage(whatsNewText).setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();

@@ -68,7 +68,30 @@ class StringWrapper {
         return mDate;
     }
 
-    Calendar createdAt() { return mCreatedAt; }
+    String getDateStr() {
+        int myYear = mDate.get(Calendar.YEAR);
+        int myMonth = mDate.get(Calendar.MONTH);
+        int myDay = mDate.get(Calendar.DAY_OF_MONTH);
+        if (myMonth < 9) {
+            return myDay + "." + "0" + myMonth + "." + myYear;
+        } else {
+            return myDay + "." + myMonth + "." + myYear;
+        }
+    }
+
+    Calendar getCreatedAt() { return mCreatedAt; }
+
+    String getCreatedAtStr() {
+        int DayCreated =  mCreatedAt.get(Calendar.DAY_OF_MONTH);
+        int MonthCreated = mCreatedAt.get(Calendar.MONTH);
+        int YearCreated = mCreatedAt.get(Calendar.YEAR);
+        int HourCreated = mCreatedAt.get(Calendar.HOUR_OF_DAY);
+        int MinuteCreated = mCreatedAt.get(Calendar.MINUTE);
+        int SecondCreated = mCreatedAt.get(Calendar.SECOND);
+        return YearCreated + "." + MonthCreated + "." + DayCreated  + "."
+                + HourCreated + "." + MinuteCreated + "." + SecondCreated;
+    }
+
 
     void setDate(Calendar mDate) {
         this.mDate = mDate;
@@ -97,7 +120,7 @@ class StringWrapper {
         int MinuteCreated = mCreatedAt.get(Calendar.MINUTE);
         int SecondCreated = mCreatedAt.get(Calendar.SECOND);
         String createdAtStr = YearCreated + "." + MonthCreated + "." + DayCreated  + "." + HourCreated + "." + MinuteCreated + "." + SecondCreated;
-        result.put("createdAt", createdAtStr);
+        result.put("getCreatedAt", createdAtStr);
         return result;
     }
 
@@ -133,7 +156,7 @@ class StringWrapper {
     static Comparator<StringWrapper> getStandartComparator() {
         return new Comparator<StringWrapper>() {
             public int compare(StringWrapper one, StringWrapper two) {
-                if (one.createdAt().before(two.createdAt())) {
+                if (one.getCreatedAt().before(two.getCreatedAt())) {
                     return -1;
                 }
                 else {

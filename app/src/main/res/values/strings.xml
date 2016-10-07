@@ -25,7 +25,7 @@
     <string name="settings">Настройки</string>
     <string name="rate_app">Оценить приложение</string>
     <string name="help">Справка</string>
-    <string name="help_text">В этот список автоматически попадают просроченные продукты. Дата справа означает последний день, когда продукт был свежим.</string>
+    <string name="help_overdue">В этот список автоматически попадают просроченные продукты. Дата справа означает последний день, когда продукт был свежим.</string>
     <string name="notifications">Напоминания</string>
     <string name="whats_new">Что нового?</string>
     <string name="sort">Сортировка</string>
@@ -74,4 +74,10 @@
     <string name="error_timeout">Превышено время ожидания ответа</string>
     <string name="restore_failed">Ошибка при восстановлении данных</string>
     <string name="data_not_found">Данные не найдены</string>
+    <string name="help_add">Оставшиеся дни считаются с учетом сегодняшнего дня. Для продуктов же срок годности отсчитывается только с начала следующего дня, поэтому отображается на 1 день больше.</string>
+    <string name="warning">Внимание</string>
+    <string name="do_you_want_to_overwite_existing">Вы хотите перезаписать существующие данные данными с сервера?</string>
+    <string name="yes">Да</string>
+    <string name="backup_is_saving">Сохраняем данные</string>
+    <string name="fetching_data">Получение данных</string>
 </resources>
