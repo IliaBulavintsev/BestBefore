@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -21,7 +20,9 @@ import java.util.List;
 /**
  * Created by rv150 on 06.01.2016.
  */
-public class CustomAdapter extends BaseAdapter {
+
+// В классе есть литералы
+class CustomAdapter extends BaseAdapter {
     private List<StringWrapper> data = new ArrayList<StringWrapper>();  //Наша коллекция
     private LayoutInflater inflater;
     private int width;
@@ -123,6 +124,8 @@ public class CustomAdapter extends BaseAdapter {
         }
     }
 
+
+
     private String getDaysLeft (Calendar sourceDate) {
         Calendar currentDate = new GregorianCalendar();
         long difference = sourceDate.getTimeInMillis() - currentDate.getTimeInMillis();
@@ -148,8 +151,6 @@ public class CustomAdapter extends BaseAdapter {
         }
 
         StringBuilder result = new StringBuilder();
-
-
         if (months != 0) {
             String str = months + " мес.";
             result.append(str);
