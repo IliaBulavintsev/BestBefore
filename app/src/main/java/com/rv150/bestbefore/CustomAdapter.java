@@ -22,7 +22,7 @@ import java.util.List;
  */
 
 // В классе есть литералы
-class CustomAdapter extends BaseAdapter {
+public class CustomAdapter extends BaseAdapter {
     private List<StringWrapper> data = new ArrayList<StringWrapper>();  //Наша коллекция
     private LayoutInflater inflater;
     private int width;

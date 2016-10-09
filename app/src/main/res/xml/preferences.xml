@@ -23,7 +23,7 @@
                     app:vnt_minValue="1"
                     android:dependency="last_day"/>
 
-                <com.rv150.bestbefore.TimePreference1
+                <com.rv150.bestbefore.Preferences.TimePreference1
                     android:name="Default notification time"
                     android:dialogLayout="@layout/time_preference"
                     android:key="time_in_first"
@@ -50,7 +50,7 @@
                     app:vnt_minValue="1"
                     android:dependency="day_before"/>
 
-                <com.rv150.bestbefore.TimePreference2
+                <com.rv150.bestbefore.Preferences.TimePreference2
                     android:name="Default notification time"
                     android:dialogLayout="@layout/time_preference"
                     android:key="time_in_second"
@@ -76,7 +76,7 @@
                     app:vnt_minValue="1"
                     android:dependency="three_days"/>
 
-                <com.rv150.bestbefore.TimePreference3
+                <com.rv150.bestbefore.Preferences.TimePreference3
                     android:name="Default notification time"
                     android:dialogLayout="@layout/time_preference"
                     android:key="time_in_third"
@@ -89,13 +89,13 @@
 
 
 
-    <com.rv150.bestbefore.ListPreferenceWithSummary
+    <com.rv150.bestbefore.Preferences.ListPreferenceWithSummary
         android:entries="@array/listArray"
         android:entryValues="@array/listValues"
         android:key="how_to_sort"
         android:title="@string/sort"
         android:defaultValue="SPOILED_TO_FRESH">
-    </com.rv150.bestbefore.ListPreferenceWithSummary>
+    </com.rv150.bestbefore.Preferences.ListPreferenceWithSummary>
 
     <CheckBoxPreference
         android:key="needShowOverdue"

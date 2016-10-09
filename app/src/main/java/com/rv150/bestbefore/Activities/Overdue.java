@@ -1,4 +1,4 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Activities;
 
 import android.app.DialogFragment;
 import android.content.DialogInterface;
@@ -16,6 +16,15 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.rv150.bestbefore.Dialogs.ClearListDialog;
+import com.rv150.bestbefore.CustomAdapter;
+import com.rv150.bestbefore.Dialogs.OverdueItemDialog;
+import com.rv150.bestbefore.Dialogs.OverdueYesNoDialog;
+import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Resources;
+import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.StringWrapper;
 
 import java.util.List;
 

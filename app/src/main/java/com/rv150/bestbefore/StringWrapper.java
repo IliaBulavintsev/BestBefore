@@ -10,27 +10,27 @@ import java.util.GregorianCalendar;
 /**
  * Created by rv150 on 06.01.2016.
  */
-class StringWrapper {
+public class StringWrapper {
     private String mTitle;
     private Calendar mDate;
     private Calendar mCreatedAt;
 
 
-    StringWrapper(String mTitle, Calendar mDate) {
+    public  StringWrapper(String mTitle, Calendar mDate) {
         this(mTitle, mDate, new GregorianCalendar());
     }
 
-    StringWrapper(String mTitle, Calendar mDate, Calendar mCreatedAt) {
+    public StringWrapper(String mTitle, Calendar mDate, Calendar mCreatedAt) {
         this.mTitle = mTitle;
         this.mDate = mDate;
         this.mCreatedAt = mCreatedAt;
     }
 
-    StringWrapper (String title, String date) {
+    public  StringWrapper (String title, String date) {
         this(title, date, null);
     }
 
-    StringWrapper (String title, String date, String createdAt) {
+    public StringWrapper (String title, String date, String createdAt) {
         this.mTitle = title;
 
         String[] array = date.split("\\.");
@@ -56,19 +56,19 @@ class StringWrapper {
     }
 
 
-    String getTitle() {
+    public String getTitle() {
         return mTitle;
     }
 
-    void setTitle(String mTitle) {
+    public void setTitle(String mTitle) {
         this.mTitle = mTitle;
     }
 
-    Calendar getDate() {
+    public Calendar getDate() {
         return mDate;
     }
 
-    String getDateStr() {
+    public String getDateStr() {
         int myYear = mDate.get(Calendar.YEAR);
         int myMonth = mDate.get(Calendar.MONTH);
         int myDay = mDate.get(Calendar.DAY_OF_MONTH);
@@ -79,9 +79,9 @@ class StringWrapper {
         }
     }
 
-    Calendar getCreatedAt() { return mCreatedAt; }
+    public Calendar getCreatedAt() { return mCreatedAt; }
 
-    String getCreatedAtStr() {
+    public String getCreatedAtStr() {
         int DayCreated =  mCreatedAt.get(Calendar.DAY_OF_MONTH);
         int MonthCreated = mCreatedAt.get(Calendar.MONTH);
         int YearCreated = mCreatedAt.get(Calendar.YEAR);
@@ -93,11 +93,11 @@ class StringWrapper {
     }
 
 
-    void setDate(Calendar mDate) {
+    public void setDate(Calendar mDate) {
         this.mDate = mDate;
     }
 
-    JSONObject getJSON() throws JSONException {
+    public JSONObject getJSON() throws JSONException {
         JSONObject result = new JSONObject();
 
         result.put("name", mTitle);
@@ -127,7 +127,7 @@ class StringWrapper {
 
 
 
-    static Comparator<StringWrapper> getFreshToSpoiledComparator() {
+    public static Comparator<StringWrapper> getFreshToSpoiledComparator() {
         return new Comparator<StringWrapper>() {
             public int compare(StringWrapper one, StringWrapper two) {
                 if (one.getDate().before(two.getDate())) {
@@ -140,7 +140,7 @@ class StringWrapper {
         };
     }
 
-    static Comparator<StringWrapper> getSpoiledToFreshComparator() {
+    public static Comparator<StringWrapper> getSpoiledToFreshComparator() {
         return new Comparator<StringWrapper>() {
             public int compare(StringWrapper one, StringWrapper two) {
                 if (one.getDate().before(two.getDate())) {
@@ -153,7 +153,7 @@ class StringWrapper {
         };
     }
 
-    static Comparator<StringWrapper> getStandartComparator() {
+    public static Comparator<StringWrapper> getStandartComparator() {
         return new Comparator<StringWrapper>() {
             public int compare(StringWrapper one, StringWrapper two) {
                 if (one.getCreatedAt().before(two.getCreatedAt())) {

@@ -2,6 +2,8 @@ package com.rv150.bestbefore;
 
 import android.content.Context;
 
+import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -13,19 +15,10 @@ import java.util.List;
  * Класс получает на вход список и переносит просроченные в отдельную коллекцию
  */
 public class DeleteOverdue {
-    private List<StringWrapper> wrapperList;
-    private List<StringWrapper> overdued;
-    private Context context;
-
-    DeleteOverdue(List<StringWrapper> list, Context context) {
-        wrapperList = list;
-        overdued = new ArrayList<>();
-        this.context = context;
-    }
-
-    List<String> delete() {
-        overdued = SharedPrefsManager.getOverdueProducts(context);   // Подгружаем ранее просроченные продукты
+    public static List<String> delete(Context context, List<StringWrapper> wrapperList) {
+        List<StringWrapper> overdued = SharedPrefsManager.getOverdueProducts(context);
         List<String> newOverdue = new ArrayList<>();
+
             for (Iterator<StringWrapper> iterator = wrapperList.iterator(); iterator.hasNext(); ) {
                 StringWrapper currentItem = iterator.next();
                 Calendar date = currentItem.getDate();
@@ -63,8 +56,8 @@ public class DeleteOverdue {
                     iterator.remove();  // И удаляем из основого списка
                 }
             }
-        SharedPrefsManager.saveOverdueProducts(overdued, context); // Сoхраняем просроченные, а wrapperList сохранится в MainActivity
+        SharedPrefsManager.saveOverdueProducts(overdued, context);
+        // Сoхраняем просроченные, а wrapperList сохранится в MainActivity
         return newOverdue;
     }
-
 }

@@ -1,4 +1,4 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -8,7 +8,10 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TimePicker;
 
-public class TimePreference3 extends DialogPreference {
+import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Resources;
+
+public class TimePreference2 extends DialogPreference {
 
     /** The widget for picking a time */
     private TimePicker timePicker;
@@ -25,7 +28,7 @@ public class TimePreference3 extends DialogPreference {
      * @param context
      * @param attributes
      */
-    public TimePreference3(Context context,
+    public TimePreference2(Context context,
                            AttributeSet attributes) {
         super(context, attributes);
         setPersistent(false);
@@ -41,8 +44,8 @@ public class TimePreference3 extends DialogPreference {
     public void onBindDialogView(View view) {
         super.onBindDialogView(view);
         timePicker = (TimePicker) view.findViewById(R.id.prefTimePicker);
-        timePicker.setCurrentHour(getSharedPreferences().getInt(Resources.PREF_THIRD_HOUR, DEFAULT_HOUR));
-        timePicker.setCurrentMinute(getSharedPreferences().getInt(Resources.PREF_THIRD_MINUTE, DEFAULT_MINUTE));
+        timePicker.setCurrentHour(getSharedPreferences().getInt(Resources.PREF_SECOND_HOUR, DEFAULT_HOUR));
+        timePicker.setCurrentMinute(getSharedPreferences().getInt(Resources.PREF_SECOND_MINUTE, DEFAULT_MINUTE));
         timePicker.setIs24HourView(DateFormat.is24HourFormat(timePicker.getContext()));
     }
 
@@ -62,14 +65,15 @@ public class TimePreference3 extends DialogPreference {
             int hour = timePicker.getCurrentHour();
             int minute = timePicker.getCurrentMinute();
             SharedPreferences.Editor editor = getEditor();
-            editor.putInt(Resources.PREF_THIRD_HOUR, hour);
-            editor.putInt(Resources.PREF_THIRD_MINUTE, minute);
+            editor.putInt(Resources.PREF_SECOND_HOUR, hour);
+            editor.putInt(Resources.PREF_SECOND_MINUTE, minute);
             editor.apply();
             if (callChangeListener(get_summary())) {
                 persistString(get_summary());
             }
         }
     }
+
 
     private String get_summary() {
         if (timePicker == null) {

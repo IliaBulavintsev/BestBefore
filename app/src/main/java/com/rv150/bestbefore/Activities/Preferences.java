@@ -1,4 +1,4 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,6 +26,13 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.rv150.bestbefore.Receivers.AlarmReceiver;
+import com.rv150.bestbefore.Network.HttpPostBackup;
+import com.rv150.bestbefore.Network.HttpPostRestore;
+import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Resources;
+import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.StringWrapper;
 
 import org.json.JSONArray;
 import org.json.JSONException;

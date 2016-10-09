@@ -1,8 +1,10 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+
+import com.rv150.bestbefore.StringWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +13,8 @@ import java.util.List;
  * Created by Rudnev on 05.10.2016.
  */
 
-class SharedPrefsManager {
-    static List<StringWrapper> getFreshProducts(Context context) {
+public class SharedPrefsManager {
+    public static List<StringWrapper> getFreshProducts(Context context) {
         List<StringWrapper> list = new ArrayList<>();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         for (int i = 0; prefs.contains(String.valueOf(i)); ++i) {
@@ -28,7 +30,7 @@ class SharedPrefsManager {
         return list;
     }
 
-    static void saveFreshProducts(List<StringWrapper> list, Context context) {
+    public static void saveFreshProducts(List<StringWrapper> list, Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
         for (int i = 0; i < list.size(); ++i) {
@@ -41,7 +43,7 @@ class SharedPrefsManager {
         editor.apply();
     }
 
-    static List<StringWrapper> getOverdueProducts(Context context) {
+    public static List<StringWrapper> getOverdueProducts(Context context) {
         List<StringWrapper> list = new ArrayList<>();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         for (int i = 0; prefs.contains("del" + String.valueOf(i)); ++i) {
@@ -56,7 +58,7 @@ class SharedPrefsManager {
     }
 
 
-    static void saveOverdueProducts(List<StringWrapper> list, Context context) {
+    public static void saveOverdueProducts(List<StringWrapper> list, Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
         for (int i = 0; i < list.size(); ++i) {

@@ -1,4 +1,4 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Activities;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -16,6 +16,9 @@ import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Resources;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;

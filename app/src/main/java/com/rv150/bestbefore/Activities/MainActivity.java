@@ -1,4 +1,4 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Activities;
 
 
 import android.app.DialogFragment;
@@ -25,6 +25,18 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.rv150.bestbefore.Receivers.AlarmReceiver;
+import com.rv150.bestbefore.CustomAdapter;
+import com.rv150.bestbefore.Dialogs.DeleteAllDialog;
+import com.rv150.bestbefore.DeleteOverdue;
+import com.rv150.bestbefore.Dialogs.ItemDialog;
+import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Dialogs.RateAppDialog;
+import com.rv150.bestbefore.Resources;
+import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.StringWrapper;
+import com.rv150.bestbefore.Dialogs.YesNoDialog;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -176,8 +188,7 @@ public class MainActivity extends AppCompatActivity {
         wrapperList = SharedPrefsManager.getFreshProducts(this); // обновляем wrapperList в соотв. с сохраненными данными
 
         // Удаление просроченных
-        DeleteOverdue deleteOverdue = new DeleteOverdue(wrapperList, this);
-        List<String> newOverdue = deleteOverdue.delete();
+        List<String> newOverdue = DeleteOverdue.delete(this, wrapperList);
         boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
 
         if (needShowOverdue  && !newOverdue.isEmpty()) {

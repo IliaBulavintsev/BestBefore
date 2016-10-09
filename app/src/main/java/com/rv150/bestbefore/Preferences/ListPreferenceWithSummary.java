@@ -1,4 +1,4 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Preferences;
 
 import android.content.Context;
 import android.preference.ListPreference;

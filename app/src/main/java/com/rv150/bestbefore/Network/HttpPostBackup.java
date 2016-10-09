@@ -1,10 +1,13 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Network;
 
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Resources;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -20,14 +23,14 @@ import java.net.URLEncoder;
  * Created by Администратор on 03.10.2016.
  */
 
-class HttpPostBackup extends AsyncTask<String, String, String> {
+public class HttpPostBackup extends AsyncTask<String, String, String> {
 
     private String responseStr = null;
     private Context context;
     private String error;
     private ProgressDialog dialog;
 
-    HttpPostBackup(Context context) {
+    public HttpPostBackup(Context context) {
         this.context = context;
         dialog = new ProgressDialog(context);
         error =  context.getString(R.string.backup_failed);

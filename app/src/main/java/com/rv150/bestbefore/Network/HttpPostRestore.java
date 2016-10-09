@@ -1,4 +1,4 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Network;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -7,6 +7,11 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Resources;
+import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.StringWrapper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,14 +33,14 @@ import java.util.List;
  * Created by Rudnev on 05.10.2016.
  */
 
-class HttpPostRestore extends AsyncTask<String, String, String> {
+public class HttpPostRestore extends AsyncTask<String, String, String> {
 
     private String responseStr = null;
     private Context context;
     private String error;
     private ProgressDialog dialog;
 
-    HttpPostRestore(Context context) {
+    public HttpPostRestore(Context context) {
         this.context = context;
         error =  context.getString(R.string.restore_failed);
         dialog = new ProgressDialog(context);

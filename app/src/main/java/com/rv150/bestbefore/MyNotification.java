@@ -10,6 +10,8 @@ import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
 
+import com.rv150.bestbefore.Activities.MainActivity;
+
 /**
  * Created by Rudnev on 30.06.2016.
  */

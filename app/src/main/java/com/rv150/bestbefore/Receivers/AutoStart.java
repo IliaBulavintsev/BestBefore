@@ -1,4 +1,4 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

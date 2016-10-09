@@ -1,10 +1,12 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+
+import com.rv150.bestbefore.Activities.Overdue;
 
 /**
  * Created by Rudnev on 07.09.2016.
