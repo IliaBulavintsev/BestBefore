@@ -149,7 +149,7 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 JSONObject item = freshJson.getJSONObject(i);
                 String name = item.getString("name");
                 String date = item.getString("date");
-                String createdAt = item.getString("getCreatedAt");
+                String createdAt = item.getString("createdAt");
                 StringWrapper product = new StringWrapper(name, date, createdAt);
                 fresh.add(product);
             }
@@ -175,7 +175,6 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
         List<StringWrapper> currentOverdue = SharedPrefsManager.getOverdueProducts(context);
         if (!currentFresh.isEmpty() || !currentOverdue.isEmpty()) {
             new AlertDialog.Builder(context)
-                    .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle(R.string.warning)
                     .setMessage(R.string.do_you_want_to_overwite_existing)
                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
@@ -189,7 +188,9 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                     .setNegativeButton(R.string.no, null)
                     .show();
         }
-        saveRestored(fresh, overdue);
+        else {
+            saveRestored(fresh, overdue);
+        }
     }
 
     private void saveRestored(List<StringWrapper> fresh, List<StringWrapper> overdue) {

@@ -120,7 +120,7 @@ public class StringWrapper {
         int MinuteCreated = mCreatedAt.get(Calendar.MINUTE);
         int SecondCreated = mCreatedAt.get(Calendar.SECOND);
         String createdAtStr = YearCreated + "." + MonthCreated + "." + DayCreated  + "." + HourCreated + "." + MinuteCreated + "." + SecondCreated;
-        result.put("getCreatedAt", createdAtStr);
+        result.put("createdAt", createdAtStr);
         return result;
     }
 
