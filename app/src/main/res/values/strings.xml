@@ -80,5 +80,4 @@
     <string name="yes">Да</string>
     <string name="backup_is_saving">Сохраняем данные</string>
     <string name="fetching_data">Получение данных</string>
-    <string name="loading">Загрузка</string>
 </resources>
