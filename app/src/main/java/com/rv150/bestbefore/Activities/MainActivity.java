@@ -419,7 +419,7 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         boolean needRate = sPrefs.getBoolean(Resources.PREF_NEED_RATE, true);
         int timesOpened = sPrefs.getInt(Resources.PREF_TIMES_OPENED, 0);
-        if (needRate && timesOpened >= 10) {
+        if (needRate && timesOpened >= 15) {
 
                 int installDay = sPrefs.getInt(Resources.PREF_INSTALL_DAY, 11);
                 int installMonth = sPrefs.getInt(Resources.PREF_INSTALL_MONTH, 8);
@@ -429,8 +429,8 @@ public class MainActivity extends AppCompatActivity {
                 final int MILLI_TO_HOUR = 1000 * 60 * 60;
                 int hours = (int) ((now.getTimeInMillis() - installedAt.getTimeInMillis()) / MILLI_TO_HOUR);
 
-                // кол-во часов с момента установки должно превысить 48
-                if (hours >= 48) {
+                // кол-во часов с момента установки должно превысить это значение
+                if (hours >= 96) {
                     SharedPreferences.Editor editor = sPrefs.edit();
                     editor.putBoolean(Resources.PREF_NEED_RATE, false);
                     editor.remove(Resources.PREF_INSTALL_YEAR);
