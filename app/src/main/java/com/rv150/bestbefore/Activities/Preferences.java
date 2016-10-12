@@ -1,5 +1,6 @@
 package com.rv150.bestbefore.Activities;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -55,7 +56,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     Preference auth;
 
     SharedPreferences sPrefs;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,7 +139,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                    auth.setTitle(R.string.signin);
                    auth.setSummary(R.string.auth_via_google);
                    signOut();
-                   setAuthFlag(false);
                 } else {
                     // Авторизация и кнопка "Выйти"
                     signIn();
@@ -190,6 +189,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                         idToken = null;
                     }
                 });
+        setAuthFlag(false);
     }
 
     private void signIn() {
