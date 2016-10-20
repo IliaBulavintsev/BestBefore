@@ -6,8 +6,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.MyNotification;
+import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.StringWrapper;
 
 import java.util.ArrayList;

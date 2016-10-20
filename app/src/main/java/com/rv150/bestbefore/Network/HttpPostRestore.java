@@ -8,9 +8,9 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.rv150.bestbefore.Preferences.SharedPrefsManager;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.Preferences.SharedPrefsManager;
 import com.rv150.bestbefore.StringWrapper;
 
 import org.json.JSONArray;

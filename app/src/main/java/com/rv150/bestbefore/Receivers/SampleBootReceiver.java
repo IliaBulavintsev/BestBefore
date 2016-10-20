@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.rv150.bestbefore.Receivers.AlarmReceiver;
-
 
 /**
  * This BroadcastReceiver automatically (re)starts the alarm when the device is

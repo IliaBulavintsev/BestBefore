@@ -26,25 +26,24 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.CustomAdapter;
-import com.rv150.bestbefore.Dialogs.DeleteAllDialog;
 import com.rv150.bestbefore.DeleteOverdue;
+import com.rv150.bestbefore.Dialogs.DeleteAllDialog;
 import com.rv150.bestbefore.Dialogs.ItemDialog;
-import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Dialogs.RateAppDialog;
-import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.Preferences.SharedPrefsManager;
-import com.rv150.bestbefore.StringWrapper;
 import com.rv150.bestbefore.Dialogs.YesNoDialog;
+import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Receivers.AlarmReceiver;
+import com.rv150.bestbefore.Resources;
+import com.rv150.bestbefore.Services.StatCollector;
+import com.rv150.bestbefore.StringWrapper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
-
-
 
 
 // Все настройки чистятся в UpdatePreferences() и в классе DeleteOverdue
@@ -81,19 +80,28 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sPrefs.edit();
 
         // Что нового?
-        boolean showWhatsNewIn11 = sPrefs.getBoolean(Resources.PREF_WHATSNEW_11, true);
-        boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
-        if (showWhatsNewIn11 && !showWelcomeScreen) {
-            new AlertDialog.Builder(this).setTitle(R.string.whats_new).setMessage("В настройках теперь можно выбрать отображение даты окончания срока годности продукта вместо количества оставшихся дней.").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        boolean warningChangingDaysFormat =
+                sPrefs.getBoolean(Resources.WARNING_CHANGE_DAYS_FORMAY, true);
+
+        if (warningChangingDaysFormat) {
+            new AlertDialog.Builder(this).setTitle("Внимание!")
+                    .setMessage("Изменился формат количества оставшихся дней в более логичную " +
+                            "сторону - сегодняшний день теперь не считается! " +
+                            "Например, если написано \"1 день\", то завтра продукт" +
+                                    " еще пригоден для питания, а если написано \"2 дня\", то " +
+                                            "можно съесть и послезавтра. Спасибо за понимание")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
                 }
             }).show();
         }
-        editor.putBoolean(Resources.PREF_WHATSNEW_11, false);
+
+        editor.putBoolean(Resources.WARNING_CHANGE_DAYS_FORMAY, false);
         editor.apply();
 
 
+        boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
         // показ приветственного сообщения
         if (showWelcomeScreen) {
             String whatsNewText = getResources().getString(R.string.welcomeText);
@@ -112,16 +120,6 @@ public class MainActivity extends AppCompatActivity {
             editor.putInt(Resources.PREF_INSTALL_MONTH, installMonth);
             editor.putInt(Resources.PREF_INSTALL_YEAR, installYear);
 
-            editor.apply();
-        }
-
-
-        // Инкремент счетчика открываний приложения
-        boolean needRate = sPrefs.getBoolean(Resources.PREF_NEED_RATE, true);
-        if (needRate) {
-            int timesOpened = sPrefs.getInt(Resources.PREF_TIMES_OPENED, 0);
-            timesOpened++;
-            editor.putInt(Resources.PREF_TIMES_OPENED, timesOpened);
             editor.apply();
         }
 
@@ -172,6 +170,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // Статистика
+        StatCollector.shareStatistic(this, "no added products :( ");
     }
 
 
@@ -257,9 +258,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
-
     public void OptionChoosed(int option) {
         final int MODIFY = 0;
         final int DELETE = 1;
@@ -288,7 +286,6 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(Resources.HOUR_CREATED, HourCreated);
                 intent.putExtra(Resources.MINUTE_CREATED, MinuteCreated);
                 intent.putExtra(Resources.SECOND_CREATED, SecondCreated);
-
                 startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
                 break;
 
@@ -315,6 +312,7 @@ public class MainActivity extends AppCompatActivity {
         customAdapter.setData(wrapperList);
         customAdapter.notifyDataSetChanged();
         SharedPrefsManager.saveFreshProducts(wrapperList, this);
+        StatCollector.shareStatistic(this, "deleted one item");
     }
 
     public void DeleteAll() {
@@ -324,6 +322,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPrefsManager.saveFreshProducts(wrapperList, this);
         TextView isEmpty = (TextView)findViewById(R.id.isEmptyText);
         isEmpty.setVisibility(View.VISIBLE);
+        StatCollector.shareStatistic(this, "deleted all fresh products");
     }
 
     @Override
@@ -341,10 +340,6 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, Preferences.class);
             startActivity(intent);
-            return true;
-        }
-        if (id == R.id.action_rate) {
-            rateApp();
             return true;
         }
         if (id == R.id.action_overdue) {
@@ -385,13 +380,13 @@ public class MainActivity extends AppCompatActivity {
                 wrapperList.add(new StringWrapper(name, date, createdAt));
 
                 // Показ справки об оставшихся днях в 1 раз
-                Boolean needHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
-                if (needHelp) {
-                    showHelp();
-                    SharedPreferences.Editor editor = sPrefs.edit();
-                    editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
-                    editor.apply();
-                }
+//                Boolean needHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
+//                if (needHelp) {
+//                    showHelp();
+//                    SharedPreferences.Editor editor = sPrefs.edit();
+//                    editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
+//                    editor.apply();
+//                }
             } else if (resultCode == Resources.RESULT_MODIFY) {                       // Изменение
                 wrapperList.set(position, new StringWrapper(name, date, createdAt));
                 position = -1;
@@ -406,6 +401,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 isEmpty.setVisibility(View.INVISIBLE);
             }
+
+            StatCollector.shareStatistic(this, null);
         }
     }
 
@@ -418,11 +415,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         boolean needRate = sPrefs.getBoolean(Resources.PREF_NEED_RATE, true);
-        int timesOpened = sPrefs.getInt(Resources.PREF_TIMES_OPENED, 0);
-        if (needRate && timesOpened >= 15) {
+        if (needRate) {
 
-                int installDay = sPrefs.getInt(Resources.PREF_INSTALL_DAY, 11);
-                int installMonth = sPrefs.getInt(Resources.PREF_INSTALL_MONTH, 8);
+                int installDay = sPrefs.getInt(Resources.PREF_INSTALL_DAY, 21);
+                int installMonth = sPrefs.getInt(Resources.PREF_INSTALL_MONTH, 9);
                 int installYear = sPrefs.getInt(Resources.PREF_INSTALL_YEAR, 2016);
                 Calendar installedAt = new GregorianCalendar(installYear, installMonth, installDay);
                 Calendar now = new GregorianCalendar();
@@ -430,7 +426,7 @@ public class MainActivity extends AppCompatActivity {
                 int hours = (int) ((now.getTimeInMillis() - installedAt.getTimeInMillis()) / MILLI_TO_HOUR);
 
                 // кол-во часов с момента установки должно превысить это значение
-                if (hours >= 96) {
+                if (hours >= 100) {
                     SharedPreferences.Editor editor = sPrefs.edit();
                     editor.putBoolean(Resources.PREF_NEED_RATE, false);
                     editor.remove(Resources.PREF_INSTALL_YEAR);
@@ -465,9 +461,4 @@ public class MainActivity extends AppCompatActivity {
         }).show();
     }
 
-
-    private void insertSmth() {
-        StringWrapper old = new StringWrapper("Кефирчик", new GregorianCalendar(2016,9,4));
-        wrapperList.add(old);
-    }
 }

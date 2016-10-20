@@ -59,7 +59,7 @@
     <string name="last_day">Последний день!</string>
     <string name="overdue">Просрочен!</string>
     <string name="CLIENT_ID">606388056260-2qa08pggc5i53q8r6akall6rs6irbnpv.apps.googleusercontent.com</string>
-    <string name="sync">Синхронизация</string>
+    <string name="sync_with_google">Синхронизация с Google</string>
     <string name="signin">Войти</string>
     <string name="auth_via_google">Авторизоваться через Google аккаунт</string>
     <string name="make_backup">Сохранить данные на сервере</string>
@@ -80,4 +80,7 @@
     <string name="yes">Да</string>
     <string name="backup_is_saving">Сохраняем данные</string>
     <string name="fetching_data">Получаем данные</string>
+    <string name="ok">OK</string>
+    <string name="nothing_to_backup">Нет данных для бекапа!</string>
+    <string name="do_you_want_to_make_backup">Сделать резервную копию?</string>
 </resources>

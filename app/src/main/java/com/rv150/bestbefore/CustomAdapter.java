@@ -117,8 +117,8 @@ public class CustomAdapter extends BaseAdapter {
             textView.setTextColor(0xffbdbdbd); // просрочен
         } else if (days == 0) {
             textView.setTextColor(0xffff0000); // последний день
-        } else if (days > 0 && days <= 3) {
-            textView.setTextColor(Color.rgb(220, 180, 0));   // 1-3 дня
+        } else if (days > 0 && days < 3) {
+            textView.setTextColor(Color.rgb(220, 180, 0));   // 1-2 дня
         } else {
             textView.setTextColor(Color.rgb(21, 153, 74));  // свежее
         }
@@ -161,9 +161,9 @@ public class CustomAdapter extends BaseAdapter {
         }
 
         // Если присутсвуют месяцы, то плюсовать дни не надо. Если месяцев 0, то days++
-        if (months == 0) {
-            days++;
-        }
+//        if (months == 0) {
+//            days++;
+//        }
 
         result.append(' ');
         result.append(context.getResources().getQuantityString(R.plurals.numberOfDaysLeft, days, days));

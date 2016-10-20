@@ -1,6 +1,5 @@
 package com.rv150.bestbefore.Activities;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -27,12 +26,12 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Network.HttpPostBackup;
 import com.rv150.bestbefore.Network.HttpPostRestore;
-import com.rv150.bestbefore.R;
-import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Receivers.AlarmReceiver;
+import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.StringWrapper;
 
 import org.json.JSONArray;
@@ -202,9 +201,15 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         List<StringWrapper> freshFood = SharedPrefsManager.getFreshProducts(this);
         List<StringWrapper> overdueFood = SharedPrefsManager.getOverdueProducts(this);
 
+        if (freshFood.isEmpty() && overdueFood.isEmpty()) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.nothing_to_backup, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
+
         // Отсылаемый jsonArray
-
-
         JSONObject result = new JSONObject();
         try {
             if (idToken == null) {
@@ -239,7 +244,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             toast.show();
             return;
         }
-
 
         new HttpPostBackup(this).execute(result.toString());
     }

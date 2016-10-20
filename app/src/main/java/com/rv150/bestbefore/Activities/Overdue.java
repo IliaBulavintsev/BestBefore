@@ -17,13 +17,14 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.rv150.bestbefore.Dialogs.ClearListDialog;
 import com.rv150.bestbefore.CustomAdapter;
+import com.rv150.bestbefore.Dialogs.ClearListDialog;
 import com.rv150.bestbefore.Dialogs.OverdueItemDialog;
 import com.rv150.bestbefore.Dialogs.OverdueYesNoDialog;
+import com.rv150.bestbefore.Preferences.SharedPrefsManager;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.Services.StatCollector;
 import com.rv150.bestbefore.StringWrapper;
 
 import java.util.List;
@@ -166,6 +167,7 @@ public class Overdue extends AppCompatActivity {
         customAdapter.setData(overdueList);
         customAdapter.notifyDataSetChanged();
         isEmpty.setVisibility(View.VISIBLE);
+        StatCollector.shareStatistic(this, "deleted all overdue products");
     }
 }
 

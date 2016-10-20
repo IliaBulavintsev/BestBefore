@@ -113,7 +113,7 @@
 
     <PreferenceScreen
         android:key="sync"
-        android:title="@string/sync"
+        android:title="@string/sync_with_google"
         android:persistent="false">
         <Preference
             android:title="@string/signin"
