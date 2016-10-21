@@ -12,12 +12,9 @@
     tools:context="com.rv150.bestbefore.Activities.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/list"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+
+
+
 
 
 
@@ -30,6 +27,12 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvContacts"
+        android:scrollbars="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 
 </RelativeLayout>

@@ -15,6 +15,8 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
@@ -26,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.rv150.bestbefore.Contact;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.CustomAdapter;
 import com.rv150.bestbefore.Dialogs.DeleteAllDialog;
@@ -33,6 +36,7 @@ import com.rv150.bestbefore.DeleteOverdue;
 import com.rv150.bestbefore.Dialogs.ItemDialog;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Dialogs.RateAppDialog;
+import com.rv150.bestbefore.RecyclerAdapter;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
 import com.rv150.bestbefore.StringWrapper;
@@ -52,12 +56,13 @@ import java.util.List;
 // Перевести дни в месяцы
 
 public class MainActivity extends AppCompatActivity {
-    private ListView listView;
-    private CustomAdapter customAdapter;
+   // private ListView listView;
+   //private CustomAdapter customAdapter;
     private List<StringWrapper> wrapperList;
     private SharedPreferences sPrefs;
     private int position = -1;
 
+    ArrayList<Contact> contacts;
 
 
     @Override
@@ -72,10 +77,23 @@ public class MainActivity extends AppCompatActivity {
         display.getSize(size);
         int width = size.x;
 
-        customAdapter = new CustomAdapter(this, width);
+     //   customAdapter = new CustomAdapter(this, width);
         wrapperList = new ArrayList<>();
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+
+        RecyclerView rvContacts = (RecyclerView) findViewById(R.id.rvContacts);
+
+        // Initialize contacts
+        contacts = Contact.createContactsList(20);
+        // Create adapter passing in the sample user data
+        RecyclerAdapter adapter = new RecyclerAdapter(this, contacts);
+        // Attach the adapter to the recyclerview to populate items
+        rvContacts.setAdapter(adapter);
+        // Set layout manager to position the items
+        rvContacts.setLayoutManager(new LinearLayoutManager(this));
+
 
 
         SharedPreferences.Editor editor = sPrefs.edit();
@@ -126,52 +144,52 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        listView = (ListView) findViewById(R.id.list);
-        listView.setAdapter(customAdapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int pos, long id) {
-                position = pos;
-                DialogFragment dialog = new ItemDialog();
-                dialog.show(getFragmentManager(), "ItemDialog");
-            }
-        });
-
-        listView.setOnScrollListener(new AbsListView.OnScrollListener(){
-            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-            int mLastFirstVisibleItem = 0;
-            boolean show = false;
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                fab.show();
-            }
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-                if (view.getId() == listView.getId()) {
-                    final int currentFirstVisibleItem = listView.getFirstVisiblePosition();
-                    int displayed = listView.getHeight() / listView.getChildAt(1).getHeight();
-                    if ((wrapperList.size() > 10) && (wrapperList.size() > displayed - 2)) {
-                        if (wrapperList.size() > displayed + 1) {
-                            if (currentFirstVisibleItem > mLastFirstVisibleItem) {
-                                fab.hide();
-                                Log.i("a", "scrolling down...");
-                            } else if (currentFirstVisibleItem < mLastFirstVisibleItem) {
-                                fab.show();
-                                Log.i("a", "scrolling up...");
-                            }
-                            mLastFirstVisibleItem = currentFirstVisibleItem;
-                        } else {
-                            if (show) {
-                                fab.show();
-                            } else {
-                                fab.hide();
-                            }
-                            show = !show;
-                        }
-                    }
-                }
-            }
-        });
+//        listView = (ListView) findViewById(R.id.list);
+//        listView.setAdapter(customAdapter);
+//
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view,
+//                                    int pos, long id) {
+//                position = pos;
+//                DialogFragment dialog = new ItemDialog();
+//                dialog.show(getFragmentManager(), "ItemDialog");
+//            }
+//        });
+//
+//        listView.setOnScrollListener(new AbsListView.OnScrollListener(){
+//            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//            int mLastFirstVisibleItem = 0;
+//            boolean show = false;
+//            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+//                fab.show();
+//            }
+//            public void onScrollStateChanged(AbsListView view, int scrollState) {
+//                if (view.getId() == listView.getId()) {
+//                    final int currentFirstVisibleItem = listView.getFirstVisiblePosition();
+//                    int displayed = listView.getHeight() / listView.getChildAt(1).getHeight();
+//                    if ((wrapperList.size() > 10) && (wrapperList.size() > displayed - 2)) {
+//                        if (wrapperList.size() > displayed + 1) {
+//                            if (currentFirstVisibleItem > mLastFirstVisibleItem) {
+//                                fab.hide();
+//                                Log.i("a", "scrolling down...");
+//                            } else if (currentFirstVisibleItem < mLastFirstVisibleItem) {
+//                                fab.show();
+//                                Log.i("a", "scrolling up...");
+//                            }
+//                            mLastFirstVisibleItem = currentFirstVisibleItem;
+//                        } else {
+//                            if (show) {
+//                                fab.show();
+//                            } else {
+//                                fab.hide();
+//                            }
+//                            show = !show;
+//                        }
+//                    }
+//                }
+//            }
+//        });
     }
 
 
@@ -222,8 +240,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         SharedPrefsManager.saveFreshProducts(wrapperList, this); // Сохраняем возможные изменения
-        customAdapter.setData(wrapperList);
-        customAdapter.notifyDataSetChanged();
+//        customAdapter.setData(wrapperList);
+//        customAdapter.notifyDataSetChanged();
 
         // Надпись "Список пуст!"
         TextView isEmpty = (TextView)findViewById(R.id.isEmptyText);
@@ -312,15 +330,15 @@ public class MainActivity extends AppCompatActivity {
         else {
             isEmpty.setVisibility(View.INVISIBLE);
         }
-        customAdapter.setData(wrapperList);
-        customAdapter.notifyDataSetChanged();
+//        customAdapter.setData(wrapperList);
+//        customAdapter.notifyDataSetChanged();
         SharedPrefsManager.saveFreshProducts(wrapperList, this);
     }
 
     public void DeleteAll() {
         wrapperList.clear();
-        customAdapter.setData(wrapperList);
-        customAdapter.notifyDataSetChanged();
+//        customAdapter.setData(wrapperList);
+//        customAdapter.notifyDataSetChanged();
         SharedPrefsManager.saveFreshProducts(wrapperList, this);
         TextView isEmpty = (TextView)findViewById(R.id.isEmptyText);
         isEmpty.setVisibility(View.VISIBLE);
@@ -397,8 +415,8 @@ public class MainActivity extends AppCompatActivity {
                 position = -1;
             }
 
-            customAdapter.setData(wrapperList);
-            customAdapter.notifyDataSetChanged();
+//            customAdapter.setData(wrapperList);
+//            customAdapter.notifyDataSetChanged();
             SharedPrefsManager.saveFreshProducts(wrapperList, this);    // Сохраняем настройки
             TextView isEmpty = (TextView) findViewById(R.id.isEmptyText);
             if (wrapperList.isEmpty()) {
