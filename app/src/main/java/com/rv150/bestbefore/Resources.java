@@ -5,7 +5,6 @@ package com.rv150.bestbefore;
  */
 public final class Resources {
     public static final String PREF_NEED_RATE = "need_rate";
-    public static final String PREF_TIMES_OPENED = "times_opened";
     public static final String PREF_ALARM_SET = "alarm_set_flag";
     public static final String PREF_WHATSNEW_11 = "showWhatsNewIn11";
     public static final String PREF_SHOW_WELCOME_SCREEN = "showWelcomeScreen";

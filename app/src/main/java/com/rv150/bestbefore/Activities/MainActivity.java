@@ -48,7 +48,7 @@ import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-
+import static android.support.v7.recyclerview.R.attr.layoutManager;
 
 
 // Все настройки чистятся в UpdatePreferences() и в классе DeleteOverdue
@@ -94,6 +94,10 @@ public class MainActivity extends AppCompatActivity {
         // Set layout manager to position the items
         rvContacts.setLayoutManager(new LinearLayoutManager(this));
 
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
+                layoutManager.getOrientation());
+        recyclerView.addItemDecoration(dividerItemDecoration);
+
 
 
         SharedPreferences.Editor editor = sPrefs.edit();
@@ -134,14 +138,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        // Инкремент счетчика открываний приложения
-        boolean needRate = sPrefs.getBoolean(Resources.PREF_NEED_RATE, true);
-        if (needRate) {
-            int timesOpened = sPrefs.getInt(Resources.PREF_TIMES_OPENED, 0);
-            timesOpened++;
-            editor.putInt(Resources.PREF_TIMES_OPENED, timesOpened);
-            editor.apply();
-        }
 
 
 //        listView = (ListView) findViewById(R.id.list);
@@ -405,7 +401,7 @@ public class MainActivity extends AppCompatActivity {
                 // Показ справки об оставшихся днях в 1 раз
                 Boolean needHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
                 if (needHelp) {
-                    showHelp();
+                    //showHelp();
                     SharedPreferences.Editor editor = sPrefs.edit();
                     editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
                     editor.apply();
@@ -436,9 +432,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         boolean needRate = sPrefs.getBoolean(Resources.PREF_NEED_RATE, true);
-        int timesOpened = sPrefs.getInt(Resources.PREF_TIMES_OPENED, 0);
-        if (needRate && timesOpened >= 15) {
-
+        if (needRate) {
                 int installDay = sPrefs.getInt(Resources.PREF_INSTALL_DAY, 11);
                 int installMonth = sPrefs.getInt(Resources.PREF_INSTALL_MONTH, 8);
                 int installYear = sPrefs.getInt(Resources.PREF_INSTALL_YEAR, 2016);
@@ -448,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
                 int hours = (int) ((now.getTimeInMillis() - installedAt.getTimeInMillis()) / MILLI_TO_HOUR);
 
                 // кол-во часов с момента установки должно превысить это значение
-                if (hours >= 96) {
+                if (hours >= 120) {
                     SharedPreferences.Editor editor = sPrefs.edit();
                     editor.putBoolean(Resources.PREF_NEED_RATE, false);
                     editor.remove(Resources.PREF_INSTALL_YEAR);

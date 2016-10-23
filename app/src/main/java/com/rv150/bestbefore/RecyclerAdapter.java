@@ -23,7 +23,9 @@ public class RecyclerAdapter  extends
             // Your holder should contain a member variable
             // for any view that will be set as you render a row
             public TextView nameTextView;
-            public Button messageButton;
+            public TextView quantityTextView;
+            public TextView dateTextView;
+            public TextView daysLeftTextView;
 
             // We also create a constructor that accepts the entire item row
             // and does the view lookups to find each subview
@@ -32,8 +34,10 @@ public class RecyclerAdapter  extends
                 // to access the context from any ViewHolder instance.
                 super(itemView);
 
-                nameTextView = (TextView) itemView.findViewById(R.id.contact_name);
-                messageButton = (Button) itemView.findViewById(R.id.message_button);
+                nameTextView = (TextView) itemView.findViewById(R.id.item_name);
+                quantityTextView = (TextView) itemView.findViewById(R.id.item_quantity);
+                dateTextView = (TextView) itemView.findViewById(R.id.item_date);
+                daysLeftTextView = (TextView) itemView.findViewById(R.id.item_days_left);
             }
         }
 
@@ -58,7 +62,7 @@ public class RecyclerAdapter  extends
         LayoutInflater inflater = LayoutInflater.from(context);
 
         // Inflate the custom layout
-        View contactView = inflater.inflate(R.layout.recycler_view_layout, parent, false);
+        View contactView = inflater.inflate(R.layout.recycler_view_item, parent, false);
 
         // Return a new holder instance
         ViewHolder viewHolder = new ViewHolder(contactView);
@@ -72,10 +76,15 @@ public class RecyclerAdapter  extends
         Contact contact = mContacts.get(position);
 
         // Set item views based on your views and data model
-        TextView textView = viewHolder.nameTextView;
-        textView.setText(contact.getName());
-        Button button = viewHolder.messageButton;
-        button.setText("Message");
+        TextView name = viewHolder.nameTextView;
+        name.setText("фруктовый сад персик и яблоко");
+
+        TextView quantity = viewHolder.quantityTextView;
+        quantity.setText("Кол-во: 1");
+        TextView date = viewHolder.dateTextView;
+        date.setText("13.11.2016");
+        TextView daysLeft = viewHolder.daysLeftTextView;
+        daysLeft.setText("17 дней");
     }
 
     // Returns the total count of items in the list
