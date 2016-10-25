@@ -103,6 +103,21 @@ public class MainActivity extends AppCompatActivity {
             editor.putInt(Resources.PREF_INSTALL_YEAR, installYear);
             editor.apply();
         }
+        else {
+            // Справка
+            boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
+            if (showHelp) {
+                new AlertDialog.Builder(this).setTitle(R.string.help)
+                        .setMessage(R.string.help_add)
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        }).show();
+                editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
+                editor.apply();
+            }
+        }
 
 
         rvProducts.addOnScrollListener(new RecyclerView.OnScrollListener() {
