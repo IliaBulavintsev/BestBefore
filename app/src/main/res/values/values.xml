@@ -4,4 +4,5 @@
     <color name="new_color">#20994a</color>
     <color name="red_color">#e34923</color>
     <color name="buttons_back">#d6d7d7</color>
+    <item name="item_click_support" type="id" />
 </resources>

@@ -14,6 +14,7 @@ public class StringWrapper {
     private String mTitle;
     private Calendar mDate;
     private Calendar mCreatedAt;
+    private int quantity = 1;
 
 
     public  StringWrapper(String mTitle, Calendar mDate) {
@@ -124,8 +125,13 @@ public class StringWrapper {
         return result;
     }
 
+    public int getQuantity() {
+        return quantity;
+    }
 
-
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 
     public static Comparator<StringWrapper> getFreshToSpoiledComparator() {
         return new Comparator<StringWrapper>() {

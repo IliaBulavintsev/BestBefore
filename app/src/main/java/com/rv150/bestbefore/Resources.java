@@ -38,12 +38,10 @@ public final class Resources {
     public static final String CREATED_AT = "getCreatedAt";
     public static final String NAME = "name";
     public static final String DATE = "date";
-    public static final String SHOW_HELP = "needHelp";
     public static final int RC_ADD_ACTIVITY = 0;
     public static final int RC_SIGN_IN = 1;
     public static final int RESULT_ADD = 1;
     public static final int RESULT_MODIFY = 2;
     public static final int RESULT_EXIT = 0;
-    public static final String SHOW_DATE_INSTEAD_DAYS_LEFT = "showDateInsteadDaysLeft";
     public static final String SERVER_URL = "http://192.168.1.52:8080/";
 }

@@ -1,13 +1,9 @@
 package com.rv150.bestbefore.Activities;
 
 import android.app.DialogFragment;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
 import android.view.Menu;
@@ -18,11 +14,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.rv150.bestbefore.Dialogs.ClearListDialog;
-import com.rv150.bestbefore.CustomAdapter;
 import com.rv150.bestbefore.Dialogs.OverdueItemDialog;
 import com.rv150.bestbefore.Dialogs.OverdueYesNoDialog;
 import com.rv150.bestbefore.R;
-import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
 import com.rv150.bestbefore.StringWrapper;
 
@@ -64,27 +58,8 @@ public class Overdue extends AppCompatActivity {
                 dialog.show(getFragmentManager(), "OverdueItemDialog");
             }
         });
-
-
-        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        Boolean needHelp = sPrefs.getBoolean(Resources.SHOW_HELP, true);
-        if (needHelp) {
-            showHelp();
-            SharedPreferences.Editor editor = sPrefs.edit();
-            editor.putBoolean(Resources.SHOW_HELP, false);
-            editor.apply();
-        }
     }
 
-    private void showHelp() {
-        String whatsNewText = getResources().getString(R.string.help_overdue);
-        new AlertDialog.Builder(this).setTitle(R.string.help).setMessage(whatsNewText).setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        }).show();
-    }
 
 
     @Override
@@ -120,10 +95,6 @@ public class Overdue extends AppCompatActivity {
         if (id == R.id.action_clear_list && !overdueList.isEmpty()) {
             DialogFragment dialog_delete_all = new ClearListDialog();
             dialog_delete_all.show(getFragmentManager(), "ClearList");
-            return true;
-        }
-        if (id == R.id.action_show_help) {
-            showHelp();
             return true;
         }
         return super.onOptionsItemSelected(item);

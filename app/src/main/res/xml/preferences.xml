@@ -103,12 +103,6 @@
         android:summary="Показывать при запуске окно с недавно просроченными продуктами"
         android:defaultValue="true" />
 
-    <CheckBoxPreference
-        android:key="showDateInsteadDaysLeft"
-        android:title="Формат отображения"
-        android:summary="Показывать дату окончания срока годности вместо количества оставшихся дней"
-        android:defaultValue="false" />
-
 
 
     <PreferenceScreen
