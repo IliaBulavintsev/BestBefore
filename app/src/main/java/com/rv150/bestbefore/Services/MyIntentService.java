@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.rv150.bestbefore.Preferences.SharedPrefsManager;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.MyNotification;
 import com.rv150.bestbefore.StringWrapper;
@@ -25,36 +26,8 @@ public class MyIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        List<StringWrapper> wrapperList = new ArrayList<>();
+        List<StringWrapper> wrapperList = SharedPrefsManager.getFreshProducts(this);
         SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        for (int i = 0; ; ++i) {
-            if (!sPrefs.contains(String.valueOf(i))) {
-                break;
-            }
-            final String title = sPrefs.getString(String.valueOf(i), "");
-            final String date = sPrefs.getString(String.valueOf(i + 500), "0.0.0");
-            String[] array = date.split("\\.");
-            int myDay = Integer.parseInt(array[0]);
-            int myMonth = Integer.parseInt(array[1]);
-            int myYear = Integer.parseInt(array[2]);
-
-            final String createdAtStr = sPrefs.getString(String.valueOf(i + 1000), "0.0.0.0.0");
-            String[] createdAtSplit = createdAtStr.split("\\.");
-            int YearCreated = Integer.parseInt(createdAtSplit[0]);
-            int MonthCreated = Integer.parseInt(createdAtSplit[1]);
-            int DayCreated = Integer.parseInt(createdAtSplit[2]);
-            int HourCreated = Integer.parseInt(createdAtSplit[3]);
-            int MinuteCreated = Integer.parseInt(createdAtSplit[4]);
-
-
-            if (!title.equals("")) {
-                StringWrapper temp = new StringWrapper(title, new GregorianCalendar(myYear, myMonth, myDay), new GregorianCalendar(YearCreated, MonthCreated, DayCreated, HourCreated, MinuteCreated));
-                wrapperList.add(temp);
-            } else {
-                break;
-            }
-        }
-
 
         int ID = intent.getIntExtra("id", -1);
         switch (ID) {
@@ -97,7 +70,7 @@ public class MyIntentService extends IntentService {
 
             if (days + 1 == days_before && difference > 0) {
                 if (firstProduct == null) {
-                    firstProduct = new String (currentItem.getTitle());
+                    firstProduct = currentItem.getTitle();
                 }
                 count++;
             }

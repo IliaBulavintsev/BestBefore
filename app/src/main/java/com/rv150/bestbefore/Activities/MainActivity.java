@@ -29,17 +29,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.rv150.bestbefore.ItemClickSupport;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
-import com.rv150.bestbefore.Dialogs.DeleteAllDialog;
+import com.rv150.bestbefore.Dialogs.DeleteAllMain;
 import com.rv150.bestbefore.DeleteOverdue;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Dialogs.RateAppDialog;
 import com.rv150.bestbefore.RecyclerAdapter;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.Services.StatCollector;
 import com.rv150.bestbefore.StringWrapper;
 
 import java.util.ArrayList;
@@ -81,18 +81,8 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sPrefs.edit();
 
         // Что нового?
-        boolean showWhatsNewIn11 = sPrefs.getBoolean(Resources.PREF_WHATSNEW_11, true);
-        boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
-        if (showWhatsNewIn11 && !showWelcomeScreen) {
-            new AlertDialog.Builder(this).setTitle(R.string.whats_new).setMessage("В настройках теперь можно выбрать отображение даты окончания срока годности продукта вместо количества оставшихся дней.").setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            }).show();
-        }
-        editor.putBoolean(Resources.PREF_WHATSNEW_11, false);
-        editor.apply();
 
+        boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
 
         // показ приветственного сообщения
         if (showWelcomeScreen) {
@@ -111,15 +101,16 @@ public class MainActivity extends AppCompatActivity {
             editor.putInt(Resources.PREF_INSTALL_DAY, installDay);
             editor.putInt(Resources.PREF_INSTALL_MONTH, installMonth);
             editor.putInt(Resources.PREF_INSTALL_YEAR, installYear);
-
             editor.apply();
         }
 
 
         rvProducts.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (dy > 0) {
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy)
+            {
+                if (dy > 0)
+                {
                     fab.hide();
                 }
                 else {
@@ -128,7 +119,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState)
+            {
                 super.onScrollStateChanged(recyclerView, newState);
             }
         });
@@ -140,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
                 runAddActivity(position);
             }
         });
+
+        StatCollector.shareStatistic(this, "no added products :( ");
     }
 
 
@@ -230,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public void DeleteItem(int position) {
+    public void deleteItem(int position) {
         wrapperList.remove(position);
         TextView isEmpty = (TextView)findViewById(R.id.isEmptyText);
         if (wrapperList.isEmpty()) {
@@ -242,15 +236,17 @@ public class MainActivity extends AppCompatActivity {
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
         SharedPrefsManager.saveFreshProducts(wrapperList, this);
+        StatCollector.shareStatistic(this, "deleted one item");
     }
 
-    public void DeleteAll() {
+    public void deleteAll() {
         wrapperList.clear();
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
         SharedPrefsManager.saveFreshProducts(wrapperList, this);
         TextView isEmpty = (TextView)findViewById(R.id.isEmptyText);
         isEmpty.setVisibility(View.VISIBLE);
+        StatCollector.shareStatistic(this, "deleted all fresh products");
     }
 
     @Override
@@ -274,8 +270,8 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.action_delete_all) {
-            DialogFragment dialog_delete_all = new DeleteAllDialog();
-            dialog_delete_all.show(getFragmentManager(), "DeleteAll");
+            DialogFragment dialog_delete_all = new DeleteAllMain();
+            dialog_delete_all.show(getFragmentManager(), "deleteAll");
             return true;
         }
 
@@ -293,6 +289,8 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -301,20 +299,27 @@ public class MainActivity extends AppCompatActivity {
             String name = data.getExtras().getString(Resources.NAME);
             Calendar date = (Calendar) data.getExtras().get(Resources.DATE);
             Calendar createdAt = (Calendar) data.getExtras().get(Resources.CREATED_AT);
+            int quantity = (int) data.getExtras().get(Resources.QUANTITY);
 
             if (resultCode == Resources.RESULT_ADD) {                              // Добавление
-                wrapperList.add(new StringWrapper(name, date, createdAt));
+                wrapperList.add(new StringWrapper(name, date, createdAt, quantity));
 
-                // Показ справки об оставшихся днях в 1 раз
-                Boolean needHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
-                if (needHelp) {
-                    //showHelp();
+                // Справка
+                boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
+                if (showHelp) {
+                    new AlertDialog.Builder(this).setTitle(R.string.help)
+                            .setMessage(R.string.help_add)
+                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
                     SharedPreferences.Editor editor = sPrefs.edit();
                     editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
                     editor.apply();
                 }
             } else if (resultCode == Resources.RESULT_MODIFY) {                       // Изменение
-                wrapperList.set(position, new StringWrapper(name, date, createdAt));
+                wrapperList.set(position, new StringWrapper(name, date, createdAt, quantity));
                 position = -1;
             }
 
@@ -329,6 +334,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 isEmpty.setVisibility(View.INVISIBLE);
             }
+
+            StatCollector.shareStatistic(this, null);
         }
     }
 
@@ -351,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
                 int hours = (int) ((now.getTimeInMillis() - installedAt.getTimeInMillis()) / MILLI_TO_HOUR);
 
                 // кол-во часов с момента установки должно превысить это значение
-                if (hours >= 120) {
+                if (hours >= 100) {
                     SharedPreferences.Editor editor = sPrefs.edit();
                     editor.putBoolean(Resources.PREF_NEED_RATE, false);
                     editor.remove(Resources.PREF_INSTALL_YEAR);
@@ -426,8 +433,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
                 final int swipedPosition = viewHolder.getAdapterPosition();;
-                DeleteItem(swipedPosition);
-                rvProducts.swapAdapter(new RecyclerAdapter(wrapperList), false);
+                deleteItem(swipedPosition);
             }
 
             @Override
@@ -556,8 +562,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void runAddActivity(int clickedPosition) {
         Intent intent = new Intent(this, Add.class);
-        intent.putExtra(Resources.NAME, wrapperList.get(clickedPosition).getTitle());
-        Calendar date = wrapperList.get(clickedPosition).getDate();
+        final StringWrapper item = wrapperList.get(clickedPosition);
+        intent.putExtra(Resources.NAME,item.getTitle());
+        Calendar date = item.getDate();
         int myDay = date.get(Calendar.DAY_OF_MONTH);
         int myMonth = date.get(Calendar.MONTH);
         int myYear = date.get(Calendar.YEAR);
@@ -565,7 +572,7 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(Resources.MY_MONTH, myMonth);
         intent.putExtra(Resources.MY_YEAR, myYear);
 
-        Calendar createdAt = wrapperList.get(clickedPosition).getCreatedAt();
+        Calendar createdAt = item.getCreatedAt();
         int DayCreated = createdAt.get(Calendar.DAY_OF_MONTH);
         int MonthCreated = createdAt.get(Calendar.MONTH);
         int YearCreated = createdAt.get(Calendar.YEAR);
@@ -578,6 +585,8 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(Resources.HOUR_CREATED, HourCreated);
         intent.putExtra(Resources.MINUTE_CREATED, MinuteCreated);
         intent.putExtra(Resources.SECOND_CREATED, SecondCreated);
+
+        intent.putExtra(Resources.QUANTITY, item.getQuantity());
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 }

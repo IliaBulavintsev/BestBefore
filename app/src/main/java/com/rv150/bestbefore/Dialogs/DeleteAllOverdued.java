@@ -12,8 +12,8 @@ import com.rv150.bestbefore.Activities.Overdue;
  * Created by Rudnev on 06.09.2016.
  */
 // Используется в просроченных продуктах
-public class ClearListDialog  extends DialogFragment {
-        public ClearListDialog()
+public class DeleteAllOverdued extends DialogFragment {
+        public DeleteAllOverdued()
         {
         }
 

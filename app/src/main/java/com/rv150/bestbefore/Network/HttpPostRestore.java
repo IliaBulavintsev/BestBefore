@@ -150,7 +150,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 String name = item.getString("name");
                 String date = item.getString("date");
                 String createdAt = item.getString("createdAt");
-                StringWrapper product = new StringWrapper(name, date, createdAt);
+                int quantity = item.getInt("quantity");
+                StringWrapper product = new StringWrapper(name, date, createdAt, quantity);
                 fresh.add(product);
             }
 
@@ -159,7 +160,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 JSONObject item = overdueJson.getJSONObject(i);
                 String name = item.getString("name");
                 String date = item.getString("date");
-                StringWrapper product = new StringWrapper(name, date);
+                int quantity = item.getInt("quantity");
+                StringWrapper product = new StringWrapper(name, date, quantity);
                 overdue.add(product);
             }
         }

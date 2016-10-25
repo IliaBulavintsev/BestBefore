@@ -6,7 +6,6 @@ package com.rv150.bestbefore;
 public final class Resources {
     public static final String PREF_NEED_RATE = "need_rate";
     public static final String PREF_ALARM_SET = "alarm_set_flag";
-    public static final String PREF_WHATSNEW_11 = "showWhatsNewIn11";
     public static final String PREF_SHOW_WELCOME_SCREEN = "showWelcomeScreen";
     public static final String PREF_SHOW_HELP_AFTER_FIRST_ADD = "showHelpAfterFirstAdd";
     public static final String PREF_INSTALL_DAY = "install_day";
@@ -38,10 +37,11 @@ public final class Resources {
     public static final String CREATED_AT = "getCreatedAt";
     public static final String NAME = "name";
     public static final String DATE = "date";
+    public static final String QUANTITY = "quantity";
     public static final int RC_ADD_ACTIVITY = 0;
     public static final int RC_SIGN_IN = 1;
     public static final int RESULT_ADD = 1;
     public static final int RESULT_MODIFY = 2;
     public static final int RESULT_EXIT = 0;
-    public static final String SERVER_URL = "http://192.168.1.52:8080/";
+    public static final String SERVER_URL = "http://212.109.192.197:8080/";
 }

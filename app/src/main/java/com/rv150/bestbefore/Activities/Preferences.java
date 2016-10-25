@@ -202,6 +202,13 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         List<StringWrapper> freshFood = SharedPrefsManager.getFreshProducts(this);
         List<StringWrapper> overdueFood = SharedPrefsManager.getOverdueProducts(this);
 
+        if (freshFood.isEmpty() && overdueFood.isEmpty()) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                             R.string.nothing_to_backup, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
         // Отсылаемый jsonArray
 
 

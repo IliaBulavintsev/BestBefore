@@ -11,8 +11,8 @@ import com.rv150.bestbefore.Activities.MainActivity;
 /**
  * Created by ivan on 08.07.2016.
  */
-public class DeleteAllDialog extends DialogFragment {
-        public DeleteAllDialog()
+public class DeleteAllMain extends DialogFragment {
+        public DeleteAllMain()
         {
         }
 
@@ -25,7 +25,7 @@ public class DeleteAllDialog extends DialogFragment {
                 public void onClick(DialogInterface dialog, int which) {
                     switch (which){
                         case DialogInterface.BUTTON_POSITIVE:
-                            ((MainActivity) getActivity()).DeleteAll();
+                            ((MainActivity) getActivity()).deleteAll();
                             break;
                         case DialogInterface.BUTTON_NEGATIVE:
                             break;

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.StringWrapper;
 
 import java.util.ArrayList;
@@ -24,7 +25,8 @@ public class SharedPrefsManager {
             final String title = prefs.getString(String.valueOf(i), "");
             final String date = prefs.getString(String.valueOf(i + 500), "0.0.0");
             final String createdAt = prefs.getString(String.valueOf(i + 1000), "0.0.0.0.0.0");
-            StringWrapper temp = new StringWrapper(title, date, createdAt);
+            final int quantity = prefs.getInt(Resources.QUANTITY + String.valueOf(i), 1);
+            StringWrapper temp = new StringWrapper(title, date, createdAt, quantity);
             list.add(temp);
         }
         return list;
@@ -38,6 +40,7 @@ public class SharedPrefsManager {
             editor.putString(String.valueOf(i), item.getTitle());
             editor.putString(String.valueOf(i + 500), item.getDateStr());
             editor.putString(String.valueOf(i + 1000), item.getCreatedAtStr());
+            editor.putInt(Resources.QUANTITY + String.valueOf(i), item.getQuantity());
         }
         editor.putString(String.valueOf(list.size()), ""); // признак конца списка
         editor.apply();
@@ -52,7 +55,8 @@ public class SharedPrefsManager {
             }
             final String title = prefs.getString("del" + String.valueOf(i), "");
             final String date = prefs.getString("del" + String.valueOf(i + 1000), "0.0.0");
-            list.add(new StringWrapper(title, date));
+            final int quantity = prefs.getInt("del" + Resources.QUANTITY + String.valueOf(i), 1);
+            list.add(new StringWrapper(title, date, quantity));
         }
         return list;
     }
@@ -65,6 +69,7 @@ public class SharedPrefsManager {
             StringWrapper item = list.get(i);
             editor.putString("del" + String.valueOf(i), item.getTitle());
             editor.putString("del" + String.valueOf(i + 1000), item.getDateStr());
+            editor.putInt("del" + Resources.QUANTITY + String.valueOf(i), item.getQuantity());
         }
         editor.putString("del" + String.valueOf(list.size()), ""); // признак конца списка
         editor.apply();

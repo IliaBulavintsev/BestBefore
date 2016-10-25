@@ -4,4 +4,8 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="ic_clear_margin">16dp</dimen>
+    <dimen name="days_left_size_standart">24sp</dimen>
+    <dimen name="days_left_size_big">28sp</dimen>
+    <dimen name="days_left_size_small">22sp</dimen>
+    <dimen name="days_left_size_very_small">18sp</dimen>
 </resources>

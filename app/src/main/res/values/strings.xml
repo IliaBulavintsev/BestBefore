@@ -25,12 +25,11 @@
     <string name="settings">Настройки</string>
     <string name="rate_app">Оценить приложение</string>
     <string name="help">Справка</string>
-    <string name="help_overdue">В этот список автоматически попадают просроченные продукты. Дата справа означает последний день, когда продукт был свежим.</string>
     <string name="notifications">Напоминания</string>
     <string name="whats_new">Что нового?</string>
     <string name="sort">Сортировка</string>
     <string name="last_overdue">Последние просроченные</string>
-    <string name="rate_app_msg">Вы не хотели бы оценить приложение в Google Play? Не стестяйтесь писать свои пожелания :)</string>
+    <string name="rate_app_msg">Вы не хотели бы оценить приложение в Google Play? Не стесняйтесь писать свои пожелания :)</string>
     <string name="rate">Оценить</string>
     <string name="no">Нет</string>
     <string name="today_is_the_last_day">Сегодня последний день!</string>
@@ -74,10 +73,15 @@
     <string name="error_timeout">Превышено время ожидания ответа</string>
     <string name="restore_failed">Ошибка при восстановлении данных</string>
     <string name="data_not_found">Данные не найдены</string>
-    <string name="help_add">Оставшиеся дни считаются с учетом сегодняшнего дня. Для продуктов же срок годности отсчитывается только с начала следующего дня, поэтому отображается на 1 день больше.</string>
+    <string name="help_add">Число справа означает количество оставшихся полных дней до конца срока. Чтобы удалить продукт, потяните его в левую сторону. Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
     <string name="warning">Внимание</string>
     <string name="do_you_want_to_overwite_existing">Вы хотите перезаписать существующие данные данными с сервера?</string>
     <string name="yes">Да</string>
+    <string name="ok">OK</string>
     <string name="backup_is_saving">Сохраняем данные</string>
     <string name="fetching_data">Получаем данные</string>
+    <string name="changing_product">Изменение продукта</string>
+    <string name="quantity">Количество</string>
+    <string name="sync_with_google">Синхронизация с Google</string>
+    <string name="nothing_to_backup">Нет данных для бекапа!</string>
 </resources>

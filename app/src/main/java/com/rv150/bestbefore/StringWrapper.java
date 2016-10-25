@@ -14,24 +14,25 @@ public class StringWrapper {
     private String mTitle;
     private Calendar mDate;
     private Calendar mCreatedAt;
-    private int quantity = 1;
+    final private int quantity;
 
 
-    public  StringWrapper(String mTitle, Calendar mDate) {
-        this(mTitle, mDate, new GregorianCalendar());
+    public  StringWrapper(String mTitle, Calendar mDate, int quantity) {
+        this(mTitle, mDate, new GregorianCalendar(), quantity);
     }
 
-    public StringWrapper(String mTitle, Calendar mDate, Calendar mCreatedAt) {
+    public StringWrapper(String mTitle, Calendar mDate, Calendar mCreatedAt, int quantity) {
         this.mTitle = mTitle;
         this.mDate = mDate;
         this.mCreatedAt = mCreatedAt;
+        this.quantity = quantity;
     }
 
-    public  StringWrapper (String title, String date) {
-        this(title, date, null);
+    public  StringWrapper (String title, String date, int quantity) {
+        this(title, date, null, quantity);
     }
 
-    public StringWrapper (String title, String date, String createdAt) {
+    public StringWrapper (String title, String date, String createdAt, int quantity) {
         this.mTitle = title;
 
         String[] array = date.split("\\.");
@@ -54,6 +55,7 @@ public class StringWrapper {
             this.mCreatedAt = new GregorianCalendar
                     (Year, Month, Day, Hour, Minute, Second);
         }
+        this.quantity = quantity;
     }
 
 
@@ -122,6 +124,7 @@ public class StringWrapper {
         int SecondCreated = mCreatedAt.get(Calendar.SECOND);
         String createdAtStr = YearCreated + "." + MonthCreated + "." + DayCreated  + "." + HourCreated + "." + MinuteCreated + "." + SecondCreated;
         result.put("createdAt", createdAtStr);
+        result.put("quantity", getQuantity());
         return result;
     }
 
@@ -129,9 +132,6 @@ public class StringWrapper {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
 
     public static Comparator<StringWrapper> getFreshToSpoiledComparator() {
         return new Comparator<StringWrapper>() {

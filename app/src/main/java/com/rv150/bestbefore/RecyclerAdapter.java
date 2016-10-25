@@ -112,17 +112,17 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
             String daysLeftStr = getDaysLeft(calendar);
             daysLeft.setText(daysLeftStr);
             if (daysLeftStr.length() == 3) {
-                daysLeft.setTextSize(22);
+                daysLeft.setTextSize(21);
             }
             else if (daysLeftStr.length() > 3) {
                 daysLeft.setTextSize(18);
             }
             else if (daysLeftStr.equals("!")) {
-                daysLeft.setTextSize(28);
+                daysLeft.setTextSize(26);
             }
             else
             {
-                daysLeft.setTextSize(26);
+                daysLeft.setTextSize(24);
             }
             setColor(daysLeft, calendar);
     }
@@ -141,8 +141,8 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
             textView.setTextColor(0xffbdbdbd); // просрочен
         } else if (days == 0) {
             textView.setTextColor(0xffff0000); // последний день
-        } else if (days > 0 && days <= 3) {
-            textView.setTextColor(Color.rgb(220, 180, 0));   // 1-3 дня
+        } else if (days > 0 && days < 3) {
+            textView.setTextColor(Color.rgb(220, 180, 0));   // 1-2 дня
         } else {
             textView.setTextColor(Color.rgb(21, 153, 74));  // свежее
         }
