@@ -154,6 +154,9 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
         long difference = sourceDate.getTimeInMillis() - currentDate.getTimeInMillis();
         int days = (int) (difference / (24 * 60 * 60 * 1000));
         if (days == 0) {
+            if (difference < 0) {
+                return "-1";        // В первый день просрочки
+            }
             return "!";
         }
         return Integer.toString(days);

@@ -16,11 +16,11 @@
                     android:defaultValue="true" />
 
                 <com.vanniktech.vntnumberpickerpreference.VNTNumberPickerPreference
-                    android:defaultValue="1"
+                    android:defaultValue="0"
                     android:key="days_in_first"
-                    android:title="За сколько дней напомнить"
+                    android:title="За сколько дней напомнить (0 - в последний)"
                     app:vnt_maxValue="365"
-                    app:vnt_minValue="1"
+                    app:vnt_minValue="0"
                     android:dependency="last_day"/>
 
                 <com.rv150.bestbefore.Preferences.TimePreference1
@@ -43,11 +43,11 @@
                     android:defaultValue="false" />
 
                 <com.vanniktech.vntnumberpickerpreference.VNTNumberPickerPreference
-                    android:defaultValue="2"
+                    android:defaultValue="1"
                     android:key="days_in_second"
-                    android:title="За сколько дней напомнить"
+                    android:title="За сколько дней напомнить (0 - в последний)"
                     app:vnt_maxValue="365"
-                    app:vnt_minValue="1"
+                    app:vnt_minValue="0"
                     android:dependency="day_before"/>
 
                 <com.rv150.bestbefore.Preferences.TimePreference2
@@ -69,11 +69,11 @@
                     android:defaultValue="false" />
 
                 <com.vanniktech.vntnumberpickerpreference.VNTNumberPickerPreference
-                    android:defaultValue="3"
+                    android:defaultValue="2"
                     android:key="days_in_third"
-                    android:title="За сколько дней напомнить"
+                    android:title="За сколько дней напомнить (0 - в последний)"
                     app:vnt_maxValue="365"
-                    app:vnt_minValue="1"
+                    app:vnt_minValue="0"
                     android:dependency="three_days"/>
 
                 <com.rv150.bestbefore.Preferences.TimePreference3

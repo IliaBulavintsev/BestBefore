@@ -163,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
         wrapperList = SharedPrefsManager.getFreshProducts(this); // обновляем wrapperList в соотв. с сохраненными данными
 
+
         // Удаление просроченных
         List<String> newOverdue = DeleteOverdue.delete(this, wrapperList);
         boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);

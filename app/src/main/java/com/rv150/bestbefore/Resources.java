@@ -21,6 +21,9 @@ public final class Resources {
     public static final String PREF_FIRST_NOTIF = "last_day";
     public static final String PREF_SECOND_NOTIF = "day_before";
     public static final String PREF_THIRD_NOTIF = "three_days";
+    public static final String PREF_DAYS_IN_FIRST_NOTIF = "days_in_first";
+    public static final String PREF_DAYS_IN_SECOND_NOTIF = "days_in_second";
+    public static final String PREF_DAYS_IN_THIRD_NOTIF = "days_in_third";
     public static final String STANDART = "STANDART";
     public static final String SPOILED_TO_FRESH = "SPOILED_TO_FRESH";
     public static final String FRESH_TO_SPOILED = "FRESH_TO_SPOILED";

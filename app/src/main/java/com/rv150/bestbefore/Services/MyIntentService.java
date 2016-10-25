@@ -9,6 +9,7 @@ import android.util.Log;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.MyNotification;
+import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.StringWrapper;
 
 import java.util.ArrayList;
@@ -32,17 +33,17 @@ public class MyIntentService extends IntentService {
         int ID = intent.getIntExtra("id", -1);
         switch (ID) {
             case 1: {
-                int daysInFirst = sPrefs.getInt("days_in_first", 1);
+                int daysInFirst = sPrefs.getInt(Resources.PREF_DAYS_IN_FIRST_NOTIF, 0);
                 makeNotification(wrapperList, daysInFirst, 1);
                 break;
             }
             case 2: {
-                int daysInSecond = sPrefs.getInt("days_in_second", 2);
+                int daysInSecond = sPrefs.getInt(Resources.PREF_DAYS_IN_SECOND_NOTIF, 1);
                 makeNotification(wrapperList, daysInSecond, 2);
                 break;
             }
             case 3: {
-                int daysInThird = sPrefs.getInt("days_in_third", 3);
+                int daysInThird = sPrefs.getInt(Resources.PREF_DAYS_IN_THIRD_NOTIF, 2);
                 makeNotification(wrapperList, daysInThird, 3);
                 break;
             }
@@ -68,7 +69,7 @@ public class MyIntentService extends IntentService {
             long difference = date.getTimeInMillis()  - currentDate.getTimeInMillis();
             int days = (int) (difference / (24*60*60*1000));
 
-            if (days + 1 == days_before && difference > 0) {
+            if (days == days_before && difference > 0) {
                 if (firstProduct == null) {
                     firstProduct = currentItem.getTitle();
                 }

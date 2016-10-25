@@ -47,12 +47,12 @@
              translators will need to use %d for languages where "one"
              doesn't mean 1 (as explained above).
           -->
-        <item quantity="zero">Последний день!</item>
-        <item quantity="one">%d день</item>
-        <item quantity="two">%d дня</item>
-        <item quantity="few">%d дня</item>
-        <item quantity="many">%d дней</item>
-        <item quantity="other">%d дней</item>
+        <item quantity="zero">Сегодня последний день!</item>
+        <item quantity="one">Остался %d день</item>
+        <item quantity="two">Осталось %d дня</item>
+        <item quantity="few">Осталось %d дня</item>
+        <item quantity="many">Осталось %d дней</item>
+        <item quantity="other">Осталось %d дней</item>
     </plurals>
     <string name="best_before_expires">Срок годности истекает!</string>
     <string name="last_day">Последний день!</string>
