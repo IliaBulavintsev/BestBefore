@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
             boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
             if (showHelp) {
                 new AlertDialog.Builder(this).setTitle(R.string.help)
-                        .setMessage(R.string.help_add)
+                        .setMessage(R.string.help_add_for_old_users)
                         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
