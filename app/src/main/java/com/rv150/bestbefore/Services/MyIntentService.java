@@ -10,9 +10,8 @@ import com.rv150.bestbefore.Preferences.SharedPrefsManager;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.MyNotification;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.StringWrapper;
+import com.rv150.bestbefore.Product;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -27,7 +26,7 @@ public class MyIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        List<StringWrapper> wrapperList = SharedPrefsManager.getFreshProducts(this);
+        List<Product> wrapperList = SharedPrefsManager.getFreshProducts(this);
         SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         int ID = intent.getIntExtra("id", -1);
@@ -55,11 +54,11 @@ public class MyIntentService extends IntentService {
        AlarmReceiver.completeWakefulIntent(intent);
     }
 
-    private void makeNotification(List<StringWrapper> wrapperList, int days_before, int ID) {
+    private void makeNotification(List<Product> wrapperList, int days_before, int ID) {
         String firstProduct = null;
         int count = 0;
         for (int i = 0; i < wrapperList.size(); ++i) {
-            StringWrapper currentItem = wrapperList.get(i);
+            Product currentItem = wrapperList.get(i);
             Calendar date = currentItem.getDate();
             int year = date.get(Calendar.YEAR);
             int month = date.get(Calendar.MONTH);

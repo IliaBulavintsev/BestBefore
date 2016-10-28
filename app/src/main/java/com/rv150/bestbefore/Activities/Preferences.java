@@ -1,6 +1,5 @@
 package com.rv150.bestbefore.Activities;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -33,7 +32,7 @@ import com.rv150.bestbefore.Network.HttpPostRestore;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
-import com.rv150.bestbefore.StringWrapper;
+import com.rv150.bestbefore.Product;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -199,8 +198,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void backup() {
-        List<StringWrapper> freshFood = SharedPrefsManager.getFreshProducts(this);
-        List<StringWrapper> overdueFood = SharedPrefsManager.getOverdueProducts(this);
+        List<Product> freshFood = SharedPrefsManager.getFreshProducts(this);
+        List<Product> overdueFood = SharedPrefsManager.getOverdueProducts(this);
 
         if (freshFood.isEmpty() && overdueFood.isEmpty()) {
             Toast toast = Toast.makeText(getApplicationContext(),
@@ -224,14 +223,14 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
             // Массив свежих продуктов
             JSONArray freshProducts = new JSONArray();
-            for (StringWrapper item : freshFood) {
+            for (Product item : freshFood) {
                 JSONObject json = item.getJSON();
                 freshProducts.put(json);
             }
 
             // Массив просроченных
             JSONArray overdueProducts = new JSONArray();
-            for (StringWrapper item : overdueFood) {
+            for (Product item : overdueFood) {
                 JSONObject json = item.getJSON();
                 overdueProducts.put(json);
             }

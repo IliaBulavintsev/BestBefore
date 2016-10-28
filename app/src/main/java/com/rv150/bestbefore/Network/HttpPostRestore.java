@@ -11,7 +11,7 @@ import android.widget.Toast;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
-import com.rv150.bestbefore.StringWrapper;
+import com.rv150.bestbefore.Product;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -137,8 +137,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
 
         JSONArray freshJson;
         JSONArray overdueJson;
-        final List<StringWrapper> fresh = new ArrayList<>();
-        final List<StringWrapper> overdue = new ArrayList<>();
+        final List<Product> fresh = new ArrayList<>();
+        final List<Product> overdue = new ArrayList<>();
         try {
             final JSONObject inputJson = new JSONObject(input);
             freshJson = inputJson.getJSONArray("fresh");
@@ -151,7 +151,7 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 String date = item.getString("date");
                 String createdAt = item.getString("createdAt");
                 int quantity = item.getInt("quantity");
-                StringWrapper product = new StringWrapper(name, date, createdAt, quantity);
+                Product product = new Product(name, date, createdAt, quantity);
                 fresh.add(product);
             }
 
@@ -161,7 +161,7 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 String name = item.getString("name");
                 String date = item.getString("date");
                 int quantity = item.getInt("quantity");
-                StringWrapper product = new StringWrapper(name, date, quantity);
+                Product product = new Product(name, date, quantity);
                 overdue.add(product);
             }
         }
@@ -173,8 +173,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
         }
 
 
-        List<StringWrapper> currentFresh = SharedPrefsManager.getFreshProducts(context);
-        List<StringWrapper> currentOverdue = SharedPrefsManager.getOverdueProducts(context);
+        List<Product> currentFresh = SharedPrefsManager.getFreshProducts(context);
+        List<Product> currentOverdue = SharedPrefsManager.getOverdueProducts(context);
         if (!currentFresh.isEmpty() || !currentOverdue.isEmpty()) {
             new AlertDialog.Builder(context)
                     .setTitle(R.string.warning)
@@ -195,7 +195,7 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
         }
     }
 
-    private void saveRestored(List<StringWrapper> fresh, List<StringWrapper> overdue) {
+    private void saveRestored(List<Product> fresh, List<Product> overdue) {
         SharedPrefsManager.saveFreshProducts(fresh, context);
         SharedPrefsManager.saveOverdueProducts(overdue, context);
         Toast toast = Toast.makeText(context,

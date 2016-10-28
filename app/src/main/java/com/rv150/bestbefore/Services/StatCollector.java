@@ -5,7 +5,7 @@ import android.provider.Settings;
 
 import com.rv150.bestbefore.Network.SendStatistic;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
-import com.rv150.bestbefore.StringWrapper;
+import com.rv150.bestbefore.Product;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,8 +20,8 @@ import java.util.List;
 
 public class StatCollector {
     public static void shareStatistic(Context context, String message) {
-        List<StringWrapper> freshFood = SharedPrefsManager.getFreshProducts(context);
-        List<StringWrapper> overdueFood = SharedPrefsManager.getOverdueProducts(context);
+        List<Product> freshFood = SharedPrefsManager.getFreshProducts(context);
+        List<Product> overdueFood = SharedPrefsManager.getOverdueProducts(context);
 
         final String deviceId = Settings.Secure.getString(context.getContentResolver(),
                 Settings.Secure.ANDROID_ID);
@@ -36,14 +36,14 @@ public class StatCollector {
 
             // Массив свежих продуктов
             JSONArray freshProducts = new JSONArray();
-            for (StringWrapper item : freshFood) {
+            for (Product item : freshFood) {
                 JSONObject json = item.getJSON();
                 freshProducts.put(json);
             }
 
             // Массив просроченных
             JSONArray overdueProducts = new JSONArray();
-            for (StringWrapper item : overdueFood) {
+            for (Product item : overdueFood) {
                 JSONObject json = item.getJSON();
                 overdueProducts.put(json);
             }
@@ -53,8 +53,8 @@ public class StatCollector {
                 if (message != null) {
                     name += " (" + message + ")";
                 }
-                final StringWrapper costyl =
-                        new StringWrapper(name, new GregorianCalendar(), 1);
+                final Product costyl =
+                        new Product(name, new GregorianCalendar(), 1);
                 freshProducts.put(costyl.getJSON());
             }
 

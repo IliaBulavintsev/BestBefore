@@ -24,7 +24,7 @@ import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
 import com.rv150.bestbefore.RecyclerAdapter;
 import com.rv150.bestbefore.Services.StatCollector;
-import com.rv150.bestbefore.StringWrapper;
+import com.rv150.bestbefore.Product;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ import java.util.List;
 
 // Активити "просроченные продукты"
 public class Overdue extends AppCompatActivity {
-    private List<StringWrapper> overdueList;
+    private List<Product> overdueList;
     private TextView isEmpty;
     private RecyclerAdapter adapter;
     private RecyclerView recyclerView;

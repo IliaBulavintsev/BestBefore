@@ -40,7 +40,7 @@ import com.rv150.bestbefore.RecyclerAdapter;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
 import com.rv150.bestbefore.Services.StatCollector;
-import com.rv150.bestbefore.StringWrapper;
+import com.rv150.bestbefore.Product;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -51,7 +51,7 @@ import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
-    private List<StringWrapper> wrapperList;
+    private List<Product> wrapperList;
     private SharedPreferences sPrefs;
     private int position = -1;
     private RecyclerAdapter adapter;
@@ -183,13 +183,13 @@ public class MainActivity extends AppCompatActivity {
             String howToSort = sPrefs.getString(Resources.PREF_HOW_TO_SORT, Resources.STANDART);
             switch (howToSort) {
                 case Resources.STANDART:
-                    Collections.sort(wrapperList, StringWrapper.getStandartComparator());
+                    Collections.sort(wrapperList, Product.getStandartComparator());
                     break;
                 case Resources.SPOILED_TO_FRESH:
-                    Collections.sort(wrapperList, StringWrapper.getSpoiledToFreshComparator());
+                    Collections.sort(wrapperList, Product.getSpoiledToFreshComparator());
                     break;
                 case Resources.FRESH_TO_SPOILED:
-                    Collections.sort(wrapperList, StringWrapper.getFreshToSpoiledComparator());
+                    Collections.sort(wrapperList, Product.getFreshToSpoiledComparator());
                     break;
                 default:
                     break;
@@ -318,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
             int quantity = (int) data.getExtras().get(Resources.QUANTITY);
 
             if (resultCode == Resources.RESULT_ADD) {                              // Добавление
-                wrapperList.add(new StringWrapper(name, date, createdAt, quantity));
+                wrapperList.add(new Product(name, date, createdAt, quantity));
 
                 // Справка
                 boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
@@ -335,7 +335,7 @@ public class MainActivity extends AppCompatActivity {
                     editor.apply();
                 }
             } else if (resultCode == Resources.RESULT_MODIFY) {                       // Изменение
-                wrapperList.set(position, new StringWrapper(name, date, createdAt, quantity));
+                wrapperList.set(position, new Product(name, date, createdAt, quantity));
                 position = -1;
             }
 
@@ -578,7 +578,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void runAddActivity(int clickedPosition) {
         Intent intent = new Intent(this, Add.class);
-        final StringWrapper item = wrapperList.get(clickedPosition);
+        final Product item = wrapperList.get(clickedPosition);
         intent.putExtra(Resources.NAME,item.getTitle());
         Calendar date = item.getDate();
         int myDay = date.get(Calendar.DAY_OF_MONTH);

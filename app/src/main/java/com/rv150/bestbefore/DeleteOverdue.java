@@ -15,12 +15,12 @@ import java.util.List;
  * Класс получает на вход список и переносит просроченные в отдельную коллекцию
  */
 public class DeleteOverdue {
-    public static List<String> delete(Context context, List<StringWrapper> wrapperList) {
-        List<StringWrapper> overdued = SharedPrefsManager.getOverdueProducts(context);
+    public static List<String> delete(Context context, List<Product> wrapperList) {
+        List<Product> overdued = SharedPrefsManager.getOverdueProducts(context);
         List<String> newOverdue = new ArrayList<>();
 
-            for (Iterator<StringWrapper> iterator = wrapperList.iterator(); iterator.hasNext(); ) {
-                StringWrapper currentItem = iterator.next();
+            for (Iterator<Product> iterator = wrapperList.iterator(); iterator.hasNext(); ) {
+                Product currentItem = iterator.next();
                 Calendar date = currentItem.getDate();
                 date.set(Calendar.HOUR_OF_DAY, 23);
                 date.set(Calendar.MINUTE, 59);
