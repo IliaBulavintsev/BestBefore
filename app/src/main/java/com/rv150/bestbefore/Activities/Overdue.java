@@ -8,6 +8,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -39,6 +40,8 @@ public class Overdue extends AppCompatActivity {
     private TextView isEmpty;
     private RecyclerAdapter adapter;
     private RecyclerView recyclerView;
+    private int position = -1;
+    private Product deletedProduct;
 
 
     @Override
@@ -95,7 +98,8 @@ public class Overdue extends AppCompatActivity {
 
 
 
-    public void deleteItem(int position) {
+    public void deleteItem() {
+        deletedProduct = overdueList.get(position);
         overdueList.remove(position);
         if (overdueList.isEmpty()) {
             isEmpty.setVisibility(View.VISIBLE);
@@ -105,6 +109,19 @@ public class Overdue extends AppCompatActivity {
         recyclerView.swapAdapter(adapter, false);
         SharedPrefsManager.saveOverdueProducts(overdueList, this);
         StatCollector.shareStatistic(this, "deleted one overdue product");
+    }
+
+    private void restoreItem() {
+        overdueList.add(position, deletedProduct);
+        deletedProduct = null;
+        position = -1;
+        adapter = new RecyclerAdapter(overdueList);
+        recyclerView.swapAdapter(adapter, false);
+        SharedPrefsManager.saveOverdueProducts(overdueList, this);
+        StatCollector.shareStatistic(this, "restored overdue item");
+
+        // Надпись "Список пуст!"
+        isEmpty.setVisibility(View.INVISIBLE);
     }
 
 
@@ -167,8 +184,19 @@ public class Overdue extends AppCompatActivity {
 
                     @Override
                     public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                        final int swipedPosition = viewHolder.getAdapterPosition();;
-                        deleteItem(swipedPosition);
+                        position = viewHolder.getAdapterPosition();;
+                        deleteItem();
+                        View parentLayout = findViewById(R.id.overdue_list);
+                        Snackbar snackbar = Snackbar
+                                .make(parentLayout, R.string.product_has_been_deleted, Snackbar.LENGTH_LONG)
+                                .setAction(R.string.undo, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        restoreItem();
+                                    }
+                                });
+
+                        snackbar.show();
                     }
 
                     @Override

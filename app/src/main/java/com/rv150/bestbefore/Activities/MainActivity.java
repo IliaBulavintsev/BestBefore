@@ -271,12 +271,8 @@ public class MainActivity extends AppCompatActivity {
     public void deleteItem() {
         deletedProduct = wrapperList.get(position);
         wrapperList.remove(position);
-        TextView isEmpty = (TextView)findViewById(R.id.isEmptyText);
         if (wrapperList.isEmpty()) {
             isEmpty.setVisibility(View.VISIBLE);
-        }
-        else {
-            isEmpty.setVisibility(View.INVISIBLE);
         }
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
