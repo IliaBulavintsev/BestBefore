@@ -37,19 +37,19 @@ public class Add extends AppCompatActivity {
     private Spinner spinner;
 
     Calendar currentData = new GregorianCalendar();
-    int DIALOG_DATE = 1;
-    int myYear = currentData.get(Calendar.YEAR);
-    int myMonth = currentData.get(Calendar.MONTH);
-    int myDay = currentData.get(Calendar.DAY_OF_MONTH);
+    private int DIALOG_DATE = 1;
+    private int myYear = currentData.get(Calendar.YEAR);
+    private int myMonth = currentData.get(Calendar.MONTH);
+    private int myDay = currentData.get(Calendar.DAY_OF_MONTH);
 
     private boolean isChanging = false;
 
-    int DayCreated;
-    int MonthCreated;
-    int YearCreated;
-    int HourCreated;
-    int MinuteCreated;
-    int SecondCreated;
+    private int DayCreated;
+    private int MonthCreated;
+    private int YearCreated;
+    private int HourCreated;
+    private int MinuteCreated;
+    private  int SecondCreated;
 
 
 
@@ -63,8 +63,10 @@ public class Add extends AppCompatActivity {
         bestBefore = (TextView)findViewById(R.id.bestBefore);
 
         spinner = (Spinner)findViewById(R.id.spinner);
-        String[] items = new String[]{"суток", "месяцев"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.custom_xml_spinner_layout,items);
+        String[] items = new String[]{
+                getString(R.string.days_in_add_act),
+                getString(R.string.months_in_add_act)};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout,items);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
 
@@ -168,7 +170,6 @@ public class Add extends AppCompatActivity {
 
     public void onRadioOneClick(View view) {
         bestBefore.setVisibility(View.VISIBLE);
-
         days.setVisibility(View.VISIBLE);
         chooseDate2.setText(R.string.chooseDateOfMan);
         chooseDate.setVisibility(View.INVISIBLE);
@@ -186,7 +187,8 @@ public class Add extends AppCompatActivity {
     }
 
     public void onSaveClick(View view) {
-        if ((enterName.getText().toString().equals("")) || (radio1.isChecked() && days.getText().toString().equals(""))
+        if ((enterName.getText().toString().equals("")) ||
+                (radio1.isChecked() && days.getText().toString().equals(""))
                 || quantity.getText().toString().equals("")) {
             Toast toast = Toast.makeText(getApplicationContext(),
                     R.string.please_fill_all_fields, Toast.LENGTH_SHORT);
@@ -199,7 +201,7 @@ public class Add extends AppCompatActivity {
 
 
         String text_spinner = spinner.getSelectedItem().toString();
-        boolean is_days = text_spinner.equals("суток");
+        boolean is_days = text_spinner.equals(getString(R.string.days_in_add_act));
 
 
         if (radio1.isChecked()) {

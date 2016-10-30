@@ -40,13 +40,6 @@
 
 
     <plurals name="numberOfDaysLeft">
-        <!--
-             As a developer, you should always supply "one" and "other"
-             strings. Your translators will know which strings are actually
-             needed for their language. Always include %d in "one" because
-             translators will need to use %d for languages where "one"
-             doesn't mean 1 (as explained above).
-          -->
         <item quantity="zero">Сегодня последний день!</item>
         <item quantity="one">Остался %d день</item>
         <item quantity="two">Осталось %d дня</item>
@@ -54,6 +47,8 @@
         <item quantity="many">Осталось %d дней</item>
         <item quantity="other">Осталось %d дней</item>
     </plurals>
+
+
     <string name="best_before_expires">Срок годности истекает!</string>
     <string name="last_day">Последний день!</string>
     <string name="overdue">Просрочен!</string>
@@ -85,4 +80,7 @@
     <string name="quantity">Количество</string>
     <string name="sync_with_google">Синхронизация с Google</string>
     <string name="nothing_to_backup">Нет данных для бекапа!</string>
+    <string name="sure_you_want_delete_all_products">Вы действительно хотите удалить все продукты?</string>
+    <string name="days_in_add_act">суток</string>
+    <string name="months_in_add_act">месяцев</string>
 </resources>

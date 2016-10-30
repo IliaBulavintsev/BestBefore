@@ -29,7 +29,7 @@ public class MyNotification {
         Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         String text;
         if (days == 0) {
-            text = "Сегодня последний день!";
+            text = res.getString(R.string.today_is_the_last_day);
         }
         else {
             text = context.getResources().getQuantityString(R.plurals.numberOfDaysLeft, days, days);
@@ -37,7 +37,6 @@ public class MyNotification {
 
         builder.setContentIntent(contentIntent)
                 .setSmallIcon(R.drawable.notify)
-                // большая картинка
                 .setLargeIcon(BitmapFactory.decodeResource(res, R.drawable.rrrr))
                 .setTicker(res.getString(R.string.best_before_expires))
                 .setWhen(System.currentTimeMillis())

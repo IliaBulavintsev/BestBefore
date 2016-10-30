@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 
 import com.rv150.bestbefore.Activities.MainActivity;
+import com.rv150.bestbefore.R;
 
 /**
  * Created by ivan on 08.07.2016.
@@ -35,7 +36,9 @@ public class DeleteAllMain extends DialogFragment {
             };
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Вы действительно хотите удалить все продукты?").setPositiveButton("Да", dialogClickListener).setNegativeButton("Нет", dialogClickListener);
+            builder.setMessage(R.string.sure_you_want_delete_all_products).
+                    setPositiveButton(R.string.yes, dialogClickListener).
+                    setNegativeButton(R.string.no, dialogClickListener);
             return builder.create();
         }
     }

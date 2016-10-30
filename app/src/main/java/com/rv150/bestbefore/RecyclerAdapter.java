@@ -19,33 +19,23 @@ import android.widget.TextView;
 public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
 
     private List<Product> items;
-    private List<Product> itemsPendingRemoval;
-
     public RecyclerAdapter(List<Product> items) {
         this.items = items;
     }
 
 
-
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        // Your holder should contain a member variable
-        // for any view that will be set as you render a row
         TextView nameTextView;
         TextView quantityTextView;
         TextView dateTextView;
         TextView daysLeftTextView;
 
-        // We also create a constructor that accepts the entire item row
-        // and does the view lookups to find each subview
         ViewHolder(View itemView) {
-            // Stores the itemView in a public final member variable that can be used
-            // to access the context from any ViewHolder instance.
             super(itemView);
             nameTextView = (TextView) itemView.findViewById(R.id.item_name);
             quantityTextView = (TextView) itemView.findViewById(R.id.item_quantity);
             dateTextView = (TextView) itemView.findViewById(R.id.item_date);
             daysLeftTextView = (TextView) itemView.findViewById(R.id.item_days_left);
-
         }
     }
 
@@ -54,10 +44,7 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
-        // Inflate the custom layout
         View contactView = inflater.inflate(R.layout.recycler_view_item, parent, false);
-
-        // Return a new holder instance
         return new ViewHolder(contactView);
     }
 
@@ -66,13 +53,11 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
     @Override
     public void onBindViewHolder(RecyclerAdapter.ViewHolder viewHolder, int position) {
         final Product item = items.get(position);
-            // we need to show the "normal" state
             viewHolder.itemView.setBackgroundColor(Color.WHITE);
             viewHolder.nameTextView.setVisibility(View.VISIBLE);
             viewHolder.quantityTextView.setVisibility(View.VISIBLE);
             viewHolder.dateTextView.setVisibility(View.VISIBLE);
             viewHolder.daysLeftTextView.setVisibility(View.VISIBLE);
-
 
             TextView name = viewHolder.nameTextView;
             name.setText(item.getTitle());
