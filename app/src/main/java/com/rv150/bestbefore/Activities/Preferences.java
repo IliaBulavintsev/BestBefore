@@ -1,8 +1,14 @@
 package com.rv150.bestbefore.Activities;
 
+import android.app.AlertDialog;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -33,6 +39,7 @@ import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
 import com.rv150.bestbefore.Product;
+import com.rv150.bestbefore.Services.DBHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -107,6 +114,30 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 return true;
             }
         });
+
+
+
+        Preference clearDictionary = findPreference("clear_dictionary");
+        clearDictionary.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                new AlertDialog.Builder(preference.getContext())
+                        .setTitle(R.string.warning)
+                        .setMessage(R.string.sure_you_want_clear_user_dictionary)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                new ClearUserDictionaryTask(getApplicationContext()).execute();
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                       .show();
+                return true;
+            }
+        });
+
+
 
         // Синхронизация
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -433,5 +464,24 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         SharedPreferences.Editor editor = sPrefs.edit();
         editor.putBoolean("auth_flag", value);
         editor.apply();
+    }
+
+
+
+
+    private class ClearUserDictionaryTask extends AsyncTask<String, String, String> {
+
+        Context context;
+        ClearUserDictionaryTask(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected String doInBackground(final String... args) {
+            DBHelper dbHelper = new DBHelper(context);
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            db.execSQL("delete from "+ DBHelper.AutoCompletedProducts.TABLE_NAME);
+            return null;
+        }
     }
 }

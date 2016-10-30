@@ -105,6 +105,12 @@
 
 
 
+
+    <Preference
+        android:key="clear_dictionary"
+        android:title="@string/clear_user_dictionary" />
+
+
     <PreferenceScreen
         android:key="sync"
         android:title="@string/sync_with_google"
