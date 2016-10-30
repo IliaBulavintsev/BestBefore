@@ -6,6 +6,7 @@ package com.rv150.bestbefore;
 public final class Resources {
     public static final String PREF_NEED_RATE = "need_rate";
     public static final String PREF_ALARM_SET = "alarm_set_flag";
+    public static final String PREF_HOURS_NEEDED = "hours_needed_for_rate";
     public static final String PREF_SHOW_WELCOME_SCREEN = "showWelcomeScreen";
     public static final String PREF_SHOW_HELP_AFTER_FIRST_ADD = "showHelpForNewDesign";
     public static final String PREF_INSTALL_DAY = "install_day";

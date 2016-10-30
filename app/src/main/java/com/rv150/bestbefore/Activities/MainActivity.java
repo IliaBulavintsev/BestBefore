@@ -338,6 +338,15 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void delayRateApp() {
+        int hoursNeeded = sPrefs.getInt(Resources.PREF_HOURS_NEEDED, 100);
+        hoursNeeded += 30;
+        SharedPreferences.Editor editor = sPrefs.edit();
+        editor.putInt(Resources.PREF_HOURS_NEEDED, hoursNeeded);
+        editor.apply();
+    }
+
+
     public void onFabClick(View view) {
         Intent intent = new Intent(MainActivity.this, Add.class);
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
@@ -408,18 +417,20 @@ public class MainActivity extends AppCompatActivity {
                 int installDay = sPrefs.getInt(Resources.PREF_INSTALL_DAY, 11);
                 int installMonth = sPrefs.getInt(Resources.PREF_INSTALL_MONTH, 8);
                 int installYear = sPrefs.getInt(Resources.PREF_INSTALL_YEAR, 2016);
+                int hoursNeeded = sPrefs.getInt(Resources.PREF_HOURS_NEEDED, 100);
                 Calendar installedAt = new GregorianCalendar(installYear, installMonth, installDay);
                 Calendar now = new GregorianCalendar();
                 final int MILLI_TO_HOUR = 1000 * 60 * 60;
                 int hours = (int) ((now.getTimeInMillis() - installedAt.getTimeInMillis()) / MILLI_TO_HOUR);
 
                 // кол-во часов с момента установки должно превысить это значение
-                if (hours >= 100) {
+                if (hours >= hoursNeeded) {
                     SharedPreferences.Editor editor = sPrefs.edit();
                     editor.putBoolean(Resources.PREF_NEED_RATE, false);
                     editor.remove(Resources.PREF_INSTALL_YEAR);
                     editor.remove(Resources.PREF_INSTALL_MONTH);
                     editor.remove(Resources.PREF_INSTALL_DAY);
+                    editor.remove(Resources.PREF_HOURS_NEEDED);
                     editor.apply();
 
                     // Вызов окна с предложением оценить приложение

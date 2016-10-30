@@ -29,6 +29,9 @@ public class RateAppDialog extends DialogFragment {
                         ((MainActivity) getActivity()).rateApp();
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
+                        ((MainActivity) getActivity()).delayRateApp();
+                        break;
+                    case DialogInterface.BUTTON_NEUTRAL:
                         ((MainActivity) getActivity()).finishAct();
                         break;
                 }
@@ -37,7 +40,10 @@ public class RateAppDialog extends DialogFragment {
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage(R.string.rate_app_msg).setPositiveButton(R.string.rate, dialogClickListener).setNegativeButton(R.string.no, dialogClickListener);
+        builder.setMessage(R.string.rate_app_msg)
+                .setPositiveButton(R.string.rate, dialogClickListener)
+                .setNeutralButton(R.string.no, dialogClickListener)     // сделано специально для удобного расположения
+                .setNegativeButton(R.string.later, dialogClickListener);
         return builder.create();
     }
 }

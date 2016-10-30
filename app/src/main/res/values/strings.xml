@@ -91,4 +91,5 @@
     <string name="product_has_been_deleted">Продукт удален</string>
     <string name="undo">Отмена</string>
     <string name="feedback">Обратная связь</string>
+    <string name="later">Позже</string>
 </resources>
