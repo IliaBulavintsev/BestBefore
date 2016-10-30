@@ -27,6 +27,7 @@ public final class Resources {
     public static final String STANDART = "STANDART";
     public static final String SPOILED_TO_FRESH = "SPOILED_TO_FRESH";
     public static final String FRESH_TO_SPOILED = "FRESH_TO_SPOILED";
+    public static final String BY_NAME = "BY_NAME";
     public static final String SHOW_OVERDUE_DIALOG = "needShowOverdue";
     public static final String DAY_CREATED = "DayCreated";
     public static final String MONTH_CREATED = "MonthCreated";
@@ -47,4 +48,5 @@ public final class Resources {
     public static final int RESULT_MODIFY = 2;
     public static final int RESULT_EXIT = 0;
     public static final String SERVER_URL = "http://212.109.192.197:8080/";
+    public static final String WHATS_NEW = "whats_new_15";
 }

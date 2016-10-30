@@ -104,7 +104,7 @@ public class Product {
         result.put("name", getTitle());
         result.put("date", getDateStr());
         result.put("createdAt", getCreatedAtStr());
-        result.put("mQuantity", getQuantity());
+        result.put("quantity", getQuantity());
         return result;
     }
 
@@ -148,6 +148,14 @@ public class Product {
                 else {
                     return 1;
                 }
+            }
+        };
+    }
+
+    public static Comparator<Product> getByNameComparator() {
+        return new Comparator<Product>() {
+            public int compare(Product one, Product two) {
+                return one.getTitle().compareTo(two.getTitle());
             }
         };
     }

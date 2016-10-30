@@ -26,7 +26,10 @@
     <string name="rate_app">Оценить приложение</string>
     <string name="help">Справка</string>
     <string name="notifications">Напоминания</string>
-    <string name="whats_new">Что нового?</string>
+    <string name="whats_new_title">Что нового?</string>
+     <string name="whats_new">- Автодополнение призвано облегчить процесс добавления продуктов! Словарный запас основан на популярных наименованиях, а также на введенных Вами продуктах.
+     \n- Теперь можно отменить удаление записи, если Вы передумали :)
+     \n- Появилась сортировка по названию</string>
     <string name="sort">Сортировка</string>
     <string name="last_overdue">Последние просроченные</string>
     <string name="rate_app_msg">Вы не хотели бы оценить приложение в Google Play? Не стесняйтесь писать свои пожелания :)</string>
@@ -85,4 +88,7 @@
     <string name="months_in_add_act">месяцев</string>
     <string name="clear_user_dictionary">Очистить пользовательский словарь</string>
     <string name="sure_you_want_clear_user_dictionary">Вы действительно хотите удалить все запомненные названия добавленных продуктов?</string>
+    <string name="product_has_been_deleted">Продукт удален</string>
+    <string name="undo">Отмена</string>
+    <string name="feedback">Обратная связь</string>
 </resources>

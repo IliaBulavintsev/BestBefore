@@ -18,8 +18,10 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -61,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerAdapter adapter;
     private RecyclerView rvProducts;
     private DBHelper dbHelper;
+    private Product deletedProduct;
+    TextView isEmpty;
 
 
 
@@ -74,6 +78,10 @@ public class MainActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
+        isEmpty = (TextView)findViewById(R.id.isEmptyText);
+        Typeface font = Typeface.createFromAsset(getAssets(), "san.ttf");
+        isEmpty.setTypeface(font);
+
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         rvProducts = (RecyclerView) findViewById(R.id.rvProducts);
 
@@ -85,8 +93,6 @@ public class MainActivity extends AppCompatActivity {
         // DB helper
         dbHelper = new DBHelper(getApplicationContext());
 
-
-        SharedPreferences.Editor editor = sPrefs.edit();
 
         // Что нового?
 
@@ -103,7 +109,9 @@ public class MainActivity extends AppCompatActivity {
                     dialog.dismiss();
                 }
             }).show();
+            SharedPreferences.Editor editor = sPrefs.edit();
             editor.putBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, false);
+            editor.putBoolean(Resources.WHATS_NEW, false);
 
             Calendar installedAt = new GregorianCalendar();
             int installDay = installedAt.get(Calendar.DAY_OF_MONTH);
@@ -116,16 +124,17 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             // Справка
-            boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
-            if (showHelp) {
-                new AlertDialog.Builder(this).setTitle(R.string.help)
-                        .setMessage(R.string.help_add_for_old_users)
+            boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW, true);
+            if (whatsNew) {
+                new AlertDialog.Builder(this).setTitle(R.string.whats_new_title)
+                        .setMessage(R.string.whats_new)
                         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
                         }).show();
-                editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
+                SharedPreferences.Editor editor = sPrefs.edit();
+                editor.putBoolean(Resources.WHATS_NEW, false);
                 editor.apply();
             }
         }
@@ -208,6 +217,9 @@ public class MainActivity extends AppCompatActivity {
                 case Resources.FRESH_TO_SPOILED:
                     Collections.sort(wrapperList, Product.getFreshToSpoiledComparator());
                     break;
+                case Resources.BY_NAME:
+                    Collections.sort(wrapperList, Product.getByNameComparator());
+                    break;
                 default:
                     break;
             }
@@ -222,9 +234,6 @@ public class MainActivity extends AppCompatActivity {
         rvProducts.swapAdapter(adapter, false);
 
         // Надпись "Список пуст!"
-        TextView isEmpty = (TextView)findViewById(R.id.isEmptyText);
-        Typeface font = Typeface.createFromAsset(getAssets(), "san.ttf");
-        isEmpty.setTypeface(font);
         if (wrapperList.isEmpty()) {
             isEmpty.setVisibility(View.VISIBLE);
         }
@@ -259,7 +268,8 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public void deleteItem(int position) {
+    public void deleteItem() {
+        deletedProduct = wrapperList.get(position);
         wrapperList.remove(position);
         TextView isEmpty = (TextView)findViewById(R.id.isEmptyText);
         if (wrapperList.isEmpty()) {
@@ -272,6 +282,19 @@ public class MainActivity extends AppCompatActivity {
         rvProducts.swapAdapter(adapter, false);
         SharedPrefsManager.saveFreshProducts(wrapperList, this);
         StatCollector.shareStatistic(this, "deleted one item");
+    }
+
+    private void restoreItem() {
+        wrapperList.add(position, deletedProduct);
+        deletedProduct = null;
+        position = -1;
+        adapter = new RecyclerAdapter(wrapperList);
+        rvProducts.swapAdapter(adapter, false);
+        SharedPrefsManager.saveFreshProducts(wrapperList, this);
+        StatCollector.shareStatistic(this, "restored item");
+
+        // Надпись "Список пуст!"
+        isEmpty.setVisibility(View.INVISIBLE);
     }
 
     public void deleteAll() {
@@ -471,8 +494,19 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                final int swipedPosition = viewHolder.getAdapterPosition();
-                deleteItem(swipedPosition);
+                position = viewHolder.getAdapterPosition();
+                deleteItem();
+                View parentLayout = findViewById(R.id.rvProducts);
+                Snackbar snackbar = Snackbar
+                        .make(parentLayout, R.string.product_has_been_deleted, Snackbar.LENGTH_LONG)
+                        .setAction(R.string.undo, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                restoreItem();
+                            }
+                        });
+
+                snackbar.show();
             }
 
             @Override

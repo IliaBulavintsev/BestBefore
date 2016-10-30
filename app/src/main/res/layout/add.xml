@@ -184,7 +184,7 @@
             android:layout_height="wrap_content"
             android:text="@string/dateOfMan"
             android:id="@+id/radioButton1"
-            android:checked="true"
+            android:checked="false"
             android:onClick="onRadioOneClick"
             android:textSize="14sp"/>
 
@@ -193,7 +193,7 @@
             android:layout_height="wrap_content"
             android:text="@string/okayBefore"
             android:id="@+id/radioButton2"
-            android:checked="false"
+            android:checked="true"
             android:onClick="onRadioTwoClick"
             android:textSize="14sp"/>
     </RadioGroup>

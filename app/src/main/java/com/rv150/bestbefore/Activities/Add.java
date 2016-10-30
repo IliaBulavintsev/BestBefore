@@ -113,6 +113,15 @@ public class Add extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        // Показать сразу "годен до"
+        chooseDate2.setVisibility(View.VISIBLE);
+        chooseDate2.setText(R.string.chooseDateOfExpiry2);
+        chooseDate.setVisibility(View.VISIBLE);
+        chooseDate.setText(R.string.chooseDateOfExpiry);
+        bestBefore.setVisibility(View.INVISIBLE);
+        spinner.setVisibility(View.INVISIBLE);
+        days.setVisibility(View.INVISIBLE);
+
         Bundle extras = getIntent().getExtras();
         if (extras == null)  {                      // Добавление продукта
             setDateText(myDay, myMonth, myYear);
@@ -135,16 +144,6 @@ public class Add extends AppCompatActivity {
             SecondCreated = extras.getInt(Resources.SECOND_CREATED);
 
             int quantityInt = extras.getInt(Resources.QUANTITY);
-
-            // Показать сразу "годен до"
-            radio2.setChecked(true);
-            chooseDate2.setVisibility(View.VISIBLE);
-            chooseDate2.setText(R.string.chooseDateOfExpiry2);
-            chooseDate.setVisibility(View.VISIBLE);
-            chooseDate.setText(R.string.chooseDateOfExpiry);
-            bestBefore.setVisibility(View.INVISIBLE);
-            spinner.setVisibility(View.INVISIBLE);
-            days.setVisibility(View.INVISIBLE);
             quantity.setText(Integer.toString(quantityInt));
         }
 
@@ -217,6 +216,7 @@ public class Add extends AppCompatActivity {
                 "печень",
                 "пицца",
                 "рис",
+                "рыба",
                 "ряженка",
                 "свинина",
                 "селедка",

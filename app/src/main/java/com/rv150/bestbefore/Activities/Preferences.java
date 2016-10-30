@@ -139,6 +139,20 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
 
+        Preference feedback = findPreference("feedback");
+        feedback.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                String [] addresses = {"rudnev.vanya@gmail.com"};
+                String subject = "Фидбек по приложению \"Срок годности\"";
+                composeEmail(addresses, subject);
+                return true;
+            }
+        });
+
+
+
+
         // Синхронизация
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.CLIENT_ID))
@@ -482,6 +496,17 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             db.execSQL("delete from "+ DBHelper.AutoCompletedProducts.TABLE_NAME);
             return null;
+        }
+    }
+
+
+    private void composeEmail(String[] addresses, String subject) {
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+        intent.putExtra(Intent.EXTRA_EMAIL, addresses);
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
         }
     }
 }
