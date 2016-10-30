@@ -3,10 +3,12 @@ package com.rv150.bestbefore.Activities;
 
 import android.app.DialogFragment;
 import android.app.NotificationManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -39,6 +41,7 @@ import com.rv150.bestbefore.Dialogs.RateAppDialog;
 import com.rv150.bestbefore.RecyclerAdapter;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.StatCollector;
 import com.rv150.bestbefore.Product;
 
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private int position = -1;
     private RecyclerAdapter adapter;
     private RecyclerView rvProducts;
+    private DBHelper dbHelper;
 
 
 
@@ -76,6 +80,9 @@ public class MainActivity extends AppCompatActivity {
         adapter = new RecyclerAdapter(wrapperList);
 
         setUpRecyclerView();
+
+        // DB helper
+        dbHelper = new DBHelper(getApplicationContext());
 
 
         SharedPreferences.Editor editor = sPrefs.edit();
@@ -148,7 +155,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        StatCollector.shareStatistic(this, "no added products :( ");
+
+        if (showWelcomeScreen) {
+            StatCollector.shareStatistic(this, "First launch ");
+        }
+        else {
+            StatCollector.shareStatistic(this, "EMPTY :( ");
+        }
     }
 
 
@@ -343,7 +356,17 @@ public class MainActivity extends AppCompatActivity {
             adapter = new RecyclerAdapter(wrapperList);
             rvProducts.swapAdapter(adapter, false);
 
-            SharedPrefsManager.saveFreshProducts(wrapperList, this);    // Сохраняем настройки
+            SharedPrefsManager.saveFreshProducts(wrapperList, this);    // Сохраняем данные
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+            // Create a new map of values, where column names are the keys
+            ContentValues values = new ContentValues();
+            values.put(DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME, name);
+
+            // Insert the new row, returning the primary key value of the new row
+            db.insert(DBHelper.AutoCompletedProducts.TABLE_NAME, null, values);
+
+
             TextView isEmpty = (TextView) findViewById(R.id.isEmptyText);
             if (wrapperList.isEmpty()) {
                 isEmpty.setVisibility(View.VISIBLE);
@@ -437,7 +460,9 @@ public class MainActivity extends AppCompatActivity {
 
             // not important, we don't want drag & drop
             @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            public boolean onMove(RecyclerView recyclerView,
+                                  RecyclerView.ViewHolder viewHolder,
+                                  RecyclerView.ViewHolder target) {
                 return false;
             }
 
@@ -448,7 +473,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                final int swipedPosition = viewHolder.getAdapterPosition();;
+                final int swipedPosition = viewHolder.getAdapterPosition();
                 deleteItem(swipedPosition);
             }
 

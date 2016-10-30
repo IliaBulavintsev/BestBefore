@@ -3,11 +3,14 @@ package com.rv150.bestbefore.Activities;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -17,9 +20,12 @@ import android.widget.Toast;
 
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
+import com.rv150.bestbefore.Services.DBHelper;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * Created by rv150 on 07.01.2016.
@@ -29,19 +35,15 @@ public class Add extends AppCompatActivity {
     private TextView chooseDate2;
     private TextView bestBefore;
 
-    private EditText enterName;
+    private AutoCompleteTextView enterName;
     private TextView date;
     private EditText days;
     private EditText quantity;
     private RadioButton radio1;
+    private RadioButton radio2;
     private Spinner spinner;
 
-    Calendar currentData = new GregorianCalendar();
     private int DIALOG_DATE = 1;
-    private int myYear = currentData.get(Calendar.YEAR);
-    private int myMonth = currentData.get(Calendar.MONTH);
-    private int myDay = currentData.get(Calendar.DAY_OF_MONTH);
-
     private boolean isChanging = false;
 
     private int DayCreated;
@@ -49,7 +51,15 @@ public class Add extends AppCompatActivity {
     private int YearCreated;
     private int HourCreated;
     private int MinuteCreated;
-    private  int SecondCreated;
+    private int SecondCreated;
+
+    DBHelper dbHelper;
+    SQLiteDatabase db;
+    Cursor cursor;
+
+    private int myYear;
+    private int myMonth;
+    private int myDay;
 
 
 
@@ -61,17 +71,8 @@ public class Add extends AppCompatActivity {
         chooseDate = (TextView)findViewById(R.id.chooseDate);
         chooseDate2 = (TextView)findViewById(R.id.chooseDate2);
         bestBefore = (TextView)findViewById(R.id.bestBefore);
-
         spinner = (Spinner)findViewById(R.id.spinner);
-        String[] items = new String[]{
-                getString(R.string.days_in_add_act),
-                getString(R.string.months_in_add_act)};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout,items);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-
-
-        enterName = (EditText)findViewById(R.id.enterName);
+        enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
         date = (TextView)findViewById(R.id.date);
         days = (EditText)findViewById(R.id.days);
         quantity = (EditText) findViewById(R.id.enterQuantity);
@@ -87,18 +88,35 @@ public class Add extends AppCompatActivity {
         date.setTypeface(font);
         days.setTypeface(font);
         quantity.setTypeface(font);
-
-        if (myMonth < 9) {
-            date.setText(myDay + "." + "0" + (myMonth + 1) + "." + myYear);
-        }
-        else {
-            date.setText(myDay + "." + (myMonth + 1) + "." + myYear);
-        }
         radio1 = (RadioButton)findViewById(R.id.radioButton1);
-        RadioButton radio2 = (RadioButton)findViewById(R.id.radioButton2);
+        radio2 = (RadioButton)findViewById(R.id.radioButton2);
+
+        String[] spinnerItems = new String[]{
+                getString(R.string.days_in_add_act),
+                getString(R.string.months_in_add_act)};
+        ArrayAdapter<String> spinnerAdapter =
+                new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, spinnerItems);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(spinnerAdapter);
+
+        dbHelper = new DBHelper(getApplicationContext());
+
+        // Инициализация переменных сегодняшним числом
+        Calendar currentData = new GregorianCalendar();
+        myYear = currentData.get(Calendar.YEAR);
+        myMonth = currentData.get(Calendar.MONTH);
+        myDay = currentData.get(Calendar.DAY_OF_MONTH);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
         Bundle extras = getIntent().getExtras();
-        if (extras != null) {                       // Изменение
+        if (extras == null)  {                      // Добавление продукта
+            setDateText(myDay, myMonth, myYear);
+        }
+        else  {                                     // Изменение продукта
             isChanging = true;
             setTitle(R.string.changing_product);
             String nameStr = extras.getString("name");
@@ -106,6 +124,7 @@ public class Add extends AppCompatActivity {
             myDay = extras.getInt(Resources.MY_DAY);
             myMonth = extras.getInt(Resources.MY_MONTH);
             myYear = extras.getInt(Resources.MY_YEAR);
+            setDateText(myDay, myMonth, myYear);
 
             DayCreated = extras.getInt(Resources.DAY_CREATED);
             MonthCreated = extras.getInt(Resources.MONTH_CREATED);
@@ -115,14 +134,6 @@ public class Add extends AppCompatActivity {
             SecondCreated = extras.getInt(Resources.SECOND_CREATED);
 
             int quantityInt = extras.getInt(Resources.QUANTITY);
-
-
-            if (myMonth < 9) {
-                date.setText(myDay + "." + "0" + (myMonth + 1) + "." + myYear);
-            }
-            else {
-                date.setText(myDay + "." + (myMonth + 1) + "." + myYear);
-            }
 
             // Показать сразу "годен до"
             radio2.setChecked(true);
@@ -136,7 +147,46 @@ public class Add extends AppCompatActivity {
             quantity.setText(Integer.toString(quantityInt));
         }
 
+
+        db = dbHelper.getReadableDatabase();
+
+        //получаем данные из бд
+        cursor =  db.rawQuery("select " + DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME +
+                " from "+ DBHelper.AutoCompletedProducts.TABLE_NAME, null);
+
+        String[] projection = {
+                DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME
+        };
+
+        String sortOrder =
+                DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME + " ASC";
+
+       cursor = db.query(
+                DBHelper.AutoCompletedProducts.TABLE_NAME, // The table to query
+                projection,                               // The columns to return
+                null,                                   // The columns for the WHERE clause
+                null,                                     // The values for the WHERE clause
+                null,                                     // don't group the rows
+                null,                                     // don't filter by row groups
+                sortOrder                                 // The sort order
+        );
+
+        List<String> items = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            final String product = cursor.getString(
+                    cursor.getColumnIndexOrThrow(DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME));
+            items.add(product);
+        }
+        cursor.close();
+
+        if (!items.isEmpty()) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>
+                    (this, R.layout.support_simple_spinner_dropdown_item, items);
+            enterName.setAdapter(adapter);
+        }
     }
+
+
 
 
 
@@ -154,12 +204,7 @@ public class Add extends AppCompatActivity {
             myYear = year;
             myMonth = monthOfYear;
             myDay = dayOfMonth;
-            if (myMonth < 9) {
-                date.setText(myDay + "." + "0" + (myMonth + 1) + "." + myYear);
-            }
-            else {
-                date.setText(myDay + "." + (myMonth + 1) + "." + myYear);
-            }
+            setDateText(myDay, myMonth, myYear);
         }
     };
 
@@ -255,7 +300,8 @@ public class Add extends AppCompatActivity {
         final int quant = Integer.parseInt(quantity.getText().toString());
         intent.putExtra(Resources.QUANTITY, quant);
         if (isChanging) {
-            Calendar createdAt = new GregorianCalendar(YearCreated, MonthCreated, DayCreated, HourCreated, MinuteCreated, SecondCreated);
+            Calendar createdAt = new GregorianCalendar(YearCreated, MonthCreated,
+                    DayCreated, HourCreated, MinuteCreated, SecondCreated);
             intent.putExtra(Resources.CREATED_AT, createdAt);
             setResult(Resources.RESULT_MODIFY, intent);   // Изменениe
         }
@@ -271,12 +317,21 @@ public class Add extends AppCompatActivity {
         finish();
     }
 
-    public int compare(Calendar d1, Calendar d2) {
+    private int compare(Calendar d1, Calendar d2) {
         if (d1.get(Calendar.YEAR) != d2.get(Calendar.YEAR))
             return d1.get(Calendar.YEAR) - d2.get(Calendar.YEAR);
         if (d1.get(Calendar.MONTH) != d2.get(Calendar.MONTH))
             return d1.get(Calendar.MONTH) - d2.get(Calendar.MONTH);
         return d1.get(Calendar.DAY_OF_MONTH) - d2.get(Calendar.DAY_OF_MONTH);
+    }
+
+    private void setDateText(int day, int month, int year) {
+        if (month < 9) {
+            date.setText(day + "." + "0" + (month + 1) + "." + year);
+        }
+        else {
+            date.setText(day + "." + (month + 1) + "." + year);
+        }
     }
 }
 
