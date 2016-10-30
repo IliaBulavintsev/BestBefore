@@ -23,6 +23,7 @@ import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -148,12 +149,6 @@ public class Add extends AppCompatActivity {
         }
 
 
-        db = dbHelper.getReadableDatabase();
-
-        //получаем данные из бд
-        cursor =  db.rawQuery("select " + DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME +
-                " from "+ DBHelper.AutoCompletedProducts.TABLE_NAME, null);
-
         String[] projection = {
                 DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME
         };
@@ -161,6 +156,8 @@ public class Add extends AppCompatActivity {
         String sortOrder =
                 DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME + " ASC";
 
+       //получаем данные из бд
+       db = dbHelper.getReadableDatabase();
        cursor = db.query(
                 DBHelper.AutoCompletedProducts.TABLE_NAME, // The table to query
                 projection,                               // The columns to return
@@ -171,21 +168,106 @@ public class Add extends AppCompatActivity {
                 sortOrder                                 // The sort order
         );
 
+
+        String [] popularProducts = {
+                "баранина",
+                "бекон",
+                "брокколи",
+                "брынза",
+                "буженина",
+                "ветчина",
+                "говядина",
+                "икра",
+                "икра красная",
+                "икра кабачковая",
+                "йогурт",
+                "кетчуп",
+                "кефир",
+                "капуста",
+                "капуста квашеная",
+                "капуста цветная",
+                "колбаса",
+                "колбаса вареная",
+                "колбаса сырокопченая",
+                "колбаса варено-копченая",
+                "колбаса докторская",
+                "колбаса сервелат",
+                "креветки",
+                "крылышки",
+                "кукуруза",
+                "курица",
+                "лосось",
+                "макароны",
+                "майонез",
+                "маслины",
+                "масло",
+                "масло сливочное",
+                "масло подсолнечное",
+                "масло оливковое",
+                "молоко",
+                "мороженое",
+                "мясо",
+                "окунь",
+                "окорок",
+                "оливки",
+                "осетр",
+                "паштет",
+                "пельмени",
+                "печенье",
+                "печень",
+                "пицца",
+                "рис",
+                "ряженка",
+                "свинина",
+                "селедка",
+                "сливки",
+                "сметана",
+                "сок",
+                "сок яблочный",
+                "сок вишневый",
+                "сок мультифруктовый",
+                "сок апельсиновый",
+                "сок виноградный",
+                "сок томатный",
+                "сок ананасовый",
+                "сосиски",
+                "судак",
+                "скумбрия",
+                "сыр",
+                "сыр плавленый",
+                "сырок глазированный",
+                "творог",
+                "творог обезжиренный",
+                "творог полужирный",
+                "творог жирный",
+                "томатная паста",
+                "телятина",
+                "фарш",
+                "хрен",
+                "шампиньоны",
+                "яйцо куриное",
+                "яйцо перепелиное"
+        };
+
+
+
         List<String> items = new ArrayList<>();
+        items.addAll(Arrays.asList(popularProducts));
+
         while (cursor.moveToNext()) {
-            final String product = cursor.getString(
+            String product = cursor.getString(
                     cursor.getColumnIndexOrThrow(DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME));
-            items.add(product);
+            product = product.toLowerCase();
+            if (!items.contains(product)) {
+                items.add(product);
+            }
         }
         cursor.close();
 
-        if (!items.isEmpty()) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>
+        ArrayAdapter<String> adapter = new ArrayAdapter<>
                     (this, R.layout.support_simple_spinner_dropdown_item, items);
-            enterName.setAdapter(adapter);
-        }
+        enterName.setAdapter(adapter);
     }
-
 
 
 

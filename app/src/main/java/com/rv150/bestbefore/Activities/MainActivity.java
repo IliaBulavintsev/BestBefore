@@ -16,6 +16,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -94,7 +95,10 @@ public class MainActivity extends AppCompatActivity {
         // показ приветственного сообщения
         if (showWelcomeScreen) {
             String whatsNewText = getResources().getString(R.string.welcomeText);
-            new AlertDialog.Builder(this).setTitle(R.string.welcomeTitle).setMessage(whatsNewText).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.welcomeTitle)
+                    .setMessage(whatsNewText)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
                 }
@@ -244,6 +248,8 @@ public class MainActivity extends AppCompatActivity {
             editor.putBoolean(Resources.PREF_ALARM_SET, true);
         }
         editor.apply();
+
+        new InsertDataTask(wrapperList).execute();
     }
 
 
@@ -357,14 +363,6 @@ public class MainActivity extends AppCompatActivity {
             rvProducts.swapAdapter(adapter, false);
 
             SharedPrefsManager.saveFreshProducts(wrapperList, this);    // Сохраняем данные
-            SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-            // Create a new map of values, where column names are the keys
-            ContentValues values = new ContentValues();
-            values.put(DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME, name);
-
-            // Insert the new row, returning the primary key value of the new row
-            db.insert(DBHelper.AutoCompletedProducts.TABLE_NAME, null, values);
 
 
             TextView isEmpty = (TextView) findViewById(R.id.isEmptyText);
@@ -629,5 +627,26 @@ public class MainActivity extends AppCompatActivity {
 
         intent.putExtra(Resources.QUANTITY, item.getQuantity());
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
+    }
+
+
+    private class InsertDataTask extends AsyncTask<String, String, String> {
+
+        List<Product> insertedData;
+        InsertDataTask(List<Product> insertedData) {
+            this.insertedData = insertedData;
+        }
+        @Override
+        protected String doInBackground(final String... args) {
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+            // Create a new map of values, where column names are the keys
+            ContentValues values = new ContentValues();
+            for (Product item: insertedData) {
+                values.put(DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME, item.getTitle());
+                db.insert(DBHelper.AutoCompletedProducts.TABLE_NAME, null, values);
+            }
+            return null;
+        }
     }
 }
