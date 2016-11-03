@@ -18,11 +18,11 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -33,8 +33,15 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.model.DividerDrawerItem;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.rv150.bestbefore.ItemClickSupport;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Dialogs.DeleteAllMain;
@@ -64,8 +71,12 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvProducts;
     private DBHelper dbHelper;
     private Product deletedProduct;
-    TextView isEmpty;
+    private TextView isEmpty;
+    private ListView drawerList;
+    private DrawerLayout drawerLayout;
 
+    String [] mPlanetTitles = {"All", "Meat", "Vegetables"};
+    private Drawer drawer;
 
 
     @Override
@@ -92,6 +103,44 @@ public class MainActivity extends AppCompatActivity {
 
         // DB helper
         dbHelper = new DBHelper(getApplicationContext());
+
+        String [] mPlanetTitles = {"All", "Meat", "Vegetables"};
+
+
+//        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+//        drawerList = (ListView) findViewById(R.id.left_drawer);
+//
+//        // Set the adapter for the list view
+//        drawerList.setAdapter(new ArrayAdapter<>(this,
+//                R.layout.drawer_list_item, mPlanetTitles));
+//        // Set the list's click listener
+//        drawerList.setOnItemClickListener(new DrawerItemClickListener());
+
+
+
+        PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName("Primary Item");
+        SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName(R.string.settings);
+
+//create the drawer and remember the `Drawer` result object
+        drawer = new DrawerBuilder()
+                .withActivity(this)
+                .withToolbar(toolbar)
+                .withHeader(R.layout.drawer_header)
+                .addDrawerItems(
+                        item1,
+                        new DividerDrawerItem(),
+                        item2,
+                        new SecondaryDrawerItem()
+                )
+                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                    @Override
+                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                        drawerPushed(position, drawerItem);
+                        return true;
+                    }
+                })
+                .build();
+
 
 
         // Что нового?
@@ -177,6 +226,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+
+    private void drawerPushed (int position, IDrawerItem drawerItem) {
+        drawer.closeDrawer();
+
+    }
 
 
 
