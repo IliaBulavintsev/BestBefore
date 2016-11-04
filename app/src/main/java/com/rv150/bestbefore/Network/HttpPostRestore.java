@@ -10,7 +10,7 @@ import android.widget.Toast;
 
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.Preferences.ProductDAO;
 import com.rv150.bestbefore.Product;
 
 import org.json.JSONArray;
@@ -151,7 +151,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 String date = item.getString("date");
                 String createdAt = item.getString("createdAt");
                 int quantity = item.getInt("quantity");
-                Product product = new Product(name, date, createdAt, quantity);
+                long groupId = item.getLong("groupId");
+                Product product = new Product(name, date, createdAt, quantity, groupId);
                 fresh.add(product);
             }
 
@@ -161,7 +162,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 String name = item.getString("name");
                 String date = item.getString("date");
                 int quantity = item.getInt("quantity");
-                Product product = new Product(name, date, quantity);
+                long groupId = item.getLong("groupId");
+                Product product = new Product(name, date, quantity, groupId);
                 overdue.add(product);
             }
         }
@@ -173,8 +175,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
         }
 
 
-        List<Product> currentFresh = SharedPrefsManager.getFreshProducts(context);
-        List<Product> currentOverdue = SharedPrefsManager.getOverdueProducts(context);
+        List<Product> currentFresh = ProductDAO.getFreshProducts(context);
+        List<Product> currentOverdue = ProductDAO.getOverdueProducts(context);
         if (!currentFresh.isEmpty() || !currentOverdue.isEmpty()) {
             new AlertDialog.Builder(context)
                     .setTitle(R.string.warning)
@@ -196,8 +198,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
     }
 
     private void saveRestored(List<Product> fresh, List<Product> overdue) {
-        SharedPrefsManager.saveFreshProducts(fresh, context);
-        SharedPrefsManager.saveOverdueProducts(overdue, context);
+        ProductDAO.saveFreshProducts(fresh, context);
+        ProductDAO.saveOverdueProducts(overdue, context);
         Toast toast = Toast.makeText(context,
                 R.string.restore_success, Toast.LENGTH_SHORT);
         toast.show();

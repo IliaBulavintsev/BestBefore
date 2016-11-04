@@ -39,10 +39,11 @@ public final class Resources {
     public static final String MY_DAY = "myDay";
     public static final String MY_MONTH = "myMonth";
     public static final String MY_YEAR = "myYear";
-    public static final String CREATED_AT = "getCreatedAt";
+    public static final String CREATED_AT = "createdAt";
     public static final String NAME = "name";
     public static final String DATE = "date";
     public static final String QUANTITY = "quantity";
+    public static final String _ID = "ID";
     public static final int RC_ADD_ACTIVITY = 0;
     public static final int RC_SIGN_IN = 1;
     public static final int RESULT_ADD = 1;

@@ -22,7 +22,7 @@ import android.widget.TextView;
 
 import com.rv150.bestbefore.Dialogs.DeleteAllOverdued;
 import com.rv150.bestbefore.R;
-import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.Preferences.ProductDAO;
 import com.rv150.bestbefore.RecyclerAdapter;
 import com.rv150.bestbefore.Services.StatCollector;
 import com.rv150.bestbefore.Product;
@@ -63,7 +63,7 @@ public class Overdue extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        overdueList = SharedPrefsManager.getOverdueProducts(this); // обновляем overdueList в соотв. с сохраненными данными
+        overdueList = ProductDAO.getOverdueProducts(this); // обновляем overdueList в соотв. с сохраненными данными
 
         adapter = new RecyclerAdapter(overdueList);
         recyclerView.swapAdapter(adapter, false);
@@ -107,7 +107,7 @@ public class Overdue extends AppCompatActivity {
 
         adapter = new RecyclerAdapter(overdueList);
         recyclerView.swapAdapter(adapter, false);
-        SharedPrefsManager.saveOverdueProducts(overdueList, this);
+        ProductDAO.saveOverdueProducts(overdueList, this);
         StatCollector.shareStatistic(this, "deleted one overdue product");
     }
 
@@ -117,7 +117,7 @@ public class Overdue extends AppCompatActivity {
         position = -1;
         adapter = new RecyclerAdapter(overdueList);
         recyclerView.swapAdapter(adapter, false);
-        SharedPrefsManager.saveOverdueProducts(overdueList, this);
+        ProductDAO.saveOverdueProducts(overdueList, this);
         StatCollector.shareStatistic(this, "restored overdue item");
 
         // Надпись "Список пуст!"
@@ -128,7 +128,7 @@ public class Overdue extends AppCompatActivity {
 
     public void clearList() {
         overdueList.clear();
-        SharedPrefsManager.saveOverdueProducts(overdueList, this);
+        ProductDAO.saveOverdueProducts(overdueList, this);
         adapter = new RecyclerAdapter(overdueList);
         recyclerView.swapAdapter(adapter, false);
         isEmpty.setVisibility(View.VISIBLE);

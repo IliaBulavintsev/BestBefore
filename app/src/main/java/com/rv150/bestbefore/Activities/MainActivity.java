@@ -22,7 +22,6 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -33,7 +32,6 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.mikepenz.materialdrawer.Drawer;
@@ -50,12 +48,11 @@ import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Dialogs.RateAppDialog;
 import com.rv150.bestbefore.RecyclerAdapter;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.Preferences.ProductDAO;
 import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.StatCollector;
 import com.rv150.bestbefore.Product;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
@@ -72,10 +69,8 @@ public class MainActivity extends AppCompatActivity {
     private DBHelper dbHelper;
     private Product deletedProduct;
     private TextView isEmpty;
-    private ListView drawerList;
-    private DrawerLayout drawerLayout;
+    private ProductDAO productDAO;
 
-    String [] mPlanetTitles = {"All", "Meat", "Vegetables"};
     private Drawer drawer;
 
 
@@ -93,31 +88,19 @@ public class MainActivity extends AppCompatActivity {
         Typeface font = Typeface.createFromAsset(getAssets(), "san.ttf");
         isEmpty.setTypeface(font);
 
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        rvProducts = (RecyclerView) findViewById(R.id.rvProducts);
-
-        wrapperList = new ArrayList<>();
-        adapter = new RecyclerAdapter(wrapperList);
-
-        setUpRecyclerView();
-
         // DB helper
         dbHelper = new DBHelper(getApplicationContext());
+        productDAO = new ProductDAO(getApplicationContext());
+
+        rvProducts = (RecyclerView) findViewById(R.id.rvProducts);
+        wrapperList = productDAO.getAllFromDB();
+        setUpRecyclerView();
+
+
+
+
 
         String [] mPlanetTitles = {"All", "Meat", "Vegetables"};
-
-
-//        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-//        drawerList = (ListView) findViewById(R.id.left_drawer);
-//
-//        // Set the adapter for the list view
-//        drawerList.setAdapter(new ArrayAdapter<>(this,
-//                R.layout.drawer_list_item, mPlanetTitles));
-//        // Set the list's click listener
-//        drawerList.setOnItemClickListener(new DrawerItemClickListener());
-
-
-
         PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName("Primary Item");
         SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName(R.string.settings);
 
@@ -189,33 +172,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        rvProducts.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy)
-            {
-                if (dy > 0)
-                {
-                    fab.hide();
-                }
-                else {
-                    fab.show();
-                }
-            }
 
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState)
-            {
-                super.onScrollStateChanged(recyclerView, newState);
-            }
-        });
-
-        ItemClickSupport.addTo(rvProducts).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
-            @Override
-            public void onItemClicked(RecyclerView recyclerView, int pos, View v) {
-                position = pos;
-                runAddActivity(position);
-            }
-        });
 
 
         if (showWelcomeScreen) {
@@ -241,8 +198,6 @@ public class MainActivity extends AppCompatActivity {
 
         NotificationManager notifManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notifManager.cancelAll();
-
-        wrapperList = SharedPrefsManager.getFreshProducts(this); // обновляем wrapperList в соотв. с сохраненными данными
 
 
         // Удаление просроченных
@@ -282,9 +237,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        SharedPrefsManager.saveFreshProducts(wrapperList, this); // Сохраняем возможные изменения
-
-
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
 
@@ -313,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
         }
         editor.apply();
 
-        new InsertDataTask(wrapperList).execute();
+        new InsertForAutocomplete(wrapperList).execute();
     }
 
 
@@ -331,36 +283,33 @@ public class MainActivity extends AppCompatActivity {
         }
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
-        SharedPrefsManager.saveFreshProducts(wrapperList, this);
+        productDAO.deleteProduct(deletedProduct.getId());
         StatCollector.shareStatistic(this, "deleted one item");
     }
 
     private void restoreItem() {
         wrapperList.add(position, deletedProduct);
+        productDAO.insertProduct(deletedProduct);
         deletedProduct = null;
         position = -1;
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
-        SharedPrefsManager.saveFreshProducts(wrapperList, this);
         StatCollector.shareStatistic(this, "restored item");
-
         // Надпись "Список пуст!"
         isEmpty.setVisibility(View.INVISIBLE);
     }
 
     public void deleteAll() {
+        productDAO.deleteProducts(wrapperList);
         wrapperList.clear();
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
-        SharedPrefsManager.saveFreshProducts(wrapperList, this);
-        TextView isEmpty = (TextView)findViewById(R.id.isEmptyText);
         isEmpty.setVisibility(View.VISIBLE);
         StatCollector.shareStatistic(this, "deleted all fresh products");
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -416,11 +365,15 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == Resources.RC_ADD_ACTIVITY && resultCode != Resources.RESULT_EXIT) {
             String name = data.getExtras().getString(Resources.NAME);
             Calendar date = (Calendar) data.getExtras().get(Resources.DATE);
-            Calendar createdAt = (Calendar) data.getExtras().get(Resources.CREATED_AT);
             int quantity = (int) data.getExtras().get(Resources.QUANTITY);
 
+
             if (resultCode == Resources.RESULT_ADD) {                              // Добавление
-                wrapperList.add(new Product(name, date, createdAt, quantity));
+                Calendar createdAt = new GregorianCalendar();
+                Product newProduct = new Product(name, date, createdAt, quantity, null);
+                long id = productDAO.insertProduct(newProduct);
+                newProduct.setId(id);
+                wrapperList.add(newProduct);
 
                 // Справка
                 boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
@@ -436,8 +389,12 @@ public class MainActivity extends AppCompatActivity {
                     editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
                     editor.apply();
                 }
-            } else if (resultCode == Resources.RESULT_MODIFY) {                       // Изменение
-                wrapperList.set(position, new Product(name, date, createdAt, quantity));
+            } else if (resultCode == Resources.RESULT_MODIFY) {               // Изменение
+                Product product = wrapperList.get(position);
+                product.setTitle(name);
+                product.setDate(date);
+                product.setQuantity(quantity);
+                productDAO.updateProduct(product);
                 position = -1;
             }
 
@@ -445,7 +402,6 @@ public class MainActivity extends AppCompatActivity {
             adapter = new RecyclerAdapter(wrapperList);
             rvProducts.swapAdapter(adapter, false);
 
-            SharedPrefsManager.saveFreshProducts(wrapperList, this);    // Сохраняем данные
 
 
             TextView isEmpty = (TextView) findViewById(R.id.isEmptyText);
@@ -507,11 +463,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void setUpRecyclerView() {
-        // Attach the adapter to the recyclerview to populate items
 
-
-        rvProducts.setAdapter(adapter);
-        // Set layout manager to position the items
         rvProducts.setLayoutManager(new LinearLayoutManager(this));
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvProducts.getContext(),
@@ -519,6 +471,35 @@ public class MainActivity extends AppCompatActivity {
         rvProducts.addItemDecoration(dividerItemDecoration);
         setUpItemTouchHelper();
         setUpAnimationDecoratorHelper();
+
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        rvProducts.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy)
+            {
+                if (dy > 0)
+                {
+                    fab.hide();
+                }
+                else {
+                    fab.show();
+                }
+            }
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState)
+            {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+        });
+
+        ItemClickSupport.addTo(rvProducts).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+            @Override
+            public void onItemClicked(RecyclerView recyclerView, int pos, View v) {
+                position = pos;
+                runAddActivity(position);
+            }
+        });
     }
 
 
@@ -700,36 +681,16 @@ public class MainActivity extends AppCompatActivity {
         final Product item = wrapperList.get(clickedPosition);
         intent.putExtra(Resources.NAME,item.getTitle());
         Calendar date = item.getDate();
-        int myDay = date.get(Calendar.DAY_OF_MONTH);
-        int myMonth = date.get(Calendar.MONTH);
-        int myYear = date.get(Calendar.YEAR);
-        intent.putExtra(Resources.MY_DAY, myDay);
-        intent.putExtra(Resources.MY_MONTH, myMonth);
-        intent.putExtra(Resources.MY_YEAR, myYear);
-
-        Calendar createdAt = item.getCreatedAt();
-        int DayCreated = createdAt.get(Calendar.DAY_OF_MONTH);
-        int MonthCreated = createdAt.get(Calendar.MONTH);
-        int YearCreated = createdAt.get(Calendar.YEAR);
-        int HourCreated = createdAt.get(Calendar.HOUR_OF_DAY);
-        int MinuteCreated = createdAt.get(Calendar.MINUTE);
-        int SecondCreated = createdAt.get(Calendar.SECOND);
-        intent.putExtra(Resources.DAY_CREATED, DayCreated);
-        intent.putExtra(Resources.MONTH_CREATED, MonthCreated);
-        intent.putExtra(Resources.YEAR_CREATED, YearCreated);
-        intent.putExtra(Resources.HOUR_CREATED, HourCreated);
-        intent.putExtra(Resources.MINUTE_CREATED, MinuteCreated);
-        intent.putExtra(Resources.SECOND_CREATED, SecondCreated);
-
+        intent.putExtra(Resources.DATE, date);
         intent.putExtra(Resources.QUANTITY, item.getQuantity());
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 
 
-    private class InsertDataTask extends AsyncTask<String, String, String> {
+    private class InsertForAutocomplete extends AsyncTask<String, String, String> {
 
         List<Product> insertedData;
-        InsertDataTask(List<Product> insertedData) {
+        InsertForAutocomplete(List<Product> insertedData) {
             this.insertedData = insertedData;
         }
         @Override

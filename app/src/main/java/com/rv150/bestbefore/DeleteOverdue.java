@@ -2,7 +2,7 @@ package com.rv150.bestbefore;
 
 import android.content.Context;
 
-import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.Preferences.ProductDAO;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class DeleteOverdue {
     public static List<String> delete(Context context, List<Product> wrapperList) {
-        List<Product> overdued = SharedPrefsManager.getOverdueProducts(context);
+        List<Product> overdued = ProductDAO.getOverdueProducts(context);
         List<String> newOverdue = new ArrayList<>();
 
             for (Iterator<Product> iterator = wrapperList.iterator(); iterator.hasNext(); ) {
@@ -56,7 +56,7 @@ public class DeleteOverdue {
                     iterator.remove();  // И удаляем из основого списка
                 }
             }
-        SharedPrefsManager.saveOverdueProducts(overdued, context);
+        ProductDAO.saveOverdueProducts(overdued, context);
         // Сoхраняем просроченные, а wrapperList сохранится в MainActivity
         return newOverdue;
     }

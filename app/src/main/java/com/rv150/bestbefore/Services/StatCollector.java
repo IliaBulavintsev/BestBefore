@@ -4,7 +4,7 @@ import android.content.Context;
 import android.provider.Settings;
 
 import com.rv150.bestbefore.Network.SendStatistic;
-import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.Preferences.ProductDAO;
 import com.rv150.bestbefore.Product;
 
 import org.json.JSONArray;
@@ -20,8 +20,8 @@ import java.util.List;
 
 public class StatCollector {
     public static void shareStatistic(Context context, String message) {
-        List<Product> freshFood = SharedPrefsManager.getFreshProducts(context);
-        List<Product> overdueFood = SharedPrefsManager.getOverdueProducts(context);
+        List<Product> freshFood = ProductDAO.getFreshProducts(context);
+        List<Product> overdueFood = ProductDAO.getOverdueProducts(context);
 
         final String deviceId = Settings.Secure.getString(context.getContentResolver(),
                 Settings.Secure.ANDROID_ID);
@@ -54,7 +54,7 @@ public class StatCollector {
                     name += " (" + message + ")";
                 }
                 final Product costyl =
-                        new Product(name, new GregorianCalendar(), 1);
+                        new Product(name, new GregorianCalendar(), 1, null);
                 freshProducts.put(costyl.getJSON());
             }
 

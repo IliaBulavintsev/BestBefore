@@ -14,25 +14,28 @@ public class Product {
     private String mTitle;
     private Calendar mDate;
     private Calendar mCreatedAt;
-    final private int mQuantity;
+    private int mQuantity;
+    private Long groupId;
+    private long id;
 
 
-    public Product(String mTitle, Calendar mDate, int quantity) {
-        this(mTitle, mDate, new GregorianCalendar(), quantity);
+    public Product(String title, Calendar date, int quantity, Long groupId) {
+        this(title, date, new GregorianCalendar(), quantity, groupId);
     }
 
-    public Product(String title, Calendar date, Calendar createdAt, int quantity) {
+    public Product(String title, Calendar date, Calendar createdAt, int quantity, Long groupId) {
         this.mTitle = title;
         this.mDate = date;
         this.mCreatedAt = createdAt;
         this.mQuantity = quantity;
+        this.groupId = groupId;
     }
 
-    public Product(String title, String date, int quantity) {
-        this(title, date, null, quantity);
+    public Product(String title, String date, int quantity, Long groupId) {
+        this(title, date, null, quantity, groupId);
     }
 
-    public Product(String title, String date, String createdAt, int quantity) {
+    public Product(String title, String date, String createdAt, int quantity, Long groupId) {
         this.mTitle = title;
         String[] array = date.split("\\.");
         int myDay = Integer.parseInt(array[0]);
@@ -55,8 +58,16 @@ public class Product {
                     (Year, Month, Day, Hour, Minute, Second);
         }
         this.mQuantity = quantity;
+        this.groupId = groupId;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getTitle() {
         return mTitle;
@@ -105,6 +116,7 @@ public class Product {
         result.put("date", getDateStr());
         result.put("createdAt", getCreatedAtStr());
         result.put("quantity", getQuantity());
+        result.put("group_id", getGroupId());
         return result;
     }
 
@@ -112,6 +124,13 @@ public class Product {
         return mQuantity;
     }
 
+    public void setQuantity(int quantity) {
+        this.mQuantity = quantity;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
 
     public static Comparator<Product> getFreshToSpoiledComparator() {
         return new Comparator<Product>() {

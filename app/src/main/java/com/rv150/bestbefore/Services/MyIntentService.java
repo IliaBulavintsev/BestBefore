@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.Preferences.ProductDAO;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.MyNotification;
 import com.rv150.bestbefore.Resources;
@@ -26,7 +26,7 @@ public class MyIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        List<Product> wrapperList = SharedPrefsManager.getFreshProducts(this);
+        List<Product> wrapperList = ProductDAO.getFreshProducts(this);
         SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         int ID = intent.getIntExtra("id", -1);

@@ -34,33 +34,23 @@ import java.util.List;
 public class Add extends AppCompatActivity {
     private TextView chooseDate;
     private TextView chooseDate2;
-    private TextView bestBefore;
+    private TextView bestBeforeTxt;
 
     private AutoCompleteTextView enterName;
     private TextView date;
     private EditText days;
     private EditText quantity;
     private RadioButton radio1;
-    private RadioButton radio2;
     private Spinner spinner;
 
     private int DIALOG_DATE = 1;
     private boolean isChanging = false;
-
-    private int DayCreated;
-    private int MonthCreated;
-    private int YearCreated;
-    private int HourCreated;
-    private int MinuteCreated;
-    private int SecondCreated;
+    private Calendar bestBefore;
 
     DBHelper dbHelper;
     SQLiteDatabase db;
     Cursor cursor;
 
-    private int myYear;
-    private int myMonth;
-    private int myDay;
 
 
 
@@ -71,7 +61,7 @@ public class Add extends AppCompatActivity {
         TextView name = (TextView)findViewById(R.id.name);
         chooseDate = (TextView)findViewById(R.id.chooseDate);
         chooseDate2 = (TextView)findViewById(R.id.chooseDate2);
-        bestBefore = (TextView)findViewById(R.id.bestBefore);
+        bestBeforeTxt = (TextView)findViewById(R.id.bestBefore);
         spinner = (Spinner)findViewById(R.id.spinner);
         enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
         date = (TextView)findViewById(R.id.date);
@@ -83,14 +73,13 @@ public class Add extends AppCompatActivity {
         name.setTypeface(font);
         chooseDate.setTypeface(font);
         chooseDate2.setTypeface(font);
-        bestBefore.setTypeface(font);
+        bestBeforeTxt.setTypeface(font);
 
         enterName.setTypeface(font);
         date.setTypeface(font);
         days.setTypeface(font);
         quantity.setTypeface(font);
         radio1 = (RadioButton)findViewById(R.id.radioButton1);
-        radio2 = (RadioButton)findViewById(R.id.radioButton2);
 
         String[] spinnerItems = new String[]{
                 getString(R.string.days_in_add_act),
@@ -102,11 +91,13 @@ public class Add extends AppCompatActivity {
 
         dbHelper = new DBHelper(getApplicationContext());
 
+        bestBefore = new GregorianCalendar();
+
         // Инициализация переменных сегодняшним числом
-        Calendar currentData = new GregorianCalendar();
-        myYear = currentData.get(Calendar.YEAR);
-        myMonth = currentData.get(Calendar.MONTH);
-        myDay = currentData.get(Calendar.DAY_OF_MONTH);
+//        Calendar currentData = new GregorianCalendar();
+//        myYear = currentData.get(Calendar.YEAR);
+//        myMonth = currentData.get(Calendar.MONTH);
+//        myDay = currentData.get(Calendar.DAY_OF_MONTH);
     }
 
     @Override
@@ -118,55 +109,25 @@ public class Add extends AppCompatActivity {
         chooseDate2.setText(R.string.chooseDateOfExpiry2);
         chooseDate.setVisibility(View.VISIBLE);
         chooseDate.setText(R.string.chooseDateOfExpiry);
-        bestBefore.setVisibility(View.INVISIBLE);
+        bestBeforeTxt.setVisibility(View.INVISIBLE);
         spinner.setVisibility(View.INVISIBLE);
         days.setVisibility(View.INVISIBLE);
 
         Bundle extras = getIntent().getExtras();
         if (extras == null)  {                      // Добавление продукта
-            setDateText(myDay, myMonth, myYear);
+            setDateText(new GregorianCalendar());
         }
         else  {                                     // Изменение продукта
             isChanging = true;
             setTitle(R.string.changing_product);
             String nameStr = extras.getString("name");
             enterName.setText(nameStr);
-            myDay = extras.getInt(Resources.MY_DAY);
-            myMonth = extras.getInt(Resources.MY_MONTH);
-            myYear = extras.getInt(Resources.MY_YEAR);
-            setDateText(myDay, myMonth, myYear);
-
-            DayCreated = extras.getInt(Resources.DAY_CREATED);
-            MonthCreated = extras.getInt(Resources.MONTH_CREATED);
-            YearCreated = extras.getInt(Resources.YEAR_CREATED);
-            HourCreated = extras.getInt(Resources.HOUR_CREATED);
-            MinuteCreated = extras.getInt(Resources.MINUTE_CREATED);
-            SecondCreated = extras.getInt(Resources.SECOND_CREATED);
+            Calendar date = (Calendar) extras.get(Resources.DATE);
+            setDateText(date);
 
             int quantityInt = extras.getInt(Resources.QUANTITY);
-            quantity.setText(Integer.toString(quantityInt));
+            quantity.setText(String.valueOf(quantityInt));
         }
-
-
-        String[] projection = {
-                DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME
-        };
-
-        String sortOrder =
-                DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME + " ASC";
-
-       //получаем данные из бд
-       db = dbHelper.getReadableDatabase();
-       cursor = db.query(
-                DBHelper.AutoCompletedProducts.TABLE_NAME, // The table to query
-                projection,                               // The columns to return
-                null,                                   // The columns for the WHERE clause
-                null,                                     // The values for the WHERE clause
-                null,                                     // don't group the rows
-                null,                                     // don't filter by row groups
-                sortOrder                                 // The sort order
-        );
-
 
         String [] popularProducts = {
                 "баранина",
@@ -250,6 +211,27 @@ public class Add extends AppCompatActivity {
         };
 
 
+        String[] projection = {
+                DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME
+        };
+
+        String sortOrder =
+                DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME + " ASC";
+
+        //получаем данные из бд
+        db = dbHelper.getReadableDatabase();
+        cursor = db.query(
+                DBHelper.AutoCompletedProducts.TABLE_NAME, // The table to query
+                projection,                               // The columns to return
+                null,                                   // The columns for the WHERE clause
+                null,                                     // The values for the WHERE clause
+                null,                                     // don't group the rows
+                null,                                     // don't filter by row groups
+                sortOrder                                 // The sort order
+        );
+
+
+
 
         List<String> items = new ArrayList<>();
         items.addAll(Arrays.asList(popularProducts));
@@ -275,7 +257,10 @@ public class Add extends AppCompatActivity {
 
     protected Dialog onCreateDialog(int id) {
         if (id == DIALOG_DATE) {
-            return new DatePickerDialog(this, myCallBack, myYear, myMonth, myDay);
+            int year = bestBefore.get(Calendar.YEAR);
+            int month = bestBefore.get(Calendar.MONTH);
+            int day = bestBefore.get(Calendar.DAY_OF_MONTH);
+            return new DatePickerDialog(this, myCallBack, year, month, day);
         }
         return super.onCreateDialog(id);
     }
@@ -283,10 +268,10 @@ public class Add extends AppCompatActivity {
 
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
-            myYear = year;
-            myMonth = monthOfYear;
-            myDay = dayOfMonth;
-            setDateText(myDay, myMonth, myYear);
+            bestBefore.set(Calendar.YEAR, year);
+            bestBefore.set(Calendar.MONTH, monthOfYear);
+            bestBefore.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            setDateText(bestBefore);
         }
     };
 
@@ -296,7 +281,7 @@ public class Add extends AppCompatActivity {
     }
 
     public void onRadioOneClick(View view) {
-        bestBefore.setVisibility(View.VISIBLE);
+        bestBeforeTxt.setVisibility(View.VISIBLE);
         days.setVisibility(View.VISIBLE);
         chooseDate2.setText(R.string.chooseDateOfMan);
         chooseDate.setVisibility(View.INVISIBLE);
@@ -308,7 +293,7 @@ public class Add extends AppCompatActivity {
         chooseDate2.setText(R.string.chooseDateOfExpiry2);
         chooseDate.setVisibility(View.VISIBLE);
         chooseDate.setText(R.string.chooseDateOfExpiry);
-        bestBefore.setVisibility(View.INVISIBLE);
+        bestBeforeTxt.setVisibility(View.INVISIBLE);
         spinner.setVisibility(View.INVISIBLE);
         days.setVisibility(View.INVISIBLE);
     }
@@ -323,16 +308,15 @@ public class Add extends AppCompatActivity {
             return;
         }
 
-        Calendar date = new GregorianCalendar(myYear, myMonth, myDay);
-        Calendar currentDate = new GregorianCalendar();
 
+        Calendar currentDate = new GregorianCalendar();
 
         String text_spinner = spinner.getSelectedItem().toString();
         boolean is_days = text_spinner.equals(getString(R.string.days_in_add_act));
 
 
         if (radio1.isChecked()) {
-            if (compare(date, currentDate) > 0) {
+            if (compare(bestBefore, currentDate) > 0) {
                 Toast toast = Toast.makeText(getApplicationContext(),
                         R.string.wrong_date, Toast.LENGTH_SHORT);
                 toast.show();
@@ -348,17 +332,17 @@ public class Add extends AppCompatActivity {
             }
 
             if (is_days) {
-                date.add(Calendar.DAY_OF_MONTH, (int) term);
+                bestBefore.add(Calendar.DAY_OF_MONTH, (int) term);
             }
             else {
-                date.add(Calendar.MONTH,  (int) term);
+                bestBefore.add(Calendar.MONTH,  (int) term);
                 if (term % 1 != 0 ) { // Если есть еще половинка
-                    int daysInMonth = date.getActualMaximum(Calendar.DAY_OF_MONTH);
-                    date.add(Calendar.DAY_OF_MONTH, daysInMonth / 2);
+                    int daysInMonth = bestBefore.getActualMaximum(Calendar.DAY_OF_MONTH);
+                    bestBefore.add(Calendar.DAY_OF_MONTH, daysInMonth / 2);
                 }
             }
 
-            if (compare(date, currentDate) < 0) {
+            if (compare(bestBefore, currentDate) < 0) {
                 Toast toast = Toast.makeText(getApplicationContext(),
                         R.string.product_is_expired, Toast.LENGTH_SHORT);
                 toast.show();
@@ -367,7 +351,7 @@ public class Add extends AppCompatActivity {
         }
 
         else {
-            if (compare(date, currentDate) < 0) {
+            if (compare(bestBefore, currentDate) < 0) {
                 Toast toast = Toast.makeText(getApplicationContext(),
                         R.string.wrong_date, Toast.LENGTH_SHORT);
                 toast.show();
@@ -378,18 +362,13 @@ public class Add extends AppCompatActivity {
 
         Intent intent = new Intent();
         intent.putExtra(Resources.NAME, enterName.getText().toString());
-        intent.putExtra(Resources.DATE, date);
+        intent.putExtra(Resources.DATE, bestBefore);
         final int quant = Integer.parseInt(quantity.getText().toString());
         intent.putExtra(Resources.QUANTITY, quant);
         if (isChanging) {
-            Calendar createdAt = new GregorianCalendar(YearCreated, MonthCreated,
-                    DayCreated, HourCreated, MinuteCreated, SecondCreated);
-            intent.putExtra(Resources.CREATED_AT, createdAt);
             setResult(Resources.RESULT_MODIFY, intent);   // Изменениe
         }
         else {
-            Calendar createdAt = new GregorianCalendar();
-            intent.putExtra(Resources.CREATED_AT, createdAt);
             setResult(Resources.RESULT_ADD, intent);   // Добавление
         }
         finish();
@@ -407,7 +386,10 @@ public class Add extends AppCompatActivity {
         return d1.get(Calendar.DAY_OF_MONTH) - d2.get(Calendar.DAY_OF_MONTH);
     }
 
-    private void setDateText(int day, int month, int year) {
+    private void setDateText(Calendar calendar) {
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
         if (month < 9) {
             date.setText(day + "." + "0" + (month + 1) + "." + year);
         }

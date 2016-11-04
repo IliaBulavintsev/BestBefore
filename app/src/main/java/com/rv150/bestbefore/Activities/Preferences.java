@@ -1,7 +1,6 @@
 package com.rv150.bestbefore.Activities;
 
 import android.app.AlertDialog;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -37,7 +36,7 @@ import com.rv150.bestbefore.Network.HttpPostBackup;
 import com.rv150.bestbefore.Network.HttpPostRestore;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.Preferences.SharedPrefsManager;
+import com.rv150.bestbefore.Preferences.ProductDAO;
 import com.rv150.bestbefore.Product;
 import com.rv150.bestbefore.Services.DBHelper;
 
@@ -243,8 +242,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void backup() {
-        List<Product> freshFood = SharedPrefsManager.getFreshProducts(this);
-        List<Product> overdueFood = SharedPrefsManager.getOverdueProducts(this);
+        List<Product> freshFood = ProductDAO.getFreshProducts(this);
+        List<Product> overdueFood = ProductDAO.getOverdueProducts(this);
 
         if (freshFood.isEmpty() && overdueFood.isEmpty()) {
             Toast toast = Toast.makeText(getApplicationContext(),
