@@ -4,8 +4,8 @@ import android.content.Context;
 import android.provider.Settings;
 
 import com.rv150.bestbefore.Network.SendStatistic;
-import com.rv150.bestbefore.Preferences.ProductDAO;
-import com.rv150.bestbefore.Product;
+import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Models.Product;
 
 import org.json.JSONArray;
 import org.json.JSONException;

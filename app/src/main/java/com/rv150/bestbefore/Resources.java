@@ -43,7 +43,7 @@ public final class Resources {
     public static final String NAME = "name";
     public static final String DATE = "date";
     public static final String QUANTITY = "quantity";
-    public static final String _ID = "ID";
+    public static final String GROUP_ID = "groupId";
     public static final int RC_ADD_ACTIVITY = 0;
     public static final int RC_SIGN_IN = 1;
     public static final int RESULT_ADD = 1;
@@ -51,4 +51,8 @@ public final class Resources {
     public static final int RESULT_EXIT = 0;
     public static final String SERVER_URL = "http://212.109.192.197:8080/";
     public static final String WHATS_NEW = "whats_new_15";
+    public static final long ID_MAIN_GROUP = -2;
+    public static final long ID_FOR_SETTINGS = -3;
+    public static final long ID_FOR_FEEDBACK = -4;
+    public static final long ID_FOR_ADD_GROUP = -5;
 }

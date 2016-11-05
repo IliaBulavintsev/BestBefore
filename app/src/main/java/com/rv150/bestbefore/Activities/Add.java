@@ -39,12 +39,13 @@ public class Add extends AppCompatActivity {
     private AutoCompleteTextView enterName;
     private TextView date;
     private EditText days;
-    private EditText quantity;
+    private EditText quantityET;
     private RadioButton radio1;
     private Spinner spinner;
 
     private int DIALOG_DATE = 1;
     private boolean isChanging = false;
+    Long groupId;
     private Calendar bestBefore;
 
     DBHelper dbHelper;
@@ -66,8 +67,8 @@ public class Add extends AppCompatActivity {
         enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
         date = (TextView)findViewById(R.id.date);
         days = (EditText)findViewById(R.id.days);
-        quantity = (EditText) findViewById(R.id.enterQuantity);
-        quantity.setText("1");
+        quantityET = (EditText) findViewById(R.id.enterQuantity);
+        quantityET.setText("1");
 
         Typeface font = Typeface.createFromAsset(getAssets(), "san.ttf");
         name.setTypeface(font);
@@ -78,7 +79,7 @@ public class Add extends AppCompatActivity {
         enterName.setTypeface(font);
         date.setTypeface(font);
         days.setTypeface(font);
-        quantity.setTypeface(font);
+        quantityET.setTypeface(font);
         radio1 = (RadioButton)findViewById(R.id.radioButton1);
 
         String[] spinnerItems = new String[]{
@@ -92,12 +93,6 @@ public class Add extends AppCompatActivity {
         dbHelper = new DBHelper(getApplicationContext());
 
         bestBefore = new GregorianCalendar();
-
-        // Инициализация переменных сегодняшним числом
-//        Calendar currentData = new GregorianCalendar();
-//        myYear = currentData.get(Calendar.YEAR);
-//        myMonth = currentData.get(Calendar.MONTH);
-//        myDay = currentData.get(Calendar.DAY_OF_MONTH);
     }
 
     @Override
@@ -114,19 +109,22 @@ public class Add extends AppCompatActivity {
         days.setVisibility(View.INVISIBLE);
 
         Bundle extras = getIntent().getExtras();
+
         if (extras == null)  {                      // Добавление продукта
             setDateText(new GregorianCalendar());
         }
-        else  {                                     // Изменение продукта
-            isChanging = true;
-            setTitle(R.string.changing_product);
+        else  {
+            groupId = extras.getLong(Resources.GROUP_ID);
             String nameStr = extras.getString("name");
-            enterName.setText(nameStr);
-            Calendar date = (Calendar) extras.get(Resources.DATE);
-            setDateText(date);
-
-            int quantityInt = extras.getInt(Resources.QUANTITY);
-            quantity.setText(String.valueOf(quantityInt));
+            if (nameStr != null) {          // Изменение продукта
+                isChanging = true;
+                setTitle(R.string.changing_product);
+                enterName.setText(nameStr);
+                Calendar date = (Calendar) extras.get(Resources.DATE);
+                setDateText(date);
+                int quantity = extras.getInt(Resources.QUANTITY);
+                quantityET.setText(String.valueOf(quantity));
+            }
         }
 
         String [] popularProducts = {
@@ -301,7 +299,7 @@ public class Add extends AppCompatActivity {
     public void onSaveClick(View view) {
         if ((enterName.getText().toString().equals("")) ||
                 (radio1.isChecked() && days.getText().toString().equals(""))
-                || quantity.getText().toString().equals("")) {
+                || quantityET.getText().toString().equals("")) {
             Toast toast = Toast.makeText(getApplicationContext(),
                     R.string.please_fill_all_fields, Toast.LENGTH_SHORT);
             toast.show();
@@ -313,6 +311,8 @@ public class Add extends AppCompatActivity {
 
         String text_spinner = spinner.getSelectedItem().toString();
         boolean is_days = text_spinner.equals(getString(R.string.days_in_add_act));
+
+
 
 
         if (radio1.isChecked()) {
@@ -359,12 +359,20 @@ public class Add extends AppCompatActivity {
             }
         }
 
+        final int quantity = Integer.parseInt(quantityET.getText().toString());
+        if (quantity <= 0) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.wrong_quantity, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
 
         Intent intent = new Intent();
         intent.putExtra(Resources.NAME, enterName.getText().toString());
         intent.putExtra(Resources.DATE, bestBefore);
-        final int quant = Integer.parseInt(quantity.getText().toString());
-        intent.putExtra(Resources.QUANTITY, quant);
+        intent.putExtra(Resources.QUANTITY, quantity);
+        intent.putExtra(Resources.GROUP_ID, groupId);
         if (isChanging) {
             setResult(Resources.RESULT_MODIFY, intent);   // Изменениe
         }

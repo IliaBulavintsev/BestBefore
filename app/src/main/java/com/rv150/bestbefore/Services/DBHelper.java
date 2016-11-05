@@ -38,10 +38,12 @@ public class DBHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + AutoCompletedProducts.TABLE_NAME + " (" +
                     AutoCompletedProducts._ID + " INTEGER PRIMARY KEY," +
                     AutoCompletedProducts.COLUMN_NAME_NAME + " VARCHAR(100) UNIQUE)";
+
     private static final String SQL_CREATE_GROUP_TABLE  =
             "CREATE TABLE " + Group.TABLE_NAME + " (" +
                     Group._ID + " INTEGER PRIMARY KEY," +
                     Group.COLUMN_NAME_NAME + " VARCHAR(50))";
+
     private static final String SQL_CREATE_PRODUCT_TABLE  =
             "CREATE TABLE " + Product.TABLE_NAME + " (" +
                     Product._ID + " INTEGER PRIMARY KEY," +

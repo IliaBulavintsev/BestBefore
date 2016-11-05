@@ -1,4 +1,4 @@
-package com.rv150.bestbefore.Preferences;
+package com.rv150.bestbefore.DAO;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.Product;
+import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.Services.DBHelper;
 
 import java.util.ArrayList;
@@ -71,6 +71,46 @@ public class ProductDAO {
                 groupId = cursor.getLong(
                         cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_GROUP_ID));
             }
+
+            long id = cursor.getLong(
+                    cursor.getColumnIndexOrThrow(DBHelper.Product._ID));
+
+            Calendar date = new GregorianCalendar();
+            date.setTimeInMillis(dateInMillis);
+
+            Calendar createdAt =  new GregorianCalendar();
+            createdAt.setTimeInMillis(createdAtInMillis);
+
+            Product product = new Product(name, date, createdAt, quantity, groupId);
+            product.setId(id);
+            products.add(product);
+        }
+        cursor.close();
+        return products;
+    }
+
+
+    public List<Product> getFromGroup (long groupId) {
+        if (groupId == Resources.ID_MAIN_GROUP) {
+            return getAllFromDB();              // Для основной группы вернуть все продукты
+        }
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String query = "SELECT * FROM " + DBHelper.Product.TABLE_NAME +
+                " WHERE " + DBHelper.Product.COLUMN_NAME_GROUP_ID + " = " + groupId;
+        Cursor cursor = db.rawQuery(query, null);
+        List<Product> products = new ArrayList<>();
+
+        while (cursor.moveToNext()) {
+            String name = cursor.getString(
+                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_NAME));
+            long dateInMillis = cursor.getLong(
+                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_DATE));
+
+            long createdAtInMillis = cursor.getLong(
+                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_CREATED_AT));
+
+            int quantity = cursor.getInt(
+                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_QUANTITY));
 
             long id = cursor.getLong(
                     cursor.getColumnIndexOrThrow(DBHelper.Product._ID));

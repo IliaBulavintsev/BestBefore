@@ -29,10 +29,13 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
@@ -40,7 +43,9 @@ import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.ItemClickSupport;
+import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Dialogs.DeleteAllMain;
 import com.rv150.bestbefore.DeleteOverdue;
@@ -48,10 +53,10 @@ import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Dialogs.RateAppDialog;
 import com.rv150.bestbefore.RecyclerAdapter;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.Preferences.ProductDAO;
+import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.StatCollector;
-import com.rv150.bestbefore.Product;
+import com.rv150.bestbefore.Models.Product;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -69,9 +74,13 @@ public class MainActivity extends AppCompatActivity {
     private DBHelper dbHelper;
     private Product deletedProduct;
     private TextView isEmpty;
+
     private ProductDAO productDAO;
+    private GroupDAO groupDAO;
 
     private Drawer drawer;
+    private int drawerPosition = 2;
+    private long groupChoosen = Resources.ID_MAIN_GROUP;
 
 
     @Override
@@ -80,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        setTitle(R.string.all_products);
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -91,38 +101,15 @@ public class MainActivity extends AppCompatActivity {
         // DB helper
         dbHelper = new DBHelper(getApplicationContext());
         productDAO = new ProductDAO(getApplicationContext());
+        groupDAO = new GroupDAO(getApplicationContext());
 
         rvProducts = (RecyclerView) findViewById(R.id.rvProducts);
         wrapperList = productDAO.getAllFromDB();
         setUpRecyclerView();
 
 
+        setUpDrawer(toolbar);
 
-
-
-        String [] mPlanetTitles = {"All", "Meat", "Vegetables"};
-        PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName("Primary Item");
-        SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName(R.string.settings);
-
-//create the drawer and remember the `Drawer` result object
-        drawer = new DrawerBuilder()
-                .withActivity(this)
-                .withToolbar(toolbar)
-                .withHeader(R.layout.drawer_header)
-                .addDrawerItems(
-                        item1,
-                        new DividerDrawerItem(),
-                        item2,
-                        new SecondaryDrawerItem()
-                )
-                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                    @Override
-                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                        drawerPushed(position, drawerItem);
-                        return true;
-                    }
-                })
-                .build();
 
 
 
@@ -171,10 +158,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
-
-
-
         if (showWelcomeScreen) {
             StatCollector.shareStatistic(this, "First launch ");
         }
@@ -183,11 +166,150 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void setUpDrawer(Toolbar toolbar) {
+        PrimaryDrawerItem allProducts = new PrimaryDrawerItem()
+                .withIdentifier(Resources.ID_MAIN_GROUP)
+                .withName(R.string.all_products);
+
+        SecondaryDrawerItem addCategory = new SecondaryDrawerItem()
+                .withIdentifier(Resources.ID_FOR_ADD_GROUP)
+                .withName(R.string.add_group)
+                .withSelectable(false);
+
+        SecondaryDrawerItem settings = new SecondaryDrawerItem()
+                .withIdentifier(Resources.ID_FOR_SETTINGS)
+                .withName(R.string.settings)
+                .withSelectable(false);
+        SecondaryDrawerItem feedback = new SecondaryDrawerItem()
+                .withIdentifier(Resources.ID_FOR_FEEDBACK)
+                .withName(R.string.feedback)
+                .withSelectable(false);
+
+        drawer = new DrawerBuilder()
+                .withActivity(this)
+                .withToolbar(toolbar)
+                .withHeader(R.layout.drawer_header)
+                .addDrawerItems(
+                        allProducts,
+                        addCategory,
+                        new DividerDrawerItem(),
+                        settings,
+                        feedback
+                )
+                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                    @Override
+                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                        drawerPushed(drawerItem);
+                        return true;
+                    }
+                })
+                .build();
+        List<Group> userGroups = groupDAO.getAll();
+        for (Group group: userGroups) {
+            PrimaryDrawerItem newItem = new PrimaryDrawerItem()
+                    .withName(group.getName())
+                    .withIdentifier(group.getId());
+            drawer.addItemAtPosition(newItem, drawerPosition++);
+        }
+    }
 
 
-    private void drawerPushed (int position, IDrawerItem drawerItem) {
+
+
+
+
+
+
+
+
+    private void drawerPushed (IDrawerItem drawerItem) {
         drawer.closeDrawer();
+        final long id = drawerItem.getIdentifier();
+        if (id == Resources.ID_FOR_ADD_GROUP) {
+            showAddGroupDialog();
+            return;
+        }
+        if (id == Resources.ID_FOR_SETTINGS) {
+            Intent intent = new Intent(this, Preferences.class);
+            startActivity(intent);
+            return;
+        }
+        if (id == Resources.ID_FOR_FEEDBACK) {
+            String [] addresses = {getString(R.string.developer_email)};
+            String subject = getString(R.string.email_subject);
+            composeEmail(addresses, subject);
+            return;
+        }
+        groupChoosen = id;
+        changeGroup();
+    }
 
+
+    private void changeGroup() {
+        Group group = groupDAO.get(groupChoosen);
+        wrapperList = productDAO.getFromGroup(group.getId());
+        adapter = new RecyclerAdapter(wrapperList);
+        rvProducts.swapAdapter(adapter, false);
+        if (wrapperList.isEmpty()) {
+            isEmpty.setVisibility(View.VISIBLE);
+        }
+        else {
+            isEmpty.setVisibility(View.INVISIBLE);
+        }
+        setTitle(group.getName());
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    private void showAddGroupDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.creating_group);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+
+        builder.setView(input, 70, 0, 100, 0);
+
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String result = input.getText().toString();
+                if (result.isEmpty()) {
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            R.string.wrong_name, Toast.LENGTH_SHORT);
+                    toast.show();
+                    showAddGroupDialog();
+                }
+                else {
+                    createGroup(result);
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
+    }
+
+    private void createGroup(String name) {
+        Group newGroup = new Group(name);
+        long id = groupDAO.insertGroup(newGroup);
+        PrimaryDrawerItem newItem = new PrimaryDrawerItem()
+                .withName(name)
+                .withIdentifier(id);
+        drawer.addItemAtPosition(newItem, drawerPosition++);
     }
 
 
@@ -353,6 +475,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void onFabClick(View view) {
         Intent intent = new Intent(MainActivity.this, Add.class);
+        if (groupChoosen != Resources.ID_MAIN_GROUP) {
+            intent.putExtra(Resources.GROUP_ID, groupChoosen);
+        }
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 
@@ -366,11 +491,12 @@ public class MainActivity extends AppCompatActivity {
             String name = data.getExtras().getString(Resources.NAME);
             Calendar date = (Calendar) data.getExtras().get(Resources.DATE);
             int quantity = (int) data.getExtras().get(Resources.QUANTITY);
+            Long groupId = (Long) data.getExtras().get(Resources.GROUP_ID);
 
 
             if (resultCode == Resources.RESULT_ADD) {                              // Добавление
                 Calendar createdAt = new GregorianCalendar();
-                Product newProduct = new Product(name, date, createdAt, quantity, null);
+                Product newProduct = new Product(name, date, createdAt, quantity, groupId);
                 long id = productDAO.insertProduct(newProduct);
                 newProduct.setId(id);
                 wrapperList.add(newProduct);
@@ -394,6 +520,7 @@ public class MainActivity extends AppCompatActivity {
                 product.setTitle(name);
                 product.setDate(date);
                 product.setQuantity(quantity);
+                product.setGroupId(groupId);
                 productDAO.updateProduct(product);
                 position = -1;
             }
@@ -704,6 +831,16 @@ public class MainActivity extends AppCompatActivity {
                 db.insert(DBHelper.AutoCompletedProducts.TABLE_NAME, null, values);
             }
             return null;
+        }
+    }
+
+    private void composeEmail(String[] addresses, String subject) {
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+        intent.putExtra(Intent.EXTRA_EMAIL, addresses);
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
         }
     }
 }

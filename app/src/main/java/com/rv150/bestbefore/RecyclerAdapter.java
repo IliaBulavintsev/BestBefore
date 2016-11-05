@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.rv150.bestbefore.Models.Product;
+
 /**
  * Created by Rudnev on 25.10.2016.
  */

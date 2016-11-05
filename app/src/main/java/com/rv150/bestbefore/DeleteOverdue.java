@@ -2,7 +2,8 @@ package com.rv150.bestbefore;
 
 import android.content.Context;
 
-import com.rv150.bestbefore.Preferences.ProductDAO;
+import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Models.Product;
 
 import java.util.ArrayList;
 import java.util.Calendar;

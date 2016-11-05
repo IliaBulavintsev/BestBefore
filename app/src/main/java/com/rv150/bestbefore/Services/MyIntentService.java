@@ -6,11 +6,11 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.rv150.bestbefore.Preferences.ProductDAO;
+import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.MyNotification;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.Product;
+import com.rv150.bestbefore.Models.Product;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;

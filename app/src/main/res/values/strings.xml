@@ -92,4 +92,11 @@
     <string name="undo">Отмена</string>
     <string name="feedback">Обратная связь</string>
     <string name="later">Позже</string>
+    <string name="wrong_quantity">Неверное количество!</string>
+    <string name="all_products">Все продукты</string>
+    <string name="add_group">Добавить группу</string>
+    <string name="creating_group">Создание группы</string>
+    <string name="wrong_name">Неверное имя</string>
+    <string name="email_subject">Фидбек по приложению \"Срок годности\"</string>
+    <string name="developer_email">rudnev.vanya@gmail.com</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Models;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -130,6 +130,10 @@ public class Product {
 
     public Long getGroupId() {
         return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
     }
 
     public static Comparator<Product> getFreshToSpoiledComparator() {

@@ -22,10 +22,10 @@ import android.widget.TextView;
 
 import com.rv150.bestbefore.Dialogs.DeleteAllOverdued;
 import com.rv150.bestbefore.R;
-import com.rv150.bestbefore.Preferences.ProductDAO;
+import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.RecyclerAdapter;
 import com.rv150.bestbefore.Services.StatCollector;
-import com.rv150.bestbefore.Product;
+import com.rv150.bestbefore.Models.Product;
 
 import java.util.ArrayList;
 import java.util.List;

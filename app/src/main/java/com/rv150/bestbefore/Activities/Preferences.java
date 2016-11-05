@@ -36,8 +36,8 @@ import com.rv150.bestbefore.Network.HttpPostBackup;
 import com.rv150.bestbefore.Network.HttpPostRestore;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.Preferences.ProductDAO;
-import com.rv150.bestbefore.Product;
+import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.Services.DBHelper;
 
 import org.json.JSONArray;

@@ -10,8 +10,8 @@ import android.widget.Toast;
 
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.Preferences.ProductDAO;
-import com.rv150.bestbefore.Product;
+import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Models.Product;
 
 import org.json.JSONArray;
 import org.json.JSONException;
