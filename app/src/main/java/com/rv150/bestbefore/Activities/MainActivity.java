@@ -44,10 +44,11 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.rv150.bestbefore.DAO.GroupDAO;
+import com.rv150.bestbefore.Dialogs.DeleteGroupDialog;
 import com.rv150.bestbefore.ItemClickSupport;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
-import com.rv150.bestbefore.Dialogs.DeleteAllMain;
+import com.rv150.bestbefore.Dialogs.DeleteAllDialog;
 import com.rv150.bestbefore.DeleteOverdue;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Dialogs.RateAppDialog;
@@ -112,9 +113,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
         // Что нового?
-
         boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
 
         // показ приветственного сообщения
@@ -171,16 +170,20 @@ public class MainActivity extends AppCompatActivity {
                 .withIdentifier(Resources.ID_MAIN_GROUP)
                 .withName(R.string.all_products);
 
-        SecondaryDrawerItem addCategory = new SecondaryDrawerItem()
+        SecondaryDrawerItem addGroup = new SecondaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_ADD_GROUP)
                 .withName(R.string.add_group)
                 .withSelectable(false);
 
-        SecondaryDrawerItem settings = new SecondaryDrawerItem()
+        PrimaryDrawerItem overdued = new PrimaryDrawerItem()
+                .withIdentifier(Resources.ID_FOR_OVERDUED)
+                .withName(R.string.overdue_products);
+
+        PrimaryDrawerItem settings = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_SETTINGS)
                 .withName(R.string.settings)
                 .withSelectable(false);
-        SecondaryDrawerItem feedback = new SecondaryDrawerItem()
+        PrimaryDrawerItem feedback = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_FEEDBACK)
                 .withName(R.string.feedback)
                 .withSelectable(false);
@@ -191,7 +194,9 @@ public class MainActivity extends AppCompatActivity {
                 .withHeader(R.layout.drawer_header)
                 .addDrawerItems(
                         allProducts,
-                        addCategory,
+                        addGroup,
+                        new DividerDrawerItem(),
+                        overdued,
                         new DividerDrawerItem(),
                         settings,
                         feedback
@@ -220,13 +225,16 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
     private void drawerPushed (IDrawerItem drawerItem) {
         drawer.closeDrawer();
         final long id = drawerItem.getIdentifier();
         if (id == Resources.ID_FOR_ADD_GROUP) {
             showAddGroupDialog();
+            return;
+        }
+        if (id == Resources.ID_FOR_OVERDUED) {
+            Intent intent = new Intent(this, Overdue.class);
+            startActivity(intent);
             return;
         }
         if (id == Resources.ID_FOR_SETTINGS) {
@@ -240,14 +248,23 @@ public class MainActivity extends AppCompatActivity {
             composeEmail(addresses, subject);
             return;
         }
+        // Смена группы (не считая главной)
         groupChoosen = id;
         changeGroup();
     }
 
 
     private void changeGroup() {
-        Group group = groupDAO.get(groupChoosen);
-        wrapperList = productDAO.getFromGroup(group.getId());
+        if (groupChoosen == Resources.ID_MAIN_GROUP) {
+            wrapperList = productDAO.getAllFromDB();
+            setTitle(R.string.all_products);
+        }
+        else {
+            Group group = groupDAO.get(groupChoosen);
+            wrapperList = productDAO.getFromGroup(group.getId());
+            setTitle(group.getName());
+        }
+        sortMainList();
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
         if (wrapperList.isEmpty()) {
@@ -256,7 +273,6 @@ public class MainActivity extends AppCompatActivity {
         else {
             isEmpty.setVisibility(View.INVISIBLE);
         }
-        setTitle(group.getName());
     }
 
 
@@ -310,6 +326,33 @@ public class MainActivity extends AppCompatActivity {
                 .withName(name)
                 .withIdentifier(id);
         drawer.addItemAtPosition(newItem, drawerPosition++);
+        groupChoosen = id;
+        changeGroup();
+    }
+
+    public void clearGroup() {
+        if (groupChoosen == Resources.ID_MAIN_GROUP) {
+            productDAO.deleteAll();
+            StatCollector.shareStatistic(this, "deleted all fresh products");
+        }
+        else {
+            Group group = groupDAO.get(groupChoosen);
+            productDAO.deleteFromGroup(group.getId());
+            StatCollector.shareStatistic(this, "deleted all from \"" + group.getName() + "\"");
+        }
+
+        wrapperList.clear();
+        adapter = new RecyclerAdapter(wrapperList);
+        rvProducts.swapAdapter(adapter, false);
+        isEmpty.setVisibility(View.VISIBLE);
+    }
+
+    public void deleteGroup() {
+        groupDAO.deleteGroup(groupChoosen);
+        drawer.removeItem(groupChoosen);
+        drawerPosition--;
+        groupChoosen = Resources.ID_MAIN_GROUP;
+        changeGroup();
     }
 
 
@@ -334,29 +377,7 @@ public class MainActivity extends AppCompatActivity {
             builder.show();
         }
 
-
-
-        // Сортировка
-        if (wrapperList.size() >= 2) {
-            String howToSort = sPrefs.getString(Resources.PREF_HOW_TO_SORT, Resources.STANDART);
-            switch (howToSort) {
-                case Resources.STANDART:
-                    Collections.sort(wrapperList, Product.getStandartComparator());
-                    break;
-                case Resources.SPOILED_TO_FRESH:
-                    Collections.sort(wrapperList, Product.getSpoiledToFreshComparator());
-                    break;
-                case Resources.FRESH_TO_SPOILED:
-                    Collections.sort(wrapperList, Product.getFreshToSpoiledComparator());
-                    break;
-                case Resources.BY_NAME:
-                    Collections.sort(wrapperList, Product.getByNameComparator());
-                    break;
-                default:
-                    break;
-            }
-        }
-
+        sortMainList();
 
 
         adapter = new RecyclerAdapter(wrapperList);
@@ -421,14 +442,6 @@ public class MainActivity extends AppCompatActivity {
         isEmpty.setVisibility(View.INVISIBLE);
     }
 
-    public void deleteAll() {
-        productDAO.deleteProducts(wrapperList);
-        wrapperList.clear();
-        adapter = new RecyclerAdapter(wrapperList);
-        rvProducts.swapAdapter(adapter, false);
-        isEmpty.setVisibility(View.VISIBLE);
-        StatCollector.shareStatistic(this, "deleted all fresh products");
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -439,19 +452,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, Preferences.class);
-            startActivity(intent);
+        if (id == R.id.action_clear_list) {
+            DialogFragment dialog = new DeleteAllDialog();
+            dialog.show(getFragmentManager(), "deleteAll");
             return true;
         }
-        if (id == R.id.action_overdue) {
-            Intent intent = new Intent(this, Overdue.class);
-            startActivity(intent);
-            return true;
-        }
-        if (id == R.id.action_delete_all) {
-            DialogFragment dialog_delete_all = new DeleteAllMain();
-            dialog_delete_all.show(getFragmentManager(), "deleteAll");
+        if (id == R.id.action_delete_group) {
+            if (groupChoosen == Resources.ID_MAIN_GROUP) {  // Главная группа не удаляется
+                return true;
+            }
+            DialogFragment dialogDeleteGroup = new DeleteGroupDialog();
+            dialogDeleteGroup.show(getFragmentManager(), "deleteGroup");
             return true;
         }
 
@@ -475,7 +486,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void onFabClick(View view) {
         Intent intent = new Intent(MainActivity.this, Add.class);
-        if (groupChoosen != Resources.ID_MAIN_GROUP) {
+        if (groupChoosen == Resources.ID_MAIN_GROUP) {
+            intent.putExtra(Resources.GROUP_ID, (Long)null);
+        }
+        else {
             intent.putExtra(Resources.GROUP_ID, groupChoosen);
         }
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
@@ -810,6 +824,7 @@ public class MainActivity extends AppCompatActivity {
         Calendar date = item.getDate();
         intent.putExtra(Resources.DATE, date);
         intent.putExtra(Resources.QUANTITY, item.getQuantity());
+        intent.putExtra(Resources.GROUP_ID, item.getGroupId());
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 
@@ -841,6 +856,29 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(Intent.EXTRA_SUBJECT, subject);
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
+        }
+    }
+
+    private void sortMainList() {
+        // Сортировка
+        if (wrapperList.size() >= 2) {
+            String howToSort = sPrefs.getString(Resources.PREF_HOW_TO_SORT, Resources.STANDART);
+            switch (howToSort) {
+                case Resources.STANDART:
+                    Collections.sort(wrapperList, Product.getStandartComparator());
+                    break;
+                case Resources.SPOILED_TO_FRESH:
+                    Collections.sort(wrapperList, Product.getSpoiledToFreshComparator());
+                    break;
+                case Resources.FRESH_TO_SPOILED:
+                    Collections.sort(wrapperList, Product.getFreshToSpoiledComparator());
+                    break;
+                case Resources.BY_NAME:
+                    Collections.sort(wrapperList, Product.getByNameComparator());
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

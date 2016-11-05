@@ -88,7 +88,7 @@ public class Overdue extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_clear_list && !overdueList.isEmpty()) {
+        if (id == R.id.action_clear_overdue_list && !overdueList.isEmpty()) {
             DialogFragment dialog_delete_all = new DeleteAllOverdued();
             dialog_delete_all.show(getFragmentManager(), "ClearList");
             return true;

@@ -99,4 +99,6 @@
     <string name="wrong_name">Неверное имя</string>
     <string name="email_subject">Фидбек по приложению \"Срок годности\"</string>
     <string name="developer_email">rudnev.vanya@gmail.com</string>
+    <string name="delete_group">Удалить группу</string>
+    <string name="sure_you_want_to_delete_group_with_products">Вы действительно хотите удалить эту группу со всеми ее продуктами?</string>
 </resources>

@@ -172,11 +172,16 @@ public class ProductDAO {
 
     }
 
-    public void deleteProducts (List<Product> products) {
+
+    public void deleteFromGroup (long groupId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        for (Product product: products) {
-            db.delete(DBHelper.Product.TABLE_NAME, DBHelper.Product._ID + "=?", new String[] {String.valueOf(product.getId())});
-        }
+        db.delete(DBHelper.Product.TABLE_NAME, DBHelper.Product.COLUMN_NAME_GROUP_ID + "=?",
+                new String[] {String.valueOf(groupId)});
+    }
+
+    public void deleteAll() {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.delete(DBHelper.Product.TABLE_NAME, null, null);
     }
 
 

@@ -37,7 +37,7 @@ public class Add extends AppCompatActivity {
     private TextView bestBeforeTxt;
 
     private AutoCompleteTextView enterName;
-    private TextView date;
+    private TextView dateTV;
     private EditText days;
     private EditText quantityET;
     private RadioButton radio1;
@@ -65,7 +65,7 @@ public class Add extends AppCompatActivity {
         bestBeforeTxt = (TextView)findViewById(R.id.bestBefore);
         spinner = (Spinner)findViewById(R.id.spinner);
         enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
-        date = (TextView)findViewById(R.id.date);
+        dateTV = (TextView)findViewById(R.id.date);
         days = (EditText)findViewById(R.id.days);
         quantityET = (EditText) findViewById(R.id.enterQuantity);
         quantityET.setText("1");
@@ -77,7 +77,7 @@ public class Add extends AppCompatActivity {
         bestBeforeTxt.setTypeface(font);
 
         enterName.setTypeface(font);
-        date.setTypeface(font);
+        dateTV.setTypeface(font);
         days.setTypeface(font);
         quantityET.setTypeface(font);
         radio1 = (RadioButton)findViewById(R.id.radioButton1);
@@ -91,7 +91,6 @@ public class Add extends AppCompatActivity {
         spinner.setAdapter(spinnerAdapter);
 
         dbHelper = new DBHelper(getApplicationContext());
-
         bestBefore = new GregorianCalendar();
     }
 
@@ -109,23 +108,19 @@ public class Add extends AppCompatActivity {
         days.setVisibility(View.INVISIBLE);
 
         Bundle extras = getIntent().getExtras();
-
-        if (extras == null)  {                      // Добавление продукта
-            setDateText(new GregorianCalendar());
-        }
-        else  {
-            groupId = extras.getLong(Resources.GROUP_ID);
+        if (extras != null) {
+            groupId = (Long) extras.get(Resources.GROUP_ID);
             String nameStr = extras.getString("name");
             if (nameStr != null) {          // Изменение продукта
                 isChanging = true;
                 setTitle(R.string.changing_product);
                 enterName.setText(nameStr);
-                Calendar date = (Calendar) extras.get(Resources.DATE);
-                setDateText(date);
+                bestBefore = (Calendar) extras.get(Resources.DATE);
                 int quantity = extras.getInt(Resources.QUANTITY);
                 quantityET.setText(String.valueOf(quantity));
             }
         }
+        setDateText(bestBefore); // Установка нужной даты в TextView
 
         String [] popularProducts = {
                 "баранина",
@@ -399,10 +394,10 @@ public class Add extends AppCompatActivity {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         if (month < 9) {
-            date.setText(day + "." + "0" + (month + 1) + "." + year);
+            dateTV.setText(day + "." + "0" + (month + 1) + "." + year);
         }
         else {
-            date.setText(day + "." + (month + 1) + "." + year);
+            dateTV.setText(day + "." + (month + 1) + "." + year);
         }
     }
 }

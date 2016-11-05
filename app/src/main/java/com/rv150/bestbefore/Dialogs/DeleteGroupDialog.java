@@ -10,10 +10,11 @@ import com.rv150.bestbefore.Activities.MainActivity;
 import com.rv150.bestbefore.R;
 
 /**
- * Created by ivan on 08.07.2016.
+ * Created by Rudnev on 05.11.2016.
  */
-public class DeleteAllMain extends DialogFragment {
-        public DeleteAllMain()
+
+public class DeleteGroupDialog  extends DialogFragment {
+        public DeleteGroupDialog()
         {
         }
 
@@ -26,7 +27,7 @@ public class DeleteAllMain extends DialogFragment {
                 public void onClick(DialogInterface dialog, int which) {
                     switch (which){
                         case DialogInterface.BUTTON_POSITIVE:
-                            ((MainActivity) getActivity()).deleteAll();
+                            ((MainActivity) getActivity()).deleteGroup();
                             break;
                         case DialogInterface.BUTTON_NEGATIVE:
                             break;
@@ -36,9 +37,10 @@ public class DeleteAllMain extends DialogFragment {
             };
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(R.string.sure_you_want_delete_all_products).
+            builder.setMessage(R.string.sure_you_want_to_delete_group_with_products).
                     setPositiveButton(R.string.yes, dialogClickListener).
                     setNegativeButton(R.string.no, dialogClickListener);
             return builder.create();
         }
     }
+

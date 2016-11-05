@@ -30,16 +30,6 @@ public final class Resources {
     public static final String FRESH_TO_SPOILED = "FRESH_TO_SPOILED";
     public static final String BY_NAME = "BY_NAME";
     public static final String SHOW_OVERDUE_DIALOG = "needShowOverdue";
-    public static final String DAY_CREATED = "DayCreated";
-    public static final String MONTH_CREATED = "MonthCreated";
-    public static final String YEAR_CREATED = "YearCreated";
-    public static final String HOUR_CREATED = "HourCreated";
-    public static final String MINUTE_CREATED = "MinuteCreated";
-    public static final String SECOND_CREATED = "SecondCreated";
-    public static final String MY_DAY = "myDay";
-    public static final String MY_MONTH = "myMonth";
-    public static final String MY_YEAR = "myYear";
-    public static final String CREATED_AT = "createdAt";
     public static final String NAME = "name";
     public static final String DATE = "date";
     public static final String QUANTITY = "quantity";
@@ -55,4 +45,5 @@ public final class Resources {
     public static final long ID_FOR_SETTINGS = -3;
     public static final long ID_FOR_FEEDBACK = -4;
     public static final long ID_FOR_ADD_GROUP = -5;
+    public static final long ID_FOR_OVERDUED = -6;
 }
