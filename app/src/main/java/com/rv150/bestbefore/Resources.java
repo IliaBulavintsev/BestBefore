@@ -33,7 +33,7 @@ public final class Resources {
     public static final String NAME = "name";
     public static final String DATE = "date";
     public static final String QUANTITY = "quantity";
-    public static final String GROUP_ID = "groupId";
+    public static final String GROUP_NAME = "groupName";
     public static final int RC_ADD_ACTIVITY = 0;
     public static final int RC_SIGN_IN = 1;
     public static final int RESULT_ADD = 1;

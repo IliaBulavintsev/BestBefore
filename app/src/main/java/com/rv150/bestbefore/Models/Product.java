@@ -17,6 +17,7 @@ public class Product {
     private int mQuantity;
     private Long groupId;
     private long id;
+    private int viewed = 0;
 
 
     public Product(String title, Calendar date, int quantity, Long groupId) {
@@ -113,10 +114,12 @@ public class Product {
     public JSONObject getJSON() throws JSONException {
         JSONObject result = new JSONObject();
         result.put("name", getTitle());
-        result.put("date", getDateStr());
-        result.put("createdAt", getCreatedAtStr());
+        result.put("date", getDate().getTimeInMillis());
+        result.put("createdAt", getCreatedAt().getTimeInMillis());
         result.put("quantity", getQuantity());
-        result.put("group_id", getGroupId());
+        result.put("id", getId());
+        result.put("groupId", getGroupId());
+        result.put("viewed", getViewed());
         return result;
     }
 
@@ -134,6 +137,14 @@ public class Product {
 
     public void setGroupId(Long groupId) {
         this.groupId = groupId;
+    }
+
+    public int getViewed() {
+        return viewed;
+    }
+
+    public void setViewed(int viewed) {
+        this.viewed = viewed;
     }
 
     public static Comparator<Product> getFreshToSpoiledComparator() {

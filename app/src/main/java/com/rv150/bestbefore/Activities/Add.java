@@ -18,6 +18,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.rv150.bestbefore.DAO.GroupDAO;
+import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
@@ -42,15 +44,19 @@ public class Add extends AppCompatActivity {
     private EditText quantityET;
     private RadioButton radio1;
     private Spinner spinner;
+    private Spinner spinnerGroups;
 
     private int DIALOG_DATE = 1;
     private boolean isChanging = false;
-    Long groupId;
+    private String groupName;
     private Calendar bestBefore;
 
     DBHelper dbHelper;
     SQLiteDatabase db;
     Cursor cursor;
+
+    GroupDAO groupDAO;
+    final List<String> groupNames = new ArrayList<>();
 
 
 
@@ -69,6 +75,7 @@ public class Add extends AppCompatActivity {
         days = (EditText)findViewById(R.id.days);
         quantityET = (EditText) findViewById(R.id.enterQuantity);
         quantityET.setText("1");
+        spinnerGroups = (Spinner) findViewById(R.id.spinner_groups);
 
         Typeface font = Typeface.createFromAsset(getAssets(), "san.ttf");
         name.setTypeface(font);
@@ -90,6 +97,21 @@ public class Add extends AppCompatActivity {
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spinnerAdapter);
 
+
+        groupDAO = new GroupDAO(getApplicationContext());
+        final List<Group> groups = groupDAO.getAll();
+        groupNames.add(getString(R.string.all_products));
+        for (Group group: groups) {
+            groupNames.add(group.getName());
+        }
+
+        ArrayAdapter<String> spinnerGroupsAdapter =
+                new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, groupNames);
+        spinnerGroupsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerGroups.setAdapter(spinnerGroupsAdapter);
+
+
+
         dbHelper = new DBHelper(getApplicationContext());
         bestBefore = new GregorianCalendar();
     }
@@ -109,7 +131,7 @@ public class Add extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            groupId = (Long) extras.get(Resources.GROUP_ID);
+            groupName = extras.getString(Resources.GROUP_NAME);
             String nameStr = extras.getString("name");
             if (nameStr != null) {          // Изменение продукта
                 isChanging = true;
@@ -120,6 +142,13 @@ public class Add extends AppCompatActivity {
                 quantityET.setText(String.valueOf(quantity));
             }
         }
+
+        if (groupName != null) {
+            int pos = groupNames.indexOf(groupName);
+            spinnerGroups.setSelection(pos);
+        }
+
+
         setDateText(bestBefore); // Установка нужной даты в TextView
 
         String [] popularProducts = {
@@ -365,9 +394,13 @@ public class Add extends AppCompatActivity {
 
         Intent intent = new Intent();
         intent.putExtra(Resources.NAME, enterName.getText().toString());
+        bestBefore.set(Calendar.HOUR_OF_DAY, 23);
+        bestBefore.set(Calendar.MINUTE, 59);
         intent.putExtra(Resources.DATE, bestBefore);
         intent.putExtra(Resources.QUANTITY, quantity);
-        intent.putExtra(Resources.GROUP_ID, groupId);
+
+        groupName = spinnerGroups.getSelectedItem().toString();
+        intent.putExtra(Resources.GROUP_NAME, groupName);
         if (isChanging) {
             setResult(Resources.RESULT_MODIFY, intent);   // Изменениe
         }

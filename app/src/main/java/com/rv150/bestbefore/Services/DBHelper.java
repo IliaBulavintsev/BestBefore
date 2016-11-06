@@ -28,10 +28,11 @@ public class DBHelper extends SQLiteOpenHelper {
         public static final String COLUMN_NAME_CREATED_AT = "created_at";
         public static final String COLUMN_NAME_QUANTITY = "quantity";
         public static final String COLUMN_NAME_GROUP_ID = "group_id";
+        public static final String COLUMN_NAME_VIEWED = "viewed";
     }
 
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 3;
+    public static final int DATABASE_VERSION = 4;
     public static final String DATABASE_NAME = "BestBefore.db";
 
     private static final String SQL_CREATE_AUTOCOMPLETED_TABLE  =
@@ -42,7 +43,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String SQL_CREATE_GROUP_TABLE  =
             "CREATE TABLE " + Group.TABLE_NAME + " (" +
                     Group._ID + " INTEGER PRIMARY KEY," +
-                    Group.COLUMN_NAME_NAME + " VARCHAR(50))";
+                    Group.COLUMN_NAME_NAME + " VARCHAR(50) UNIQUE)";
 
     private static final String SQL_CREATE_PRODUCT_TABLE  =
             "CREATE TABLE " + Product.TABLE_NAME + " (" +
@@ -52,6 +53,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     Product.COLUMN_NAME_CREATED_AT + " INTEGER NOT NULL," +
                     Product.COLUMN_NAME_QUANTITY + " INTEGER DEFAULT 1," +
                     Product.COLUMN_NAME_GROUP_ID + " INTEGER," +
+                    Product.COLUMN_NAME_VIEWED + " INTEGER DEFAULT 0," +
                     "FOREIGN KEY (" + Product.COLUMN_NAME_GROUP_ID + ") REFERENCES " +
                     Group.TABLE_NAME + "(" + Group._ID + ") ON DELETE CASCADE)";
 
@@ -76,8 +78,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(SQL_DELETE_AUTOCOMPLETED_TABLE);
-        onCreate(db);
+        db.execSQL(SQL_CREATE_GROUP_TABLE);
+        db.execSQL(SQL_CREATE_PRODUCT_TABLE);
     }
 
     @Override

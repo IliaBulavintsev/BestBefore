@@ -64,8 +64,12 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
             TextView name = viewHolder.nameTextView;
             name.setText(item.getTitle());
 
-            TextView quantity = viewHolder.quantityTextView;
-            quantity.setText(String.format("Кол-во: %d", item.getQuantity()));
+            int quantity = item.getQuantity();
+            String quantityStr = "Кол-во: " + quantity;
+            if (quantity < 10) {
+                quantityStr += "  ";
+            }
+            viewHolder.quantityTextView.setText(quantityStr);
 
             Calendar calendar = item.getDate();
             int year = calendar.get(Calendar.YEAR);

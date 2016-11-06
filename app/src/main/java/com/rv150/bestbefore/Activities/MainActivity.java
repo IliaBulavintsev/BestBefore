@@ -37,6 +37,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.mikepenz.materialdrawer.model.DividerDrawerItem;
@@ -75,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private DBHelper dbHelper;
     private Product deletedProduct;
     private TextView isEmpty;
+    private FloatingActionButton fab;
 
     private ProductDAO productDAO;
     private GroupDAO groupDAO;
@@ -99,17 +101,19 @@ public class MainActivity extends AppCompatActivity {
         Typeface font = Typeface.createFromAsset(getAssets(), "san.ttf");
         isEmpty.setTypeface(font);
 
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+
         // DB helper
         dbHelper = new DBHelper(getApplicationContext());
         productDAO = new ProductDAO(getApplicationContext());
         groupDAO = new GroupDAO(getApplicationContext());
 
         rvProducts = (RecyclerView) findViewById(R.id.rvProducts);
-        wrapperList = productDAO.getAllFromDB();
         setUpRecyclerView();
 
-
         setUpDrawer(toolbar);
+
+        wrapperList = productDAO.getFresh();
 
 
 
@@ -182,11 +186,13 @@ public class MainActivity extends AppCompatActivity {
         PrimaryDrawerItem settings = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_SETTINGS)
                 .withName(R.string.settings)
-                .withSelectable(false);
+                .withSelectable(false)
+                .withIcon(GoogleMaterial.Icon.gmd_settings);
         PrimaryDrawerItem feedback = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_FEEDBACK)
                 .withName(R.string.feedback)
-                .withSelectable(false);
+                .withSelectable(false)
+                .withIcon(GoogleMaterial.Icon.gmd_email);
 
         drawer = new DrawerBuilder()
                 .withActivity(this)
@@ -232,11 +238,6 @@ public class MainActivity extends AppCompatActivity {
             showAddGroupDialog();
             return;
         }
-        if (id == Resources.ID_FOR_OVERDUED) {
-            Intent intent = new Intent(this, Overdue.class);
-            startActivity(intent);
-            return;
-        }
         if (id == Resources.ID_FOR_SETTINGS) {
             Intent intent = new Intent(this, Preferences.class);
             startActivity(intent);
@@ -256,13 +257,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void changeGroup() {
         if (groupChoosen == Resources.ID_MAIN_GROUP) {
-            wrapperList = productDAO.getAllFromDB();
+            wrapperList = productDAO.getFresh();
             setTitle(R.string.all_products);
+            fab.show();
+        }
+        else if (groupChoosen == Resources.ID_FOR_OVERDUED) {
+            wrapperList = productDAO.getOverdued();
+            setTitle(R.string.overdue_products);
+            fab.hide();
         }
         else {
             Group group = groupDAO.get(groupChoosen);
-            wrapperList = productDAO.getFromGroup(group.getId());
+            wrapperList = productDAO.getFreshFromGroup(group.getId());
             setTitle(group.getName());
+            fab.show();
         }
         sortMainList();
         adapter = new RecyclerAdapter(wrapperList);
@@ -321,23 +329,38 @@ public class MainActivity extends AppCompatActivity {
 
     private void createGroup(String name) {
         Group newGroup = new Group(name);
-        long id = groupDAO.insertGroup(newGroup);
+        long id;
+        try {
+            id = groupDAO.insertGroup(newGroup);
+        }
+        catch (RuntimeException e) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.group_with_this_name_already_exists, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
         PrimaryDrawerItem newItem = new PrimaryDrawerItem()
                 .withName(name)
                 .withIdentifier(id);
-        drawer.addItemAtPosition(newItem, drawerPosition++);
+        drawer.addItemAtPosition(newItem, drawerPosition);
+        drawer.setSelectionAtPosition(drawerPosition);
+        drawerPosition++;
         groupChoosen = id;
         changeGroup();
     }
 
     public void clearGroup() {
         if (groupChoosen == Resources.ID_MAIN_GROUP) {
-            productDAO.deleteAll();
+            productDAO.deleteFresh();
             StatCollector.shareStatistic(this, "deleted all fresh products");
+        }
+        else if (groupChoosen == Resources.ID_FOR_OVERDUED) {
+            productDAO.deleteOverdued();
+            StatCollector.shareStatistic(this, "deleted all overdued products");
         }
         else {
             Group group = groupDAO.get(groupChoosen);
-            productDAO.deleteFromGroup(group.getId());
+            productDAO.deleteFreshFromGroup(group.getId());
             StatCollector.shareStatistic(this, "deleted all from \"" + group.getName() + "\"");
         }
 
@@ -360,21 +383,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
+        // Стереть напоминания
         NotificationManager notifManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notifManager.cancelAll();
 
 
-        // Удаление просроченных
-        List<String> newOverdue = DeleteOverdue.delete(this, wrapperList);
-        boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
 
-        if (needShowOverdue  && !newOverdue.isEmpty()) {
-            CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.last_overdue);
-            builder.setItems(cs, null);
-            builder.show();
+        boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
+        if (needShowOverdue) {
+            // Удаление просроченных и показ сообщения
+            List<Product> temp = productDAO.getAllFromDB();        // берем все продукты из базы
+            List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp);
+            DeleteOverdue.markViewed(productDAO, temp);
+            if (!newOverdue.isEmpty()) {
+                CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.last_overdue);
+                builder.setItems(cs, null);
+                builder.show();
+            }
         }
 
         sortMainList();
@@ -432,7 +459,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void restoreItem() {
         wrapperList.add(position, deletedProduct);
-        productDAO.insertProduct(deletedProduct);
+        long id = productDAO.insertProduct(deletedProduct);
+        deletedProduct.setId(id);
         deletedProduct = null;
         position = -1;
         adapter = new RecyclerAdapter(wrapperList);
@@ -458,7 +486,10 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.action_delete_group) {
-            if (groupChoosen == Resources.ID_MAIN_GROUP) {  // Главная группа не удаляется
+            if (groupChoosen == Resources.ID_MAIN_GROUP || groupChoosen == Resources.ID_FOR_OVERDUED) {
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        R.string.you_can_not_delete_group, Toast.LENGTH_SHORT);
+                toast.show();
                 return true;
             }
             DialogFragment dialogDeleteGroup = new DeleteGroupDialog();
@@ -487,10 +518,11 @@ public class MainActivity extends AppCompatActivity {
     public void onFabClick(View view) {
         Intent intent = new Intent(MainActivity.this, Add.class);
         if (groupChoosen == Resources.ID_MAIN_GROUP) {
-            intent.putExtra(Resources.GROUP_ID, (Long)null);
+            intent.putExtra(Resources.GROUP_NAME, getString(R.string.all_products));
         }
         else {
-            intent.putExtra(Resources.GROUP_ID, groupChoosen);
+            Group group = groupDAO.get(groupChoosen);
+            intent.putExtra(Resources.GROUP_NAME, group.getName());
         }
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
@@ -505,7 +537,15 @@ public class MainActivity extends AppCompatActivity {
             String name = data.getExtras().getString(Resources.NAME);
             Calendar date = (Calendar) data.getExtras().get(Resources.DATE);
             int quantity = (int) data.getExtras().get(Resources.QUANTITY);
-            Long groupId = (Long) data.getExtras().get(Resources.GROUP_ID);
+            String groupName = (String) data.getExtras().get(Resources.GROUP_NAME);
+            Long groupId;
+            if (groupName != null && groupName.equals(getString(R.string.all_products))) {
+                groupId = null;
+            }
+            else {
+                Group group = groupDAO.get(groupName);
+                groupId = group.getId();
+            }
 
 
             if (resultCode == Resources.RESULT_ADD) {                              // Добавление
@@ -529,6 +569,7 @@ public class MainActivity extends AppCompatActivity {
                     editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
                     editor.apply();
                 }
+
             } else if (resultCode == Resources.RESULT_MODIFY) {               // Изменение
                 Product product = wrapperList.get(position);
                 product.setTitle(name);
@@ -612,8 +653,6 @@ public class MainActivity extends AppCompatActivity {
         rvProducts.addItemDecoration(dividerItemDecoration);
         setUpItemTouchHelper();
         setUpAnimationDecoratorHelper();
-
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         rvProducts.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy)
@@ -623,7 +662,9 @@ public class MainActivity extends AppCompatActivity {
                     fab.hide();
                 }
                 else {
-                    fab.show();
+                    if (groupChoosen != Resources.ID_FOR_OVERDUED) {
+                        fab.show();
+                    }
                 }
             }
 
@@ -824,7 +865,8 @@ public class MainActivity extends AppCompatActivity {
         Calendar date = item.getDate();
         intent.putExtra(Resources.DATE, date);
         intent.putExtra(Resources.QUANTITY, item.getQuantity());
-        intent.putExtra(Resources.GROUP_ID, item.getGroupId());
+        Group group = groupDAO.get(item.getGroupId());
+        intent.putExtra(Resources.GROUP_NAME, group.getName());
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 

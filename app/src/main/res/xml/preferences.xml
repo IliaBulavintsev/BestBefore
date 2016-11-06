@@ -128,10 +128,4 @@
         </PreferenceScreen>
 
 
-    <Preference
-        android:key="feedback"
-        android:title="@string/feedback" />
-
-
-
 </PreferenceScreen>

@@ -31,6 +31,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.rv150.bestbefore.DAO.GroupDAO;
+import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Network.HttpPostBackup;
 import com.rv150.bestbefore.Network.HttpPostRestore;
@@ -61,6 +63,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     Preference auth;
 
     SharedPreferences sPrefs;
+    ProductDAO productDAO;
+    GroupDAO groupDAO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +85,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         addPreferencesFromResource(R.xml.preferences);
 
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        productDAO = new ProductDAO(getApplicationContext());
+        groupDAO = new GroupDAO(getApplicationContext());
 
 
         // Листенеры на тайм пикеры
@@ -136,18 +142,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             }
         });
 
-
-
-        Preference feedback = findPreference("feedback");
-        feedback.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                String [] addresses = {"rudnev.vanya@gmail.com"};
-                String subject = "Фидбек по приложению \"Срок годности\"";
-                composeEmail(addresses, subject);
-                return true;
-            }
-        });
 
 
 
@@ -242,10 +236,9 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void backup() {
-        List<Product> freshFood = ProductDAO.getFreshProducts(this);
-        List<Product> overdueFood = ProductDAO.getOverdueProducts(this);
+        List<Product> products = productDAO.getAllFromDB();
 
-        if (freshFood.isEmpty() && overdueFood.isEmpty()) {
+        if (products.isEmpty()) {
             Toast toast = Toast.makeText(getApplicationContext(),
                              R.string.nothing_to_backup, Toast.LENGTH_SHORT);
             toast.show();
@@ -266,22 +259,22 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             result.put("idToken", idToken);
 
             // Массив свежих продуктов
-            JSONArray freshProducts = new JSONArray();
-            for (Product item : freshFood) {
+            JSONArray productsJson = new JSONArray();
+            for (Product item : products) {
                 JSONObject json = item.getJSON();
-                freshProducts.put(json);
-            }
-
-            // Массив просроченных
-            JSONArray overdueProducts = new JSONArray();
-            for (Product item : overdueFood) {
-                JSONObject json = item.getJSON();
-                overdueProducts.put(json);
+                productsJson.put(json);
             }
 
 
-            result.put("fresh", freshProducts);
-            result.put("overdue", overdueProducts);
+            result.put("products", productsJson);
+
+            List<Group> groups = groupDAO.getAll();
+            JSONArray groupsJson = new JSONArray();
+            for (Group group: groups) {
+                JSONObject json = group.getJSON();
+                groupsJson.put(json);
+            }
+            result.put("groups", groupsJson);
         }
         catch (JSONException e) {
             Toast toast = Toast.makeText(getApplicationContext(),
@@ -493,19 +486,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         protected String doInBackground(final String... args) {
             DBHelper dbHelper = new DBHelper(context);
             SQLiteDatabase db = dbHelper.getWritableDatabase();
-            db.execSQL("delete from "+ DBHelper.AutoCompletedProducts.TABLE_NAME);
+            db.execSQL("deleteAndReturnOverdued from "+ DBHelper.AutoCompletedProducts.TABLE_NAME);
             return null;
-        }
-    }
-
-
-    private void composeEmail(String[] addresses, String subject) {
-        Intent intent = new Intent(Intent.ACTION_SENDTO);
-        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
-        intent.putExtra(Intent.EXTRA_EMAIL, addresses);
-        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
         }
     }
 }

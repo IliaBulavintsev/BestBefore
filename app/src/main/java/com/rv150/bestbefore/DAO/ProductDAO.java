@@ -52,83 +52,101 @@ public class ProductDAO {
         List<Product> products = new ArrayList<>();
 
         while (cursor.moveToNext()) {
-            String name = cursor.getString(
-                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_NAME));
-            long dateInMillis = cursor.getLong(
-                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_DATE));
+            products.add(mapProduct(cursor));
+        }
+        cursor.close();
+        return products;
+    }
 
-            long createdAtInMillis = cursor.getLong(
-                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_CREATED_AT));
+    public List<Product> getOverdued() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Calendar now = new GregorianCalendar();
+        String query = "SELECT * FROM " + DBHelper.Product.TABLE_NAME +
+                " WHERE " + DBHelper.Product.COLUMN_NAME_DATE + " < " + now.getTimeInMillis();
+        Cursor cursor = db.rawQuery(query, null);
+        List<Product> products = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            products.add(mapProduct(cursor));
+        }
+        cursor.close();
+        return products;
+    }
 
-            int quantity = cursor.getInt(
-                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_QUANTITY));
-
-            Long groupId;
-            if (cursor.isNull(cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_GROUP_ID))) {
-                groupId = null;
-            }
-            else {
-                groupId = cursor.getLong(
-                        cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_GROUP_ID));
-            }
-
-            long id = cursor.getLong(
-                    cursor.getColumnIndexOrThrow(DBHelper.Product._ID));
-
-            Calendar date = new GregorianCalendar();
-            date.setTimeInMillis(dateInMillis);
-
-            Calendar createdAt =  new GregorianCalendar();
-            createdAt.setTimeInMillis(createdAtInMillis);
-
-            Product product = new Product(name, date, createdAt, quantity, groupId);
-            product.setId(id);
-            products.add(product);
+    public List<Product> getFresh() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Calendar now = new GregorianCalendar();
+        String query = "SELECT * FROM " + DBHelper.Product.TABLE_NAME +
+                " WHERE " + DBHelper.Product.COLUMN_NAME_DATE + " > " + now.getTimeInMillis();
+        Cursor cursor = db.rawQuery(query, null);
+        List<Product> products = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            products.add(mapProduct(cursor));
         }
         cursor.close();
         return products;
     }
 
 
-    public List<Product> getFromGroup (long groupId) {
+    public List<Product> getFreshFromGroup (long groupId) {
         if (groupId == Resources.ID_MAIN_GROUP) {
             return getAllFromDB();              // Для основной группы вернуть все продукты
         }
         SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Calendar now = new GregorianCalendar();
         String query = "SELECT * FROM " + DBHelper.Product.TABLE_NAME +
-                " WHERE " + DBHelper.Product.COLUMN_NAME_GROUP_ID + " = " + groupId;
+                " WHERE " + DBHelper.Product.COLUMN_NAME_GROUP_ID + " = " + groupId +
+                " AND " + DBHelper.Product.COLUMN_NAME_DATE + " > " + now.getTimeInMillis();
         Cursor cursor = db.rawQuery(query, null);
         List<Product> products = new ArrayList<>();
 
         while (cursor.moveToNext()) {
-            String name = cursor.getString(
-                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_NAME));
-            long dateInMillis = cursor.getLong(
-                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_DATE));
-
-            long createdAtInMillis = cursor.getLong(
-                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_CREATED_AT));
-
-            int quantity = cursor.getInt(
-                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_QUANTITY));
-
-            long id = cursor.getLong(
-                    cursor.getColumnIndexOrThrow(DBHelper.Product._ID));
-
-            Calendar date = new GregorianCalendar();
-            date.setTimeInMillis(dateInMillis);
-
-            Calendar createdAt =  new GregorianCalendar();
-            createdAt.setTimeInMillis(createdAtInMillis);
-
-            Product product = new Product(name, date, createdAt, quantity, groupId);
-            product.setId(id);
-            products.add(product);
+            products.add(mapProduct(cursor));
         }
         cursor.close();
         return products;
     }
 
+
+
+
+    private Product mapProduct(final Cursor cursor) {
+        String name = cursor.getString(
+                cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_NAME));
+        long dateInMillis = cursor.getLong(
+                cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_DATE));
+
+        long createdAtInMillis = cursor.getLong(
+                cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_CREATED_AT));
+
+        int quantity = cursor.getInt(
+                cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_QUANTITY));
+
+        Long groupId;
+        if (cursor.isNull(cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_GROUP_ID))) {
+            groupId = null;
+        }
+        else {
+            groupId = cursor.getLong(
+                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_GROUP_ID));
+        }
+
+        long id = cursor.getLong(
+                cursor.getColumnIndexOrThrow(DBHelper.Product._ID));
+
+        int viewed = cursor.getInt(
+                cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_VIEWED));
+
+        Calendar date = new GregorianCalendar();
+        date.setTimeInMillis(dateInMillis);
+
+        Calendar createdAt =  new GregorianCalendar();
+        createdAt.setTimeInMillis(createdAtInMillis);
+
+        Product product = new Product(name, date, createdAt, quantity, groupId);
+        product.setId(id);
+        product.setViewed(viewed);
+        return product;
+    }
 
     public void insertProducts (List<Product> products) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -138,7 +156,8 @@ public class ProductDAO {
             values.put(DBHelper.Product.COLUMN_NAME_DATE, product.getDate().getTimeInMillis());
             values.put(DBHelper.Product.COLUMN_NAME_CREATED_AT, product.getCreatedAt().getTimeInMillis());
             values.put(DBHelper.Product.COLUMN_NAME_QUANTITY, product.getQuantity());
-            values.putNull(DBHelper.Product.COLUMN_NAME_GROUP_ID);
+            values.put(DBHelper.Product.COLUMN_NAME_GROUP_ID, product.getGroupId());
+            values.put(DBHelper.Product.COLUMN_NAME_VIEWED, product.getViewed());
             db.insert(DBHelper.Product.TABLE_NAME, null, values);
         }
     }
@@ -152,6 +171,7 @@ public class ProductDAO {
         values.put(DBHelper.Product.COLUMN_NAME_CREATED_AT, product.getCreatedAt().getTimeInMillis());
         values.put(DBHelper.Product.COLUMN_NAME_QUANTITY, product.getQuantity());
         values.put(DBHelper.Product.COLUMN_NAME_GROUP_ID, product.getGroupId());
+        values.put(DBHelper.Product.COLUMN_NAME_VIEWED, product.getViewed());
         return db.insert(DBHelper.Product.TABLE_NAME, null, values);
     }
 
@@ -167,21 +187,33 @@ public class ProductDAO {
         values.put(DBHelper.Product.COLUMN_NAME_DATE, product.getDate().getTimeInMillis());
         values.put(DBHelper.Product.COLUMN_NAME_QUANTITY, product.getQuantity());
         values.put(DBHelper.Product.COLUMN_NAME_GROUP_ID, product.getGroupId());
+        values.put(DBHelper.Product.COLUMN_NAME_VIEWED, product.getViewed());
         db.update(DBHelper.Product.TABLE_NAME, values,
-                DBHelper.Product._ID + "=?", new String[] {String.valueOf(product.getId())});
+                DBHelper.Product._ID + " = ?", new String[] {String.valueOf(product.getId())});
 
     }
 
 
-    public void deleteFromGroup (long groupId) {
+    public void deleteFreshFromGroup (long groupId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.delete(DBHelper.Product.TABLE_NAME, DBHelper.Product.COLUMN_NAME_GROUP_ID + "=?",
-                new String[] {String.valueOf(groupId)});
+        Calendar now = new GregorianCalendar();
+        db.delete(DBHelper.Product.TABLE_NAME, DBHelper.Product.COLUMN_NAME_GROUP_ID + " = ? AND " +
+                DBHelper.Product.COLUMN_NAME_DATE + " > ?",
+                new String[] {String.valueOf(groupId), String.valueOf(now.getTimeInMillis())});
     }
 
-    public void deleteAll() {
+    public void deleteFresh() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.delete(DBHelper.Product.TABLE_NAME, null, null);
+        Calendar now = new GregorianCalendar();
+        db.delete(DBHelper.Product.TABLE_NAME, DBHelper.Product.COLUMN_NAME_DATE + " > ?",
+                new String[] {String.valueOf(now.getTimeInMillis())});
+    }
+
+    public void deleteOverdued() {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        Calendar now = new GregorianCalendar();
+        db.delete(DBHelper.Product.TABLE_NAME, DBHelper.Product.COLUMN_NAME_DATE + " < ?",
+                new String[] {String.valueOf(now.getTimeInMillis())});
     }
 
 

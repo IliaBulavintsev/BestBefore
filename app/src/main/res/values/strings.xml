@@ -101,4 +101,8 @@
     <string name="developer_email">rudnev.vanya@gmail.com</string>
     <string name="delete_group">Удалить группу</string>
     <string name="sure_you_want_to_delete_group_with_products">Вы действительно хотите удалить эту группу со всеми ее продуктами?</string>
+    <string name="you_can_not_delete_group">Эту группу нельзя удалить</string>
+    <string name="logo_description">Header for navigation drawer</string>
+    <string name="group">Группа</string>
+    <string name="group_with_this_name_already_exists">Группа с таким названием уже существует</string>
 </resources>

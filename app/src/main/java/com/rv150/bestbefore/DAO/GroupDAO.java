@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 
@@ -63,13 +64,32 @@ public class GroupDAO {
         return group;
     }
 
+    public Group get (String name) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String query = "SELECT * FROM " + DBHelper.Group.TABLE_NAME +
+                " WHERE " + DBHelper.Group.COLUMN_NAME_NAME + " = \"" + name + "\"";
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToNext();
+        long id = cursor.getLong(
+                cursor.getColumnIndexOrThrow(DBHelper.Group._ID));
+        Group group = new Group(name);
+        group.setId(id);
+        cursor.close();
+        return group;
+    }
+
 
 
     public long insertGroup(Group group) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DBHelper.Group.COLUMN_NAME_NAME, group.getName());
-        return db.insert(DBHelper.Group.TABLE_NAME, null, values);
+        try {
+            return db.insertOrThrow(DBHelper.Group.TABLE_NAME, null, values);
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void deleteGroup(long id) {

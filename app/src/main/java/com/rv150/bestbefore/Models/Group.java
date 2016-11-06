@@ -1,5 +1,8 @@
 package com.rv150.bestbefore.Models;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by Rudnev on 05.11.2016.
  */
@@ -26,5 +29,12 @@ public class Group {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public JSONObject getJSON() throws JSONException {
+        JSONObject result = new JSONObject();
+        result.put("name", getName());
+        result.put("id", getId());
+        return result;
     }
 }

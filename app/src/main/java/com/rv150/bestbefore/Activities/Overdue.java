@@ -20,10 +20,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.mikepenz.materialdrawer.Drawer;
+import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.Dialogs.DeleteAllOverdued;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.RecyclerAdapter;
+import com.rv150.bestbefore.Resources;
+import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.StatCollector;
 import com.rv150.bestbefore.Models.Product;
 
@@ -43,6 +47,14 @@ public class Overdue extends AppCompatActivity {
     private int position = -1;
     private Product deletedProduct;
 
+    DBHelper dbHelper;
+    private ProductDAO productDAO;
+    private GroupDAO groupDAO;
+
+    private Drawer drawer;
+    private int drawerPosition = 2;
+    private long groupChoosen = Resources.ID_MAIN_GROUP;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +62,10 @@ public class Overdue extends AppCompatActivity {
         setContentView(R.layout.overdue);
 
         isEmpty = (TextView) findViewById(R.id.isEmptyOverdue);
+        // DB helper
+        dbHelper = new DBHelper(getApplicationContext());
+        productDAO = new ProductDAO(getApplicationContext());
+        groupDAO = new GroupDAO(getApplicationContext());
 
         recyclerView = (RecyclerView) findViewById(R.id.overdue_list);
         overdueList = new ArrayList<>();
