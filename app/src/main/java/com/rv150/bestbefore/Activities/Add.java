@@ -49,7 +49,11 @@ public class Add extends AppCompatActivity {
     private RadioButton radio1;
     private Spinner spinnerBestBefore;
     private Spinner spinnerGroups;
+
+    // For spinner with groups
     int wasSelected = 0;
+    // For clear first time quantity ET
+    boolean isFirstTimeGetFocused = true;
 
     private int DIALOG_DATE = 1;
     private boolean isChanging = false;
@@ -81,18 +85,7 @@ public class Add extends AppCompatActivity {
         days = (EditText)findViewById(R.id.days);
         quantityET = (EditText) findViewById(R.id.enterQuantity);
         quantityET.setText("1");
-        spinnerGroups = (Spinner) findViewById(R.id.spinner_groups);
-
-        Typeface font = Typeface.createFromAsset(getAssets(), "san.ttf");
-        name.setTypeface(font);
-        chooseDate.setTypeface(font);
-        chooseDate2.setTypeface(font);
-        bestBeforeTxt.setTypeface(font);
-
-        enterName.setTypeface(font);
-        dateTV.setTypeface(font);
-        days.setTypeface(font);
-        quantityET.setTypeface(font);
+        spinnerGroups = (Spinner) findViewById(R.id.spinner_groups);;
         radio1 = (RadioButton)findViewById(R.id.radioButton1);
 
         String[] spinnerItems = new String[]{
@@ -136,6 +129,17 @@ public class Add extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent)
             {
 
+            }
+        });
+
+
+        quantityET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(hasFocus && isFirstTimeGetFocused){
+                    quantityET.setText("");
+                    isFirstTimeGetFocused = false;
+                }
             }
         });
     }
@@ -417,7 +421,9 @@ public class Add extends AppCompatActivity {
 
 
         Intent intent = new Intent();
-        intent.putExtra(Resources.NAME, enterName.getText().toString());
+        String name = enterName.getText().toString();
+        name = name.substring(0, 1).toUpperCase() + name.substring(1);
+        intent.putExtra(Resources.NAME, name);
         bestBefore.set(Calendar.HOUR_OF_DAY, 23);
         bestBefore.set(Calendar.MINUTE, 59);
         intent.putExtra(Resources.DATE, bestBefore);
@@ -471,6 +477,7 @@ public class Add extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String result = input.getText().toString();
+                result = result.substring(0, 1).toUpperCase() + result.substring(1);
                 if (result.isEmpty()) {
                     Toast toast = Toast.makeText(getApplicationContext(),
                             R.string.wrong_name, Toast.LENGTH_SHORT);

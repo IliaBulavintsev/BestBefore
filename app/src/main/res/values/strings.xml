@@ -83,7 +83,7 @@
     <string name="quantity">Количество</string>
     <string name="sync_with_google">Синхронизация с Google</string>
     <string name="nothing_to_backup">Нет данных для бекапа!</string>
-    <string name="sure_you_want_delete_all_products">Вы действительно хотите удалить все продукты?</string>
+    <string name="sure_you_want_delete_all_products">Вы действительно хотите удалить все продукты из этой группы?</string>
     <string name="days_in_add_act">суток</string>
     <string name="months_in_add_act">месяцев</string>
     <string name="clear_user_dictionary">Очистить пользовательский словарь</string>
@@ -108,4 +108,5 @@
     <string name="create_group_in_spinner">Создать группу&#8230;</string>
     <string name="group_was_created">Группа создана</string>
     <string name="group_was_deleted">Группа удалена</string>
+    <string name="group_was_cleared">Группа очищена</string>
 </resources>

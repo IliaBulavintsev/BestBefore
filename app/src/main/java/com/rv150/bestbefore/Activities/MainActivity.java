@@ -68,6 +68,10 @@ import java.util.List;
 
 
 
+// сегодняшний продукты при обновлении попадают в просрок (видимо из-за 23-59)
+// все старые просроки появляются в недавно просроченных
+
+
 public class MainActivity extends AppCompatActivity {
     private List<Product> wrapperList;
     private SharedPreferences sPrefs;
@@ -96,14 +100,12 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         setTitle(R.string.all_products);
 
+        isEmpty = (TextView)findViewById(R.id.isEmptyText);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        isEmpty = (TextView)findViewById(R.id.isEmptyText);
-        Typeface font = Typeface.createFromAsset(getAssets(), "san.ttf");
-        isEmpty.setTypeface(font);
-
-        fab = (FloatingActionButton) findViewById(R.id.fab);
 
         // DB helper
         dbHelper = new DBHelper(getApplicationContext());
@@ -120,10 +122,18 @@ public class MainActivity extends AppCompatActivity {
         boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
 
 
+        SharedPreferences.Editor editor = sPrefs.edit();
         boolean needMigrate = sPrefs.getBoolean(Resources.NEED_MIGRATE, true);
-        if (needMigrate && !showWelcomeScreen) {
-            migrateToDB();
+        if (needMigrate) {
+            if (!showWelcomeScreen) {
+                migrateToDB();
+            }
+            editor.putBoolean(Resources.NEED_MIGRATE, false);
+            editor.apply();
         }
+
+
+
 
 
         wrapperList = productDAO.getFresh();
@@ -140,10 +150,7 @@ public class MainActivity extends AppCompatActivity {
                     dialog.dismiss();
                 }
             }).show();
-            SharedPreferences.Editor editor = sPrefs.edit();
             editor.putBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, false);
-            editor.putBoolean(Resources.WHATS_NEW, false);
-            editor.putBoolean(Resources.NEED_MIGRATE, false);
 
             Calendar installedAt = new GregorianCalendar();
             int installDay = installedAt.get(Calendar.DAY_OF_MONTH);
@@ -165,11 +172,11 @@ public class MainActivity extends AppCompatActivity {
                                 dialog.dismiss();
                             }
                         }).show();
-                SharedPreferences.Editor editor = sPrefs.edit();
-                editor.putBoolean(Resources.WHATS_NEW, false);
-                editor.apply();
             }
         }
+
+        editor.putBoolean(Resources.WHATS_NEW, false);
+        editor.apply();
 
         if (showWelcomeScreen) {
             StatCollector.shareStatistic(this, "First launch ");
@@ -328,6 +335,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String result = input.getText().toString();
+                result = result.substring(0, 1).toUpperCase() + result.substring(1);
                 if (result.isEmpty()) {
                     Toast toast = Toast.makeText(getApplicationContext(),
                             R.string.wrong_name, Toast.LENGTH_SHORT);
@@ -389,6 +397,9 @@ public class MainActivity extends AppCompatActivity {
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
         isEmpty.setVisibility(View.VISIBLE);
+        Toast toast = Toast.makeText(getApplicationContext(),
+                R.string.group_was_cleared, Toast.LENGTH_SHORT);
+        toast.show();
     }
 
     public void deleteGroup() {
@@ -422,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
         if (needShowOverdue) {
             // Удаление просроченных и показ сообщения
             List<Product> temp = productDAO.getAllFromDB();        // берем все продукты из базы
-            List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp);
+            List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp, getApplicationContext());
             DeleteOverdue.markViewed(productDAO, temp);
             if (!newOverdue.isEmpty()) {
                 CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);
@@ -928,6 +939,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void sortMainList() {
         // Сортировка
+
+        if (groupChoosen == Resources.ID_FOR_OVERDUED) {
+            Collections.sort(wrapperList, Product.getFreshToSpoiledComparator());
+            return;
+        }
+
         if (wrapperList.size() >= 2) {
             String howToSort = sPrefs.getString(Resources.PREF_HOW_TO_SORT, Resources.STANDART);
             switch (howToSort) {
@@ -953,9 +970,17 @@ public class MainActivity extends AppCompatActivity {
     private void migrateToDB() {
         List<Product> fresh = ProductDAO.getFreshProducts(this);
         List<Product> overdue = ProductDAO.getOverdueProducts(this);
+        for (Product product: overdue) {
+            product.setViewed(1);
+        }
         List<Product> all = new ArrayList<>();
         all.addAll(fresh);
         all.addAll(overdue);
+        for (Product product: all) {
+            Calendar date = product.getDate();
+            date.set(Calendar.HOUR_OF_DAY, 23);
+            date.set(Calendar.MINUTE, 59);
+        }
         if (!all.isEmpty()) {
             productDAO.insertProducts(all);
         }

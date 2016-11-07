@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="accent_material_light">#196733</color>
-    <color name="new_color">#20994a</color>
+    <color name="new_color">#388e3c</color>
     <color name="red_color">#e34923</color>
     <color name="buttons_back">#d6d7d7</color>
     <item name="item_click_support" type="id" />

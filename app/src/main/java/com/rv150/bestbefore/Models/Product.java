@@ -117,7 +117,6 @@ public class Product {
         result.put("date", getDate().getTimeInMillis());
         result.put("createdAt", getCreatedAt().getTimeInMillis());
         result.put("quantity", getQuantity());
-        result.put("id", getId());
         result.put("groupId", getGroupId());
         result.put("viewed", getViewed());
         return result;

@@ -3,8 +3,16 @@ package com.rv150.bestbefore;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Typeface;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.SpannedString;
+import android.text.style.StyleSpan;
 
+import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.Services.DBHelper;
 
@@ -19,13 +27,13 @@ import java.util.List;
  * Класс получает на вход список и переносит просроченные в отдельную коллекцию
  */
 public class DeleteOverdue {
-    public static List<String> getOverdueNamesAndRemoveFresh(List<Product> wrapperList) {
+    public static List<String> getOverdueNamesAndRemoveFresh(List<Product> wrapperList, Context context) {
+        GroupDAO groupDAO = new GroupDAO(context);
         List<String> newOverdue = new ArrayList<>();
         for (Iterator<Product> iterator = wrapperList.iterator(); iterator.hasNext(); ) {
             Product currentItem = iterator.next();
             Calendar date = currentItem.getDate();
             Calendar currentDate = new GregorianCalendar();
-            Calendar createdAt = currentItem.getCreatedAt();
             int viewed = currentItem.getViewed();
             long difference = currentDate.getTimeInMillis() - date.getTimeInMillis();
             if (difference > 0 && viewed == 0) {    // Уже просмотренным продуктам
@@ -51,6 +59,15 @@ public class DeleteOverdue {
             }
         }
         return newOverdue;
+    }
+
+    public static SpannedString bold(String text, String boldText) {
+        int start = text.length() + 1;
+
+        SpannableStringBuilder ssb = new SpannableStringBuilder(text + " " + boldText);
+        StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
+        ssb.setSpan(boldSpan, start, start + boldText.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        return new SpannedString(ssb);
     }
 
     public static void markViewed(ProductDAO productDAO, List<Product> wrapperList) {

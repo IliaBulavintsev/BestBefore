@@ -213,6 +213,12 @@ public class ProductDAO {
             final int quantity = prefs.getInt(Resources.QUANTITY + String.valueOf(i), 1);
             Product temp = new Product(title, date, createdAt, quantity, null);
             list.add(temp);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.remove(String.valueOf(i));
+            editor.remove(String.valueOf(i+500));
+            editor.remove(String.valueOf(i+1000));
+            editor.remove(Resources.QUANTITY + String.valueOf(i));
+            editor.apply();
         }
         return list;
     }
@@ -229,6 +235,11 @@ public class ProductDAO {
             final String date = prefs.getString("del" + String.valueOf(i + 1000), "0.0.0");
             final int quantity = prefs.getInt("del" + Resources.QUANTITY + String.valueOf(i), 1);
             list.add(new Product(title, date, quantity, null));
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.remove(String.valueOf("del" + String.valueOf(i)));
+            editor.remove(String.valueOf("del" + String.valueOf(i + 1000)));
+            editor.remove("del" + Resources.QUANTITY + String.valueOf(i));
+            editor.apply();
         }
         return list;
     }

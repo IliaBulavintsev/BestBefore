@@ -1,1 +1,0 @@
-Font download from www.sanfranciscofont.ru
