@@ -2,13 +2,17 @@ package com.rv150.bestbefore.Activities;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.DatePicker;
@@ -43,8 +47,9 @@ public class Add extends AppCompatActivity {
     private EditText days;
     private EditText quantityET;
     private RadioButton radio1;
-    private Spinner spinner;
+    private Spinner spinnerBestBefore;
     private Spinner spinnerGroups;
+    int wasSelected = 0;
 
     private int DIALOG_DATE = 1;
     private boolean isChanging = false;
@@ -57,6 +62,7 @@ public class Add extends AppCompatActivity {
 
     GroupDAO groupDAO;
     final List<String> groupNames = new ArrayList<>();
+    ArrayAdapter<String> spinnerGroupsAdapter;
 
 
 
@@ -69,7 +75,7 @@ public class Add extends AppCompatActivity {
         chooseDate = (TextView)findViewById(R.id.chooseDate);
         chooseDate2 = (TextView)findViewById(R.id.chooseDate2);
         bestBeforeTxt = (TextView)findViewById(R.id.bestBefore);
-        spinner = (Spinner)findViewById(R.id.spinner);
+        spinnerBestBefore = (Spinner)findViewById(R.id.spinner);
         enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
         dateTV = (TextView)findViewById(R.id.date);
         days = (EditText)findViewById(R.id.days);
@@ -95,25 +101,43 @@ public class Add extends AppCompatActivity {
         ArrayAdapter<String> spinnerAdapter =
                 new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, spinnerItems);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(spinnerAdapter);
+        spinnerBestBefore.setAdapter(spinnerAdapter);
 
 
         groupDAO = new GroupDAO(getApplicationContext());
+        dbHelper = new DBHelper(getApplicationContext());
+        bestBefore = new GregorianCalendar();
+
         final List<Group> groups = groupDAO.getAll();
         groupNames.add(getString(R.string.all_products));
         for (Group group: groups) {
             groupNames.add(group.getName());
         }
+        groupNames.add(getString(R.string.create_group_in_spinner));
 
-        ArrayAdapter<String> spinnerGroupsAdapter =
+         spinnerGroupsAdapter =
                 new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, groupNames);
         spinnerGroupsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerGroups.setAdapter(spinnerGroupsAdapter);
 
+        spinnerGroups.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                String selectedItem = parent.getItemAtPosition(position).toString();
+                if (selectedItem.equals(getString(R.string.create_group_in_spinner)))
+                {
+                    showAddGroupDialog();
+                }
+                else {
+                    wasSelected = position;
+                }
+            } // to close the onItemSelected
+            public void onNothingSelected(AdapterView<?> parent)
+            {
 
-
-        dbHelper = new DBHelper(getApplicationContext());
-        bestBefore = new GregorianCalendar();
+            }
+        });
     }
 
     @Override
@@ -126,7 +150,7 @@ public class Add extends AppCompatActivity {
         chooseDate.setVisibility(View.VISIBLE);
         chooseDate.setText(R.string.chooseDateOfExpiry);
         bestBeforeTxt.setVisibility(View.INVISIBLE);
-        spinner.setVisibility(View.INVISIBLE);
+        spinnerBestBefore.setVisibility(View.INVISIBLE);
         days.setVisibility(View.INVISIBLE);
 
         Bundle extras = getIntent().getExtras();
@@ -307,7 +331,7 @@ public class Add extends AppCompatActivity {
         days.setVisibility(View.VISIBLE);
         chooseDate2.setText(R.string.chooseDateOfMan);
         chooseDate.setVisibility(View.INVISIBLE);
-        spinner.setVisibility(View.VISIBLE);
+        spinnerBestBefore.setVisibility(View.VISIBLE);
     }
 
     public void onRadioTwoClick(View view) {
@@ -316,7 +340,7 @@ public class Add extends AppCompatActivity {
         chooseDate.setVisibility(View.VISIBLE);
         chooseDate.setText(R.string.chooseDateOfExpiry);
         bestBeforeTxt.setVisibility(View.INVISIBLE);
-        spinner.setVisibility(View.INVISIBLE);
+        spinnerBestBefore.setVisibility(View.INVISIBLE);
         days.setVisibility(View.INVISIBLE);
     }
 
@@ -333,7 +357,7 @@ public class Add extends AppCompatActivity {
 
         Calendar currentDate = new GregorianCalendar();
 
-        String text_spinner = spinner.getSelectedItem().toString();
+        String text_spinner = spinnerBestBefore.getSelectedItem().toString();
         boolean is_days = text_spinner.equals(getString(R.string.days_in_add_act));
 
 
@@ -432,6 +456,60 @@ public class Add extends AppCompatActivity {
         else {
             dateTV.setText(day + "." + (month + 1) + "." + year);
         }
+    }
+
+    private void showAddGroupDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.creating_group);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+
+        builder.setView(input, 70, 0, 100, 0);
+
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String result = input.getText().toString();
+                if (result.isEmpty()) {
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            R.string.wrong_name, Toast.LENGTH_SHORT);
+                    toast.show();
+                    showAddGroupDialog();
+                }
+                else {
+                    createGroup(result);
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+                spinnerGroups.setSelection(wasSelected);
+            }
+        });
+        builder.show();
+    }
+
+    private void createGroup(String name) {
+        Group newGroup = new Group(name);
+        try {
+            groupDAO.insertGroup(newGroup);
+        }
+        catch (RuntimeException e) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.group_with_this_name_already_exists, Toast.LENGTH_SHORT);
+            toast.show();
+            spinnerGroups.setSelection(wasSelected);
+            return;
+        }
+        Toast toast = Toast.makeText(getApplicationContext(),
+                R.string.group_was_created, Toast.LENGTH_SHORT);
+        toast.show();
+        int count = spinnerGroupsAdapter.getCount();
+        spinnerGroupsAdapter.insert(name, count - 1);
+        spinnerGroupsAdapter.notifyDataSetChanged();
     }
 }
 

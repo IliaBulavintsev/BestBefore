@@ -105,4 +105,7 @@
     <string name="logo_description">Header for navigation drawer</string>
     <string name="group">Группа</string>
     <string name="group_with_this_name_already_exists">Группа с таким названием уже существует</string>
+    <string name="create_group_in_spinner">Создать группу&#8230;</string>
+    <string name="group_was_created">Группа создана</string>
+    <string name="group_was_deleted">Группа удалена</string>
 </resources>

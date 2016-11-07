@@ -60,6 +60,7 @@ import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.StatCollector;
 import com.rv150.bestbefore.Models.Product;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
@@ -77,12 +78,13 @@ public class MainActivity extends AppCompatActivity {
     private Product deletedProduct;
     private TextView isEmpty;
     private FloatingActionButton fab;
+    private Toolbar toolbar;
 
     private ProductDAO productDAO;
     private GroupDAO groupDAO;
 
     private Drawer drawer;
-    private int drawerPosition = 2;
+    private int drawerPosition;
     private long groupChoosen = Resources.ID_MAIN_GROUP;
 
 
@@ -90,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         setTitle(R.string.all_products);
 
@@ -111,14 +113,21 @@ public class MainActivity extends AppCompatActivity {
         rvProducts = (RecyclerView) findViewById(R.id.rvProducts);
         setUpRecyclerView();
 
-        setUpDrawer(toolbar);
-
-        wrapperList = productDAO.getFresh();
 
 
 
         // Что нового?
         boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
+
+
+        boolean needMigrate = sPrefs.getBoolean(Resources.NEED_MIGRATE, true);
+        if (needMigrate && !showWelcomeScreen) {
+            migrateToDB();
+        }
+
+
+        wrapperList = productDAO.getFresh();
+
 
         // показ приветственного сообщения
         if (showWelcomeScreen) {
@@ -134,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
             SharedPreferences.Editor editor = sPrefs.edit();
             editor.putBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, false);
             editor.putBoolean(Resources.WHATS_NEW, false);
+            editor.putBoolean(Resources.NEED_MIGRATE, false);
 
             Calendar installedAt = new GregorianCalendar();
             int installDay = installedAt.get(Calendar.DAY_OF_MONTH);
@@ -170,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpDrawer(Toolbar toolbar) {
+        drawerPosition = 2;
         PrimaryDrawerItem allProducts = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_MAIN_GROUP)
                 .withName(R.string.all_products);
@@ -222,6 +233,16 @@ public class MainActivity extends AppCompatActivity {
                     .withIdentifier(group.getId());
             drawer.addItemAtPosition(newItem, drawerPosition++);
         }
+        if (groupChoosen == Resources.ID_MAIN_GROUP) {
+            drawer.setSelectionAtPosition(1);
+        }
+        else if (groupChoosen == Resources.ID_FOR_OVERDUED) {
+            drawer.setSelectionAtPosition(drawerPosition + 2); // не очень хорошо
+        }
+        else  {
+            drawer.setSelection(groupChoosen);
+        }
+
     }
 
 
@@ -374,7 +395,11 @@ public class MainActivity extends AppCompatActivity {
         groupDAO.deleteGroup(groupChoosen);
         drawer.removeItem(groupChoosen);
         drawerPosition--;
+        drawer.setSelectionAtPosition(1);
         groupChoosen = Resources.ID_MAIN_GROUP;
+        Toast toast = Toast.makeText(getApplicationContext(),
+                R.string.group_was_deleted, Toast.LENGTH_SHORT);
+        toast.show();
         changeGroup();
     }
 
@@ -386,6 +411,10 @@ public class MainActivity extends AppCompatActivity {
         // Стереть напоминания
         NotificationManager notifManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notifManager.cancelAll();
+
+
+        // Update drawer with new groups
+        setUpDrawer(toolbar);
 
 
 
@@ -541,10 +570,12 @@ public class MainActivity extends AppCompatActivity {
             Long groupId;
             if (groupName != null && groupName.equals(getString(R.string.all_products))) {
                 groupId = null;
+                groupChoosen = Resources.ID_MAIN_GROUP;
             }
             else {
                 Group group = groupDAO.get(groupName);
                 groupId = group.getId();
+                groupChoosen = groupId;
             }
 
 
@@ -553,7 +584,6 @@ public class MainActivity extends AppCompatActivity {
                 Product newProduct = new Product(name, date, createdAt, quantity, groupId);
                 long id = productDAO.insertProduct(newProduct);
                 newProduct.setId(id);
-                wrapperList.add(newProduct);
 
                 // Справка
                 boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
@@ -581,18 +611,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
 
-            adapter = new RecyclerAdapter(wrapperList);
-            rvProducts.swapAdapter(adapter, false);
-
-
-
-            TextView isEmpty = (TextView) findViewById(R.id.isEmptyText);
-            if (wrapperList.isEmpty()) {
-                isEmpty.setVisibility(View.VISIBLE);
-            } else {
-                isEmpty.setVisibility(View.INVISIBLE);
-            }
-
+            changeGroup();
             StatCollector.shareStatistic(this, null);
         }
     }
@@ -865,8 +884,14 @@ public class MainActivity extends AppCompatActivity {
         Calendar date = item.getDate();
         intent.putExtra(Resources.DATE, date);
         intent.putExtra(Resources.QUANTITY, item.getQuantity());
-        Group group = groupDAO.get(item.getGroupId());
-        intent.putExtra(Resources.GROUP_NAME, group.getName());
+        Long groupId = item.getGroupId();
+        if (groupId == null) {
+            intent.putExtra(Resources.GROUP_NAME, getString(R.string.all_products));
+        }
+        else {
+            Group group = groupDAO.get(groupId);
+            intent.putExtra(Resources.GROUP_NAME, group.getName());
+        }
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 
@@ -921,6 +946,18 @@ public class MainActivity extends AppCompatActivity {
                 default:
                     break;
             }
+        }
+    }
+
+
+    private void migrateToDB() {
+        List<Product> fresh = ProductDAO.getFreshProducts(this);
+        List<Product> overdue = ProductDAO.getOverdueProducts(this);
+        List<Product> all = new ArrayList<>();
+        all.addAll(fresh);
+        all.addAll(overdue);
+        if (!all.isEmpty()) {
+            productDAO.insertProducts(all);
         }
     }
 }

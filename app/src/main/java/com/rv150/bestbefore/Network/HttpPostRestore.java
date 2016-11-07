@@ -198,8 +198,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
     }
 
     private void saveRestored(List<Product> fresh, List<Product> overdue) {
-        ProductDAO.saveFreshProducts(fresh, context);
-        ProductDAO.saveOverdueProducts(overdue, context);
+       // ProductDAO.saveFreshProducts(fresh, context);
+        //ProductDAO.saveOverdueProducts(overdue, context);
         Toast toast = Toast.makeText(context,
                 R.string.restore_success, Toast.LENGTH_SHORT);
         toast.show();

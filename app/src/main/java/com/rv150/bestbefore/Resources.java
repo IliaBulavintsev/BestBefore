@@ -46,4 +46,5 @@ public final class Resources {
     public static final long ID_FOR_FEEDBACK = -4;
     public static final long ID_FOR_ADD_GROUP = -5;
     public static final long ID_FOR_OVERDUED = -6;
+    public static final String NEED_MIGRATE = "needMigrate";
 }

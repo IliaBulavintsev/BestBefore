@@ -123,7 +123,7 @@ public class Overdue extends AppCompatActivity {
 
         adapter = new RecyclerAdapter(overdueList);
         recyclerView.swapAdapter(adapter, false);
-        ProductDAO.saveOverdueProducts(overdueList, this);
+        //ProductDAO.saveOverdueProducts(overdueList, this);
         StatCollector.shareStatistic(this, "deleted one overdue product");
     }
 
@@ -133,7 +133,7 @@ public class Overdue extends AppCompatActivity {
         position = -1;
         adapter = new RecyclerAdapter(overdueList);
         recyclerView.swapAdapter(adapter, false);
-        ProductDAO.saveOverdueProducts(overdueList, this);
+       // ProductDAO.saveOverdueProducts(overdueList, this);
         StatCollector.shareStatistic(this, "restored overdue item");
 
         // Надпись "Список пуст!"
@@ -144,7 +144,7 @@ public class Overdue extends AppCompatActivity {
 
     public void clearList() {
         overdueList.clear();
-        ProductDAO.saveOverdueProducts(overdueList, this);
+       // ProductDAO.saveOverdueProducts(overdueList, this);
         adapter = new RecyclerAdapter(overdueList);
         recyclerView.swapAdapter(adapter, false);
         isEmpty.setVisibility(View.VISIBLE);
