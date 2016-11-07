@@ -109,4 +109,5 @@
     <string name="group_was_created">Группа создана</string>
     <string name="group_was_deleted">Группа удалена</string>
     <string name="group_was_cleared">Группа очищена</string>
+    <string name="example_product">Это пример продукта. Смахните его влево для удаления.</string>
 </resources>

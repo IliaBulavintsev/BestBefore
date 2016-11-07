@@ -87,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
     private ProductDAO productDAO;
     private GroupDAO groupDAO;
 
+    boolean firstLaunch;
+
     private Drawer drawer;
     private int drawerPosition;
     private long groupChoosen = Resources.ID_MAIN_GROUP;
@@ -119,13 +121,12 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Что нового?
-        boolean showWelcomeScreen = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
-
+        firstLaunch = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
 
         SharedPreferences.Editor editor = sPrefs.edit();
         boolean needMigrate = sPrefs.getBoolean(Resources.NEED_MIGRATE, true);
         if (needMigrate) {
-            if (!showWelcomeScreen) {
+            if (!firstLaunch) {
                 migrateToDB();
             }
             editor.putBoolean(Resources.NEED_MIGRATE, false);
@@ -140,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // показ приветственного сообщения
-        if (showWelcomeScreen) {
+        if (firstLaunch) {
             String whatsNewText = getResources().getString(R.string.welcomeText);
             new AlertDialog.Builder(this)
                     .setTitle(R.string.welcomeTitle)
@@ -160,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
             editor.putInt(Resources.PREF_INSTALL_MONTH, installMonth);
             editor.putInt(Resources.PREF_INSTALL_YEAR, installYear);
             editor.apply();
+
         }
         else {
             // Справка
@@ -178,13 +180,108 @@ public class MainActivity extends AppCompatActivity {
         editor.putBoolean(Resources.WHATS_NEW, false);
         editor.apply();
 
-        if (showWelcomeScreen) {
+        if (firstLaunch) {
             StatCollector.shareStatistic(this, "First launch ");
         }
         else {
             StatCollector.shareStatistic(this, "EMPTY :( ");
         }
     }
+
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Стереть напоминания
+        NotificationManager notifManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        notifManager.cancelAll();
+
+
+        // Update drawer with new groups
+        setUpDrawer(toolbar);
+
+
+
+        boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
+        if (needShowOverdue) {
+            // Удаление просроченных и показ сообщения
+            List<Product> temp = productDAO.getAllFromDB();        // берем все продукты из базы
+            List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp, getApplicationContext());
+            DeleteOverdue.markViewed(productDAO, temp);
+            if (!newOverdue.isEmpty()) {
+                CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.last_overdue);
+                builder.setItems(cs, null);
+                builder.show();
+            }
+        }
+
+        sortMainList();
+
+        if (firstLaunch) {
+            // добавим пустой продукт как образец
+            String name = getString(R.string.example_product);
+            int quantity = 5;
+            Calendar date = new GregorianCalendar();
+            date.add(Calendar.DAY_OF_MONTH, 2);
+            wrapperList.add(new Product(name, date, quantity, null));
+            firstLaunch = false;
+        }
+        adapter = new RecyclerAdapter(wrapperList);
+        rvProducts.swapAdapter(adapter, false);
+
+        // Надпись "Список пуст!"
+        if (wrapperList.isEmpty()) {
+            isEmpty.setVisibility(View.VISIBLE);
+        }
+        else {
+            isEmpty.setVisibility(View.INVISIBLE);
+        }
+
+        boolean alarm_set = sPrefs.getBoolean(Resources.PREF_ALARM_SET, false);
+        boolean firstNotif = sPrefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
+        boolean secondNotif = sPrefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
+        boolean thirdNotif = sPrefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
+        SharedPreferences.Editor editor = sPrefs.edit();
+        if (wrapperList.isEmpty()) {
+            AlarmReceiver am = new AlarmReceiver();
+            am.cancelAlarm(this);
+            editor.putBoolean(Resources.PREF_ALARM_SET, false);
+        }
+        else if(!alarm_set && (firstNotif || secondNotif || thirdNotif)){
+            AlarmReceiver am = new AlarmReceiver();
+            am.setAlarm(this);
+            editor.putBoolean(Resources.PREF_ALARM_SET, true);
+        }
+        editor.apply();
+
+        new InsertForAutocomplete(wrapperList).execute();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private void setUpDrawer(Toolbar toolbar) {
         drawerPosition = 2;
@@ -416,67 +513,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Стереть напоминания
-        NotificationManager notifManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-        notifManager.cancelAll();
-
-
-        // Update drawer with new groups
-        setUpDrawer(toolbar);
-
-
-
-        boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
-        if (needShowOverdue) {
-            // Удаление просроченных и показ сообщения
-            List<Product> temp = productDAO.getAllFromDB();        // берем все продукты из базы
-            List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp, getApplicationContext());
-            DeleteOverdue.markViewed(productDAO, temp);
-            if (!newOverdue.isEmpty()) {
-                CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(R.string.last_overdue);
-                builder.setItems(cs, null);
-                builder.show();
-            }
-        }
-
-        sortMainList();
-
-
-        adapter = new RecyclerAdapter(wrapperList);
-        rvProducts.swapAdapter(adapter, false);
-
-        // Надпись "Список пуст!"
-        if (wrapperList.isEmpty()) {
-            isEmpty.setVisibility(View.VISIBLE);
-        }
-        else {
-            isEmpty.setVisibility(View.INVISIBLE);
-        }
-
-        boolean alarm_set = sPrefs.getBoolean(Resources.PREF_ALARM_SET, false);
-        boolean firstNotif = sPrefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
-        boolean secondNotif = sPrefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
-        boolean thirdNotif = sPrefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
-        SharedPreferences.Editor editor = sPrefs.edit();
-        if (wrapperList.isEmpty()) {
-            AlarmReceiver am = new AlarmReceiver();
-            am.cancelAlarm(this);
-            editor.putBoolean(Resources.PREF_ALARM_SET, false);
-        }
-        else if(!alarm_set && (firstNotif || secondNotif || thirdNotif)){
-            AlarmReceiver am = new AlarmReceiver();
-            am.setAlarm(this);
-            editor.putBoolean(Resources.PREF_ALARM_SET, true);
-        }
-        editor.apply();
-
-        new InsertForAutocomplete(wrapperList).execute();
-    }
 
 
 
@@ -547,8 +583,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void delayRateApp() {
-        int hoursNeeded = sPrefs.getInt(Resources.PREF_HOURS_NEEDED, 100);
-        hoursNeeded += 30;
+        int hoursNeeded = sPrefs.getInt(Resources.PREF_HOURS_NEEDED, 72);
+        hoursNeeded += 24;
         SharedPreferences.Editor editor = sPrefs.edit();
         editor.putInt(Resources.PREF_HOURS_NEEDED, hoursNeeded);
         editor.apply();
@@ -640,7 +676,7 @@ public class MainActivity extends AppCompatActivity {
                 int installDay = sPrefs.getInt(Resources.PREF_INSTALL_DAY, 11);
                 int installMonth = sPrefs.getInt(Resources.PREF_INSTALL_MONTH, 8);
                 int installYear = sPrefs.getInt(Resources.PREF_INSTALL_YEAR, 2016);
-                int hoursNeeded = sPrefs.getInt(Resources.PREF_HOURS_NEEDED, 100);
+                int hoursNeeded = sPrefs.getInt(Resources.PREF_HOURS_NEEDED, 72);
                 Calendar installedAt = new GregorianCalendar(installYear, installMonth, installDay);
                 Calendar now = new GregorianCalendar();
                 final int MILLI_TO_HOUR = 1000 * 60 * 60;
