@@ -40,11 +40,14 @@ public final class Resources {
     public static final int RESULT_MODIFY = 2;
     public static final int RESULT_EXIT = 0;
     public static final String SERVER_URL = "http://212.109.192.197:8080/";
-    public static final String WHATS_NEW = "whats_new_15";
-    public static final long ID_MAIN_GROUP = -2;
-    public static final long ID_FOR_SETTINGS = -3;
-    public static final long ID_FOR_FEEDBACK = -4;
-    public static final long ID_FOR_ADD_GROUP = -5;
-    public static final long ID_FOR_OVERDUED = -6;
+    public static final String WHATS_NEW = "whats_new_17";
+    public static final String WHATS_NEW_OLD = "whats_new_15";
+    public static final long ID_MAIN_GROUP = 99990;
+    public static final String MAIN_GROUP_NAME = "mainGroupName";
+    public static final long ID_FOR_SETTINGS = 99991;
+    public static final long ID_FOR_FEEDBACK = 99992;
+    public static final long ID_FOR_ADD_GROUP = 99993;
+    public static final long ID_FOR_OVERDUED = 99994;
+    public static final String OVERDUED_GROUP_NAME = "overduedGroupName";
     public static final String NEED_MIGRATE = "needMigrate";
 }

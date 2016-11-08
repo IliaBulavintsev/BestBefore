@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
     private ProductDAO productDAO;
     private GroupDAO groupDAO;
 
-    boolean firstLaunch;
+    private boolean firstLaunch;
 
     private Drawer drawer;
     private int drawerPosition;
@@ -100,13 +100,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        setTitle(R.string.all_products);
+
 
         isEmpty = (TextView)findViewById(R.id.isEmptyText);
         fab = (FloatingActionButton) findViewById(R.id.fab);
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
+        setTitle(mainGroupName);
 
 
         // DB helper
@@ -160,8 +163,11 @@ public class MainActivity extends AppCompatActivity {
             editor.putInt(Resources.PREF_INSTALL_DAY, installDay);
             editor.putInt(Resources.PREF_INSTALL_MONTH, installMonth);
             editor.putInt(Resources.PREF_INSTALL_YEAR, installYear);
-            editor.apply();
 
+            // Установим название главной группы
+            editor.putString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
+            editor.putString(Resources.OVERDUED_GROUP_NAME, getString(R.string.overdue_products));
+            editor.apply();
         }
         else {
             // Справка
@@ -173,8 +179,15 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
-                        }).show();
+                        })
+                        .setNeutralButton(R.string.rate, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                rateApp();
+                            }
+                        })
+            .show();
             }
+            editor.remove(Resources.WHATS_NEW_OLD);
         }
 
         editor.putBoolean(Resources.WHATS_NEW, false);
@@ -227,9 +240,16 @@ public class MainActivity extends AppCompatActivity {
             int quantity = 5;
             Calendar date = new GregorianCalendar();
             date.add(Calendar.DAY_OF_MONTH, 2);
-            wrapperList.add(new Product(name, date, quantity, null));
+            Product product = new Product(name, date, quantity, null);
+            productDAO.insertProduct(product);
+            wrapperList = productDAO.getAllFromDB();
             firstLaunch = false;
         }
+        else {
+            // Заполним данными для автодополнения
+            new InsertForAutocomplete(wrapperList).execute();
+        }
+
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
 
@@ -258,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
         }
         editor.apply();
 
-        new InsertForAutocomplete(wrapperList).execute();
+
     }
 
 
@@ -285,18 +305,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUpDrawer(Toolbar toolbar) {
         drawerPosition = 2;
+        final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
         PrimaryDrawerItem allProducts = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_MAIN_GROUP)
-                .withName(R.string.all_products);
+                .withName(mainGroupName);
 
         SecondaryDrawerItem addGroup = new SecondaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_ADD_GROUP)
                 .withName(R.string.add_group)
                 .withSelectable(false);
 
+
+        final String overdueGroupName = sPrefs.getString(Resources.OVERDUED_GROUP_NAME, getString(R.string.overdue_products));
         PrimaryDrawerItem overdued = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_OVERDUED)
-                .withName(R.string.overdue_products);
+                .withName(overdueGroupName);
 
         PrimaryDrawerItem settings = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_SETTINGS)
@@ -383,12 +406,14 @@ public class MainActivity extends AppCompatActivity {
     private void changeGroup() {
         if (groupChoosen == Resources.ID_MAIN_GROUP) {
             wrapperList = productDAO.getFresh();
-            setTitle(R.string.all_products);
+            final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
+            setTitle(mainGroupName);
             fab.show();
         }
         else if (groupChoosen == Resources.ID_FOR_OVERDUED) {
             wrapperList = productDAO.getOverdued();
-            setTitle(R.string.overdue_products);
+            final String overdueGroupName = sPrefs.getString(Resources.OVERDUED_GROUP_NAME, getString(R.string.overdue_products));
+            setTitle(overdueGroupName);
             fab.hide();
         }
         else {
@@ -432,14 +457,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String result = input.getText().toString();
-                result = result.substring(0, 1).toUpperCase() + result.substring(1);
                 if (result.isEmpty()) {
                     Toast toast = Toast.makeText(getApplicationContext(),
-                            R.string.wrong_name, Toast.LENGTH_SHORT);
+                            R.string.field_is_empty, Toast.LENGTH_SHORT);
                     toast.show();
                     showAddGroupDialog();
                 }
                 else {
+                    result = result.substring(0, 1).toUpperCase() + result.substring(1);
                     createGroup(result);
                 }
             }
@@ -473,6 +498,9 @@ public class MainActivity extends AppCompatActivity {
         drawerPosition++;
         groupChoosen = id;
         changeGroup();
+        Toast toast = Toast.makeText(getApplicationContext(),
+                R.string.group_was_created, Toast.LENGTH_SHORT);
+        toast.show();
     }
 
     public void clearGroup() {
@@ -561,6 +589,12 @@ public class MainActivity extends AppCompatActivity {
             dialog.show(getFragmentManager(), "deleteAll");
             return true;
         }
+
+        if (id == R.id.action_rename_group) {
+            showRenameGroupDialog();
+            return true;
+        }
+
         if (id == R.id.action_delete_group) {
             if (groupChoosen == Resources.ID_MAIN_GROUP || groupChoosen == Resources.ID_FOR_OVERDUED) {
                 Toast toast = Toast.makeText(getApplicationContext(),
@@ -594,7 +628,8 @@ public class MainActivity extends AppCompatActivity {
     public void onFabClick(View view) {
         Intent intent = new Intent(MainActivity.this, Add.class);
         if (groupChoosen == Resources.ID_MAIN_GROUP) {
-            intent.putExtra(Resources.GROUP_NAME, getString(R.string.all_products));
+            final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
+            intent.putExtra(Resources.GROUP_NAME, mainGroupName);
         }
         else {
             Group group = groupDAO.get(groupChoosen);
@@ -615,7 +650,8 @@ public class MainActivity extends AppCompatActivity {
             int quantity = (int) data.getExtras().get(Resources.QUANTITY);
             String groupName = (String) data.getExtras().get(Resources.GROUP_NAME);
             Long groupId;
-            if (groupName != null && groupName.equals(getString(R.string.all_products))) {
+            final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
+            if (groupName != null && groupName.equals(mainGroupName)) {
                 groupId = null;
                 groupChoosen = Resources.ID_MAIN_GROUP;
             }
@@ -627,8 +663,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             if (resultCode == Resources.RESULT_ADD) {                              // Добавление
-                Calendar createdAt = new GregorianCalendar();
-                Product newProduct = new Product(name, date, createdAt, quantity, groupId);
+                Product newProduct = new Product(name, date, new GregorianCalendar(), quantity, groupId);
                 long id = productDAO.insertProduct(newProduct);
                 newProduct.setId(id);
 
@@ -933,7 +968,8 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(Resources.QUANTITY, item.getQuantity());
         Long groupId = item.getGroupId();
         if (groupId == null) {
-            intent.putExtra(Resources.GROUP_NAME, getString(R.string.all_products));
+            final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
+            intent.putExtra(Resources.GROUP_NAME, mainGroupName);
         }
         else {
             Group group = groupDAO.get(groupId);
@@ -1020,5 +1056,88 @@ public class MainActivity extends AppCompatActivity {
         if (!all.isEmpty()) {
             productDAO.insertProducts(all);
         }
+    }
+
+
+    private void showRenameGroupDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.enter_new_name);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+
+        builder.setView(input, 70, 0, 100, 0);
+
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String result = input.getText().toString();
+                if (result.isEmpty()) {
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            R.string.field_is_empty, Toast.LENGTH_SHORT);
+                    toast.show();
+                    showRenameGroupDialog();
+                }
+                else {
+                    result = result.substring(0, 1).toUpperCase() + result.substring(1);
+                    renameGroup(result);
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
+    }
+
+    private void renameGroup(String result) {
+        Group group = groupDAO.get(result);
+        if (group != null) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.group_with_this_name_already_exists, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
+        int groupPosition = drawer.getPosition(groupChoosen);
+        drawer.removeItemByPosition(groupPosition);
+        PrimaryDrawerItem newItem;
+
+        if (groupChoosen == Resources.ID_MAIN_GROUP) {
+            SharedPreferences.Editor editor = sPrefs.edit();
+            editor.putString(Resources.MAIN_GROUP_NAME, result);
+            editor.apply();
+            newItem = new PrimaryDrawerItem()
+                    .withName(result)
+                    .withIdentifier(Resources.ID_MAIN_GROUP);
+        }
+        else if (groupChoosen == Resources.ID_FOR_OVERDUED) {
+            SharedPreferences.Editor editor = sPrefs.edit();
+            editor.putString(Resources.OVERDUED_GROUP_NAME, result);
+            editor.apply();
+            newItem = new PrimaryDrawerItem()
+                    .withName(result)
+                    .withIdentifier(Resources.ID_FOR_OVERDUED);
+        }
+        else {
+            group = groupDAO.get(groupChoosen);
+            group.setName(result);
+            groupDAO.updateGroup(group);
+            newItem = new PrimaryDrawerItem()
+                    .withName(result)
+                    .withIdentifier(group.getId());
+        }
+
+
+        drawer.addItemAtPosition(newItem, groupPosition);
+        drawer.setSelectionAtPosition(groupPosition);
+
+        setTitle(result);
+        Toast toast = Toast.makeText(getApplicationContext(),
+                R.string.group_was_renamed, Toast.LENGTH_SHORT);
+        toast.show();
     }
 }

@@ -69,6 +69,11 @@ public class GroupDAO {
         String query = "SELECT * FROM " + DBHelper.Group.TABLE_NAME +
                 " WHERE " + DBHelper.Group.COLUMN_NAME_NAME + " = \"" + name + "\"";
         Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor == null || cursor.getCount() == 0) {
+            return null;
+        }
+
         cursor.moveToNext();
         long id = cursor.getLong(
                 cursor.getColumnIndexOrThrow(DBHelper.Group._ID));

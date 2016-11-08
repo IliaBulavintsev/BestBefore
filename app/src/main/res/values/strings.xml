@@ -27,9 +27,7 @@
     <string name="help">Справка</string>
     <string name="notifications">Напоминания</string>
     <string name="whats_new_title">Что нового?</string>
-     <string name="whats_new">- Автодополнение призвано облегчить процесс добавления продуктов! Словарный запас основан на популярных наименованиях, а также на введенных Вами продуктах.
-     \n- Теперь можно отменить удаление записи, если Вы передумали :)
-     \n- Появилась сортировка по названию</string>
+     <string name="whats_new">В приложении теперь можно группировать продукты по категориям. Не забудьте оценить приложение, если оно вам понравилось :)</string>
     <string name="sort">Сортировка</string>
     <string name="last_overdue">Последние просроченные</string>
     <string name="rate_app_msg">Вы не хотели бы оценить приложение в Google Play? Не стесняйтесь писать свои пожелания :)</string>
@@ -96,7 +94,7 @@
     <string name="all_products">Все продукты</string>
     <string name="add_group">Добавить группу</string>
     <string name="creating_group">Создание группы</string>
-    <string name="wrong_name">Неверное имя</string>
+    <string name="field_is_empty">Поле пусто!</string>
     <string name="email_subject">Фидбек по приложению \"Срок годности\"</string>
     <string name="developer_email">rudnev.vanya@gmail.com</string>
     <string name="delete_group">Удалить группу</string>
@@ -109,5 +107,8 @@
     <string name="group_was_created">Группа создана</string>
     <string name="group_was_deleted">Группа удалена</string>
     <string name="group_was_cleared">Группа очищена</string>
+    <string name="group_was_renamed">Группа переименована</string>
     <string name="example_product">Это пример продукта. Смахните его влево для удаления.</string>
+    <string name="rename_group">Переименовать группу</string>
+    <string name="enter_new_name">Введите новое название</string>
 </resources>

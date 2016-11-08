@@ -4,10 +4,12 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
@@ -101,8 +103,11 @@ public class Add extends AppCompatActivity {
         dbHelper = new DBHelper(getApplicationContext());
         bestBefore = new GregorianCalendar();
 
+        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
         final List<Group> groups = groupDAO.getAll();
-        groupNames.add(getString(R.string.all_products));
+        final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
+        groupNames.add(mainGroupName);
         for (Group group: groups) {
             groupNames.add(group.getName());
         }
@@ -477,14 +482,14 @@ public class Add extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String result = input.getText().toString();
-                result = result.substring(0, 1).toUpperCase() + result.substring(1);
                 if (result.isEmpty()) {
                     Toast toast = Toast.makeText(getApplicationContext(),
-                            R.string.wrong_name, Toast.LENGTH_SHORT);
+                            R.string.field_is_empty, Toast.LENGTH_SHORT);
                     toast.show();
                     showAddGroupDialog();
                 }
                 else {
+                    result = result.substring(0, 1).toUpperCase() + result.substring(1);
                     createGroup(result);
                 }
             }

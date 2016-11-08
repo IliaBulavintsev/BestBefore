@@ -36,12 +36,6 @@
         </activity>
 
         <activity
-            android:name=".Activities.Overdue"
-            android:label="@string/overdue_products"
-            android:screenOrientation="portrait">
-        </activity>
-
-        <activity
             android:name=".Activities.Preferences"
             android:label="Настройки"
             android:screenOrientation="portrait">
