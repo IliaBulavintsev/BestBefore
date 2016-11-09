@@ -6,12 +6,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.SparseArray;
 import android.widget.Toast;
 
+import com.rv150.bestbefore.DAO.GroupDAO;
+import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Product;
+import com.rv150.bestbefore.Services.DBHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,7 +31,11 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Rudnev on 05.10.2016.
@@ -39,11 +47,13 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
     private Context context;
     private String error;
     private ProgressDialog dialog;
+    private ProductDAO productDAO;
 
     public HttpPostRestore(Context context) {
         this.context = context;
         error =  context.getString(R.string.restore_failed);
         dialog = new ProgressDialog(context);
+        productDAO = new ProductDAO(context);
     }
 
     @Override
@@ -135,36 +145,51 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
 
     private void parseResult (String input) {
 
-        JSONArray freshJson;
-        JSONArray overdueJson;
-        final List<Product> fresh = new ArrayList<>();
-        final List<Product> overdue = new ArrayList<>();
+        JSONArray productArray;
+        JSONArray groupArray;
+        final List<Product> products = new ArrayList<>();
+        final List<Group> groups = new ArrayList<>();
         try {
             final JSONObject inputJson = new JSONObject(input);
-            freshJson = inputJson.getJSONArray("fresh");
-            overdueJson = inputJson.getJSONArray("overdue");
+            productArray = inputJson.getJSONArray("products");
+            groupArray = inputJson.getJSONArray("groups");
 
             // Заполнение списков...
-            for (int i = 0; i < freshJson.length(); ++i) {
-                JSONObject item = freshJson.getJSONObject(i);
-                String name = item.getString("name");
-                String date = item.getString("date");
-                String createdAt = item.getString("createdAt");
-                int quantity = item.getInt("quantity");
-                long groupId = item.getLong("groupId");
+            for (int i = 0; i < productArray.length(); ++i) {
+                JSONObject item = productArray.getJSONObject(i);
+                final String name = item.getString("name");
+                final long dateInMillis = item.getLong("date");
+                final long createdAtInMillis = item.getLong("createdAt");
+                final int quantity = item.getInt("quantity");
+                Long groupId = item.getLong("groupId");
+                final int viewed = item.getInt("viewed");
+                if (groupId == -1) {
+                    groupId = null;
+                }
+                Calendar date = new GregorianCalendar();
+                date.setTimeInMillis(dateInMillis);
+                // тк на сервере могут лежать старые данные еще до миграции, то
+                date.set(Calendar.HOUR_OF_DAY, 23);
+                date.set(Calendar.MINUTE, 59);
+
+                Calendar createdAt = new GregorianCalendar();
+                createdAt.setTimeInMillis(createdAtInMillis);
                 Product product = new Product(name, date, createdAt, quantity, groupId);
-                fresh.add(product);
+                product.setViewed(viewed);
+
+                // тк на сервере могут лежать старые данные еще до миграции, то
+
+                products.add(product);
             }
 
-            // Поле getCreatedAt передается по сети, но не имеет смысла
-            for (int i = 0; i < overdueJson.length(); ++i) {
-                JSONObject item = overdueJson.getJSONObject(i);
-                String name = item.getString("name");
-                String date = item.getString("date");
-                int quantity = item.getInt("quantity");
-                long groupId = item.getLong("groupId");
-                Product product = new Product(name, date, quantity, groupId);
-                overdue.add(product);
+
+            for (int i = 0; i < groupArray.length(); ++i) {
+                JSONObject item = groupArray.getJSONObject(i);
+                final String name = item.getString("name");
+                final long oldId = item.getLong("id");
+                Group group = new Group(name);
+                group.setId(oldId);
+                groups.add(group);
             }
         }
         catch (JSONException e) {
@@ -175,9 +200,9 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
         }
 
 
-        List<Product> currentFresh = ProductDAO.getFreshProducts(context);
-        List<Product> currentOverdue = ProductDAO.getOverdueProducts(context);
-        if (!currentFresh.isEmpty() || !currentOverdue.isEmpty()) {
+
+        List<Product> currentProducts = productDAO.getAll();
+        if (!currentProducts.isEmpty()) {
             new AlertDialog.Builder(context)
                     .setTitle(R.string.warning)
                     .setMessage(R.string.do_you_want_to_overwite_existing)
@@ -185,7 +210,7 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                     {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            saveRestored(fresh, overdue);
+                            saveRestored(products, groups);
                         }
 
                     })
@@ -193,13 +218,32 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                     .show();
         }
         else {
-            saveRestored(fresh, overdue);
+            saveRestored(products, groups);
         }
     }
 
-    private void saveRestored(List<Product> fresh, List<Product> overdue) {
-       // ProductDAO.saveFreshProducts(fresh, context);
-        //ProductDAO.saveOverdueProducts(overdue, context);
+    private void saveRestored(List<Product> products, List<Group> groups) {
+        Map<Long, Long> oldIdToNew = new HashMap<>(); // Старые ID к новым для правильных внешних ключей
+        GroupDAO groupDAO = new GroupDAO(context);
+
+        productDAO.deleteAll();
+        groupDAO.deleteAll();
+
+        for (Group group: groups) {
+            long oldId = group.getId();
+            long newId = groupDAO.insertGroup(group);
+            oldIdToNew.put(oldId, newId);
+        }
+
+        for (Product product: products) {
+            Long oldGroupId = product.getGroupId();
+            if (oldGroupId != null) {
+                long newGroupId =  oldIdToNew.get(oldGroupId);
+                product.setGroupId(newGroupId);
+            }
+            productDAO.insertProduct(product);
+        }
+
         Toast toast = Toast.makeText(context,
                 R.string.restore_success, Toast.LENGTH_SHORT);
         toast.show();

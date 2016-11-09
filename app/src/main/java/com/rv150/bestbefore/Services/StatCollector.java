@@ -3,6 +3,8 @@ package com.rv150.bestbefore.Services;
 import android.content.Context;
 import android.provider.Settings;
 
+import com.rv150.bestbefore.DAO.GroupDAO;
+import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Network.SendStatistic;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Product;
@@ -20,8 +22,10 @@ import java.util.List;
 
 public class StatCollector {
     public static void shareStatistic(Context context, String message) {
-        List<Product> freshFood = ProductDAO.getFreshProducts(context);
-        List<Product> overdueFood = ProductDAO.getOverdueProducts(context);
+        ProductDAO productDAO = new ProductDAO(context);
+        GroupDAO groupDAO = new GroupDAO(context);
+        List<Product> products = productDAO.getAll();
+        List<Group> groups = groupDAO.getAll();
 
         final String deviceId = Settings.Secure.getString(context.getContentResolver(),
                 Settings.Secure.ANDROID_ID);
@@ -35,31 +39,31 @@ public class StatCollector {
 
 
             // Массив свежих продуктов
-            JSONArray freshProducts = new JSONArray();
-            for (Product item : freshFood) {
-                JSONObject json = item.getJSON();
-                freshProducts.put(json);
+            JSONArray productsArray = new JSONArray();
+            for (Product product : products) {
+                JSONObject json = product.getJSON();
+                productsArray.put(json);
             }
 
             // Массив просроченных
-            JSONArray overdueProducts = new JSONArray();
-            for (Product item : overdueFood) {
-                JSONObject json = item.getJSON();
-                overdueProducts.put(json);
+            JSONArray groupArray = new JSONArray();
+            for (Group group: groups) {
+                JSONObject json = group.getJSON();
+                groupArray.put(json);
             }
 
-            if (freshFood.isEmpty() && overdueFood.isEmpty()) {
+            if (products.isEmpty()) {
                 String name = "NO PRODUCTS";
                 if (message != null) {
                     name += " (" + message + ")";
                 }
                 final Product costyl =
                         new Product(name, new GregorianCalendar(), 1, null);
-                freshProducts.put(costyl.getJSON());
+                productsArray.put(costyl.getJSON());
             }
 
-            result.put("fresh", freshProducts);
-            result.put("overdue", overdueProducts);
+            result.put("products", productsArray);
+            result.put("groups", groupArray);
         }
         catch (JSONException e) {
             return;

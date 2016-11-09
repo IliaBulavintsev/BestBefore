@@ -236,7 +236,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void backup() {
-        List<Product> products = productDAO.getAllFromDB();
+        List<Product> products = productDAO.getAll();
 
         if (products.isEmpty()) {
             Toast toast = Toast.makeText(getApplicationContext(),
@@ -324,6 +324,9 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     auth.setSummary("");
                     Log.i("SIGN IN", "SUCCESS");
                     setAuthFlag(true);
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            R.string.auth_success, Toast.LENGTH_SHORT);
+                    toast.show();
                 }
                 // Возможно излишне
                 else {

@@ -110,4 +110,9 @@ public class GroupDAO {
                 DBHelper.Group._ID + "=?", new String[]{String.valueOf(group.getId())});
 
     }
+
+    public void deleteAll() {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.delete(DBHelper.Group.TABLE_NAME, null, null);
+    }
 }

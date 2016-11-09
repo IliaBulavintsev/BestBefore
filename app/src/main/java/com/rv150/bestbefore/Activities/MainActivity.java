@@ -12,7 +12,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -68,8 +67,7 @@ import java.util.List;
 
 
 
-// сегодняшний продукты при обновлении попадают в просрок (видимо из-за 23-59)
-// все старые просроки появляются в недавно просроченных
+// открытый drawer при сворачивании - дублирование
 
 
 public class MainActivity extends AppCompatActivity {
@@ -220,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
         boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
         if (needShowOverdue) {
             // Удаление просроченных и показ сообщения
-            List<Product> temp = productDAO.getAllFromDB();        // берем все продукты из базы
+            List<Product> temp = productDAO.getAll();        // берем все продукты из базы
             List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp, getApplicationContext());
             DeleteOverdue.markViewed(productDAO, temp);
             if (!newOverdue.isEmpty()) {
@@ -242,13 +240,10 @@ public class MainActivity extends AppCompatActivity {
             date.add(Calendar.DAY_OF_MONTH, 2);
             Product product = new Product(name, date, quantity, null);
             productDAO.insertProduct(product);
-            wrapperList = productDAO.getAllFromDB();
+            wrapperList = productDAO.getAll();
             firstLaunch = false;
         }
-        else {
-            // Заполним данными для автодополнения
-            new InsertForAutocomplete(wrapperList).execute();
-        }
+
 
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
@@ -278,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
         }
         editor.apply();
 
-
+        new InsertForAutocomplete(wrapperList).execute();
     }
 
 
@@ -506,16 +501,13 @@ public class MainActivity extends AppCompatActivity {
     public void clearGroup() {
         if (groupChoosen == Resources.ID_MAIN_GROUP) {
             productDAO.deleteFresh();
-            StatCollector.shareStatistic(this, "deleted all fresh products");
         }
         else if (groupChoosen == Resources.ID_FOR_OVERDUED) {
             productDAO.deleteOverdued();
-            StatCollector.shareStatistic(this, "deleted all overdued products");
         }
         else {
             Group group = groupDAO.get(groupChoosen);
             productDAO.deleteFreshFromGroup(group.getId());
-            StatCollector.shareStatistic(this, "deleted all from \"" + group.getName() + "\"");
         }
 
         wrapperList.clear();
@@ -558,7 +550,6 @@ public class MainActivity extends AppCompatActivity {
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
         productDAO.deleteProduct(deletedProduct.getId());
-        StatCollector.shareStatistic(this, "deleted one item");
     }
 
     private void restoreItem() {
@@ -569,7 +560,6 @@ public class MainActivity extends AppCompatActivity {
         position = -1;
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
-        StatCollector.shareStatistic(this, "restored item");
         // Надпись "Список пуст!"
         isEmpty.setVisibility(View.INVISIBLE);
     }
@@ -694,7 +684,9 @@ public class MainActivity extends AppCompatActivity {
 
 
             changeGroup();
-            StatCollector.shareStatistic(this, null);
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.product_has_been_saved, Toast.LENGTH_SHORT);
+            toast.show();
         }
     }
 
@@ -992,8 +984,11 @@ public class MainActivity extends AppCompatActivity {
             // Create a new map of values, where column names are the keys
             ContentValues values = new ContentValues();
             for (Product item: insertedData) {
-                values.put(DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME, item.getTitle());
-                db.insert(DBHelper.AutoCompletedProducts.TABLE_NAME, null, values);
+                final String name = item.getTitle();
+                if (!name.equals(getString(R.string.example_product))) {
+                    values.put(DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME, name);
+                    db.insert(DBHelper.AutoCompletedProducts.TABLE_NAME, null, values);
+                }
             }
             return null;
         }

@@ -27,7 +27,7 @@ public class ProductDAO {
         dbHelper = new DBHelper(context);
     }
 
-    public List<Product> getAllFromDB() {
+    public List<Product> getAll() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String query = "SELECT * FROM " + DBHelper.Product.TABLE_NAME;
         Cursor cursor = db.rawQuery(query, null);
@@ -71,7 +71,7 @@ public class ProductDAO {
 
     public List<Product> getFreshFromGroup (long groupId) {
         if (groupId == Resources.ID_MAIN_GROUP) {
-            return getAllFromDB();              // Для основной группы вернуть все продукты
+            return getAll();              // Для основной группы вернуть все продукты
         }
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Calendar now = new GregorianCalendar();
@@ -196,6 +196,11 @@ public class ProductDAO {
         Calendar now = new GregorianCalendar();
         db.delete(DBHelper.Product.TABLE_NAME, DBHelper.Product.COLUMN_NAME_DATE + " < ?",
                 new String[] {String.valueOf(now.getTimeInMillis())});
+    }
+
+    public void deleteAll() {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.delete(DBHelper.Product.TABLE_NAME, null, null);
     }
 
 

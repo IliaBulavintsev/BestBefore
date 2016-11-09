@@ -26,7 +26,8 @@ public class MyIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        List<Product> wrapperList = ProductDAO.getFreshProducts(this);
+        ProductDAO productDAO = new ProductDAO(this);
+        List<Product> wrapperList = productDAO.getFresh();
         SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         int ID = intent.getIntExtra("id", -1);
@@ -57,13 +58,8 @@ public class MyIntentService extends IntentService {
     private void makeNotification(List<Product> wrapperList, int days_before, int ID) {
         String firstProduct = null;
         int count = 0;
-        for (int i = 0; i < wrapperList.size(); ++i) {
-            Product currentItem = wrapperList.get(i);
+        for (Product currentItem: wrapperList) {
             Calendar date = currentItem.getDate();
-            int year = date.get(Calendar.YEAR);
-            int month = date.get(Calendar.MONTH);
-            int day = date.get(Calendar.DAY_OF_MONTH);
-            date.set(year, month, day, 23, 59);
             Calendar currentDate = new GregorianCalendar();
             long difference = date.getTimeInMillis()  - currentDate.getTimeInMillis();
             int days = (int) (difference / (24*60*60*1000));

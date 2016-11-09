@@ -501,6 +501,7 @@ public class Add extends AppCompatActivity {
                 spinnerGroups.setSelection(wasSelected);
             }
         });
+        builder.setCancelable(false);
         builder.show();
     }
 

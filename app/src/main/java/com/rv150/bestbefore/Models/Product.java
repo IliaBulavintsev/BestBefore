@@ -94,7 +94,12 @@ public class Product {
         result.put("date", getDate().getTimeInMillis());
         result.put("createdAt", getCreatedAt().getTimeInMillis());
         result.put("quantity", getQuantity());
-        result.put("groupId", getGroupId());
+        if (groupId == null) {
+            result.put("groupId", -1);
+        }
+        else {
+            result.put("groupId", groupId);
+        }
         result.put("viewed", getViewed());
         return result;
     }

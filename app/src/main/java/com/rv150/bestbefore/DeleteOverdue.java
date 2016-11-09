@@ -28,7 +28,6 @@ import java.util.List;
  */
 public class DeleteOverdue {
     public static List<String> getOverdueNamesAndRemoveFresh(List<Product> wrapperList, Context context) {
-        GroupDAO groupDAO = new GroupDAO(context);
         List<String> newOverdue = new ArrayList<>();
         for (Iterator<Product> iterator = wrapperList.iterator(); iterator.hasNext(); ) {
             Product currentItem = iterator.next();
