@@ -1,9 +1,5 @@
 package com.rv150.bestbefore;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
@@ -13,6 +9,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.rv150.bestbefore.Models.Product;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * Created by Rudnev on 25.10.2016.

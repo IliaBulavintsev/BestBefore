@@ -7,8 +7,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 
-import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Models.Product;
+import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
 
 import java.util.ArrayList;

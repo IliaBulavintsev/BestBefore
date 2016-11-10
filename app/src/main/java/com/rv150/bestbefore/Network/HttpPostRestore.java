@@ -6,16 +6,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.util.SparseArray;
 import android.widget.Toast;
 
 import com.rv150.bestbefore.DAO.GroupDAO;
+import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Group;
+import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.DAO.ProductDAO;
-import com.rv150.bestbefore.Models.Product;
-import com.rv150.bestbefore.Services.DBHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;

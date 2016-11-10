@@ -2,20 +2,14 @@ package com.rv150.bestbefore.DAO;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.preference.PreferenceManager;
 
 import com.rv150.bestbefore.Models.Group;
-import com.rv150.bestbefore.Models.Product;
-import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 /**

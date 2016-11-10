@@ -27,7 +27,7 @@
     <string name="help">Справка</string>
     <string name="notifications">Напоминания</string>
     <string name="whats_new_title">Что нового?</string>
-     <string name="whats_new">В приложении теперь можно группировать продукты по категориям. Не забудьте оценить приложение, если оно вам понравилось :)</string>
+    <string name="whats_new">В приложении наконец-то можно группировать продукты по категориям. Не забудьте оценить приложение, если оно вам понравилось, а также писать свои пожелания :)</string>
     <string name="sort">Сортировка</string>
     <string name="last_overdue">Последние просроченные</string>
     <string name="rate_app_msg">Вы не хотели бы оценить приложение в Google Play? Не стесняйтесь писать свои пожелания :)</string>
@@ -113,4 +113,5 @@
     <string name="rename_group">Переименовать группу</string>
     <string name="enter_new_name">Введите новое название</string>
     <string name="product_has_been_saved">Продукт сохранен</string>
+    <string name="do_you_want_to_make_backup">Сохранить данные на сервере?</string>
 </resources>

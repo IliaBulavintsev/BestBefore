@@ -44,20 +44,20 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.rv150.bestbefore.DAO.GroupDAO;
+import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.DeleteOverdue;
+import com.rv150.bestbefore.Dialogs.DeleteAllDialog;
 import com.rv150.bestbefore.Dialogs.DeleteGroupDialog;
+import com.rv150.bestbefore.Dialogs.RateAppDialog;
 import com.rv150.bestbefore.ItemClickSupport;
 import com.rv150.bestbefore.Models.Group;
-import com.rv150.bestbefore.Receivers.AlarmReceiver;
-import com.rv150.bestbefore.Dialogs.DeleteAllDialog;
-import com.rv150.bestbefore.DeleteOverdue;
+import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
-import com.rv150.bestbefore.Dialogs.RateAppDialog;
+import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.RecyclerAdapter;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.StatCollector;
-import com.rv150.bestbefore.Models.Product;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -133,9 +133,6 @@ public class MainActivity extends AppCompatActivity {
             editor.putBoolean(Resources.NEED_MIGRATE, false);
             editor.apply();
         }
-
-
-
 
 
         wrapperList = productDAO.getFresh();
@@ -214,12 +211,11 @@ public class MainActivity extends AppCompatActivity {
         setUpDrawer(toolbar);
 
 
-
         boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
         if (needShowOverdue) {
             // Удаление просроченных и показ сообщения
             List<Product> temp = productDAO.getAll();        // берем все продукты из базы
-            List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp, getApplicationContext());
+            List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp);
             DeleteOverdue.markViewed(productDAO, temp);
             if (!newOverdue.isEmpty()) {
                 CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);

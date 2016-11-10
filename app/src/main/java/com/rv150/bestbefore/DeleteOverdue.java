@@ -1,23 +1,18 @@
 package com.rv150.bestbefore;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
-import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.SpannedString;
 import android.text.style.StyleSpan;
 
-import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
-import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
-import com.rv150.bestbefore.Services.DBHelper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +22,8 @@ import java.util.List;
  * Класс получает на вход список и переносит просроченные в отдельную коллекцию
  */
 public class DeleteOverdue {
-    public static List<String> getOverdueNamesAndRemoveFresh(List<Product> wrapperList, Context context) {
+    public static List<String> getOverdueNamesAndRemoveFresh(List<Product> wrapperList) {
+        Collections.sort(wrapperList, Product.getFreshToSpoiledComparator());
         List<String> newOverdue = new ArrayList<>();
         for (Iterator<Product> iterator = wrapperList.iterator(); iterator.hasNext(); ) {
             Product currentItem = iterator.next();
@@ -51,7 +47,7 @@ public class DeleteOverdue {
                 } else {
                     title += " (" + days + " дней назад)";
                 }
-                newOverdue.add(0, title); // А в новые просроки название
+                newOverdue.add(title); // А в новые просроки название
             }
             else {
                 iterator.remove();

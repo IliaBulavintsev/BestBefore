@@ -32,14 +32,14 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.rv150.bestbefore.DAO.GroupDAO;
+import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Group;
-import com.rv150.bestbefore.Receivers.AlarmReceiver;
+import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.Network.HttpPostBackup;
 import com.rv150.bestbefore.Network.HttpPostRestore;
 import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Resources;
-import com.rv150.bestbefore.DAO.ProductDAO;
-import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.Services.DBHelper;
 
 import org.json.JSONArray;
@@ -233,6 +233,9 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, Resources.RC_SIGN_IN);
     }
+
+
+
 
 
     private void backup() {
