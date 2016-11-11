@@ -120,6 +120,26 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             }
         });
 
+        Preference time4 = getPreferenceManager().findPreference("time_in_fourth");
+        time4.setSummary(getSummary(4));
+        time4.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                preference.setSummary(getSummary(4));
+                return true;
+            }
+        });
+
+        Preference time5 = getPreferenceManager().findPreference("time_in_fifth");
+        time5.setSummary(getSummary(5));
+        time5.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                preference.setSummary(getSummary(5));
+                return true;
+            }
+        });
+
 
 
         Preference clearDictionary = findPreference("clear_dictionary");
@@ -376,6 +396,16 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 minute = prefs.getInt(Resources.PREF_THIRD_MINUTE, 0);
                 break;
             }
+            case 4: {
+                hour = prefs.getInt(Resources.PREF_FOURTH_HOUR, 17);
+                minute = prefs.getInt(Resources.PREF_FOURTH_MINUTE, 0);
+                break;
+            }
+            case 5: {
+                hour = prefs.getInt(Resources.PREF_FIFTH_HOUR, 17);
+                minute = prefs.getInt(Resources.PREF_FIFTH_MINUTE, 0);
+                break;
+            }
             default: {
                 hour = minute = 0;
             }
@@ -396,11 +426,13 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         boolean firstNotif = sPrefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
         boolean secondNotif = sPrefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
         boolean thirdNotif = sPrefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
+        boolean fourthNotif = sPrefs.getBoolean(Resources.PREF_FOURH_NOTIF, false);
+        boolean fifthNotif = sPrefs.getBoolean(Resources.PREF_FIFTH_NOTIF, false);
         AlarmReceiver alarmReceiver = new AlarmReceiver();
         SharedPreferences.Editor editor = sPrefs.edit();
 
 
-        if (!firstNotif && !secondNotif && !thirdNotif) {
+        if (!firstNotif && !secondNotif && !thirdNotif && !fourthNotif && !fifthNotif) {
             editor.putBoolean(Resources.PREF_ALARM_SET, false);
             alarmReceiver.cancelAlarm(this);
         } else {
@@ -492,7 +524,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         protected String doInBackground(final String... args) {
             DBHelper dbHelper = new DBHelper(context);
             SQLiteDatabase db = dbHelper.getWritableDatabase();
-            db.execSQL("deleteAndReturnOverdued from "+ DBHelper.AutoCompletedProducts.TABLE_NAME);
+            db.delete(DBHelper.AutoCompletedProducts.TABLE_NAME, null, null);
             return null;
         }
     }

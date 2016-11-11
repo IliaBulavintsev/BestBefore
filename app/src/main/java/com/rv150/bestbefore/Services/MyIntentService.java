@@ -47,6 +47,17 @@ public class MyIntentService extends IntentService {
                 makeNotification(wrapperList, daysInThird, 3);
                 break;
             }
+            case 4: {
+                int daysInFourth = sPrefs.getInt(Resources.PREF_DAYS_IN_FOURTH_NOTIF, 3);
+                makeNotification(wrapperList, daysInFourth, 4);
+                break;
+            }
+            case 5: {
+                int daysInFifth = sPrefs.getInt(Resources.PREF_DAYS_IN_FIFTH_NOTIF, 4);
+                makeNotification(wrapperList, daysInFifth, 5);
+                break;
+            }
+
             default: {
                Log.d("Exception", "ID is wrong!");
             }

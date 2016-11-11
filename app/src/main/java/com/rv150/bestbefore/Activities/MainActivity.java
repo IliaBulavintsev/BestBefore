@@ -256,13 +256,15 @@ public class MainActivity extends AppCompatActivity {
         boolean firstNotif = sPrefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
         boolean secondNotif = sPrefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
         boolean thirdNotif = sPrefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
+        boolean fourthNotif = sPrefs.getBoolean(Resources.PREF_FOURH_NOTIF, false);
+        boolean fifthNotif = sPrefs.getBoolean(Resources.PREF_FIFTH_NOTIF, false);
         SharedPreferences.Editor editor = sPrefs.edit();
         if (wrapperList.isEmpty()) {
             AlarmReceiver am = new AlarmReceiver();
             am.cancelAlarm(this);
             editor.putBoolean(Resources.PREF_ALARM_SET, false);
         }
-        else if(!alarm_set && (firstNotif || secondNotif || thirdNotif)){
+        else if(!alarm_set && (firstNotif || secondNotif || thirdNotif || fourthNotif || fifthNotif)){
             AlarmReceiver am = new AlarmReceiver();
             am.setAlarm(this);
             editor.putBoolean(Resources.PREF_ALARM_SET, true);

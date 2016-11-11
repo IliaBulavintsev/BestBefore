@@ -57,14 +57,6 @@ public class DBHelper extends SQLiteOpenHelper {
                     "FOREIGN KEY (" + Product.COLUMN_NAME_GROUP_ID + ") REFERENCES " +
                     Group.TABLE_NAME + "(" + Group._ID + ") ON DELETE CASCADE)";
 
-
-    private static final String SQL_DELETE_AUTOCOMPLETED_TABLE =
-            "DROP TABLE IF EXISTS " + AutoCompletedProducts.TABLE_NAME;
-    private static final String SQL_DELETE_GROUP_TABLE =
-            "DROP TABLE IF EXISTS " + Group.TABLE_NAME;
-    private static final String SQL_DELETE_PRODUCT_TABLE =
-            "DROP TABLE IF EXISTS " + Product.TABLE_NAME;
-
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }

@@ -32,6 +32,10 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
                 break;
             case 3: service.setAction("third");
                 break;
+            case 4: service.setAction("fourth");
+                break;
+            case 5: service.setAction("fifth");
+                break;
         }
         startWakefulService(context, service);
     }
@@ -45,7 +49,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
                 PreferenceManager.getDefaultSharedPreferences(context);
 
 
-        // Отмена всех трех
+        // Отмена всех трех (уже пяти)
         Intent i1 = new Intent(context, AlarmReceiver.class);
         i1.putExtra("id", 1);
         i1.setAction("first");
@@ -61,14 +65,28 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         i3.setAction("third");
         PendingIntent pi3 = PendingIntent.getBroadcast(context, 3, i3, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        Intent i4 = new Intent(context, AlarmReceiver.class);
+        i4.putExtra("id", 4);
+        i4.setAction("fourth");
+        PendingIntent pi4 = PendingIntent.getBroadcast(context, 4, i4, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent i5 = new Intent(context, AlarmReceiver.class);
+        i5.putExtra("id", 5);
+        i5.setAction("fifth");
+        PendingIntent pi5 = PendingIntent.getBroadcast(context, 5, i5, PendingIntent.FLAG_UPDATE_CURRENT);
+
         am.cancel(pi1);
         am.cancel(pi2);
         am.cancel(pi3); // Тормозим все напоминания, а потом устанавливаем только те, что действительно включены
+        am.cancel(pi4);
+        am.cancel(pi5);
 
 
         boolean firstNotif = sPrefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
         boolean secondNotif = sPrefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
         boolean thirdNotif = sPrefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
+        boolean fourthNotif = sPrefs.getBoolean(Resources.PREF_FOURH_NOTIF, false);
+        boolean fifthNotif = sPrefs.getBoolean(Resources.PREF_FIFTH_NOTIF, false);
 
         // Если активировано 1-ое напоминание
         if (firstNotif) {
@@ -133,6 +151,46 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
                     delay, pi3);
         }
+
+        if (fourthNotif) {
+            int hour = sPrefs.getInt(Resources.PREF_FOURTH_HOUR, 17);
+            int minute = sPrefs.getInt(Resources.PREF_FOURTH_MINUTE, 0);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(System.currentTimeMillis());
+            calendar.set(Calendar.HOUR_OF_DAY, hour);
+            calendar.set(Calendar.MINUTE, minute);
+
+            Date dat = new Date();// initializes to now
+            Calendar cal_now = Calendar.getInstance();
+            cal_now.setTime(dat);
+            if (calendar.before(cal_now)) {// if its in the past increment
+                calendar.add(Calendar.DATE, 1);
+            }
+
+            long delay = 24 * 60 * 60 * 1000;
+            am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+                    delay, pi4);
+        }
+
+        if (fifthNotif) {
+            int hour = sPrefs.getInt(Resources.PREF_FIFTH_HOUR, 17);
+            int minute = sPrefs.getInt(Resources.PREF_FIFTH_MINUTE, 0);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(System.currentTimeMillis());
+            calendar.set(Calendar.HOUR_OF_DAY, hour);
+            calendar.set(Calendar.MINUTE, minute);
+
+            Date dat = new Date();// initializes to now
+            Calendar cal_now = Calendar.getInstance();
+            cal_now.setTime(dat);
+            if (calendar.before(cal_now)) {// if its in the past increment
+                calendar.add(Calendar.DATE, 1);
+            }
+
+            long delay = 24 * 60 * 60 * 1000;
+            am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+                    delay, pi5);
+        }
     }
 
     public void cancelAlarm (Context context) {
@@ -149,9 +207,19 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         i3.setAction("third");
         PendingIntent pi3 = PendingIntent.getBroadcast(context, 3, i3, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        Intent i4 = new Intent(context, AlarmReceiver.class);
+        i4.setAction("fourth");
+        PendingIntent pi4 = PendingIntent.getBroadcast(context, 4, i4, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent i5 = new Intent(context, AlarmReceiver.class);
+        i5.setAction("fifth");
+        PendingIntent pi5 = PendingIntent.getBroadcast(context, 5, i5, PendingIntent.FLAG_UPDATE_CURRENT);
+
         am.cancel(pi1);
         am.cancel(pi2);
         am.cancel(pi3);
+        am.cancel(pi4);
+        am.cancel(pi5);
     }
 }
 

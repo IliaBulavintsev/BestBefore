@@ -84,6 +84,55 @@
                     android:title="Время напоминания"/>
             </PreferenceCategory>
 
+            <PreferenceCategory
+                android:title="Четвертое напоминание"
+                android:key="fourth_group">
+                <SwitchPreference
+                    android:key="four_days"
+                    android:title="Включить"
+                    android:defaultValue="false" />
+
+                <com.vanniktech.vntnumberpickerpreference.VNTNumberPickerPreference
+                    android:defaultValue="3"
+                    android:key="days_in_fourth"
+                    android:title="За сколько дней напомнить (0 - в последний)"
+                    app:vnt_maxValue="365"
+                    app:vnt_minValue="0"
+                    android:dependency="four_days"/>
+
+                <com.rv150.bestbefore.Preferences.TimePreference4
+                    android:name="Default notification time"
+                    android:dialogLayout="@layout/time_preference"
+                    android:key="time_in_fourth"
+                    android:dependency="four_days"
+                    android:title="Время напоминания"/>
+            </PreferenceCategory>
+
+
+            <PreferenceCategory
+                android:title="Пятое напоминание"
+                android:key="fifth_group">
+                <SwitchPreference
+                    android:key="five_days"
+                    android:title="Включить"
+                    android:defaultValue="false" />
+
+                <com.vanniktech.vntnumberpickerpreference.VNTNumberPickerPreference
+                    android:defaultValue="4"
+                    android:key="days_in_fifth"
+                    android:title="За сколько дней напомнить (0 - в последний)"
+                    app:vnt_maxValue="365"
+                    app:vnt_minValue="0"
+                    android:dependency="five_days"/>
+
+                <com.rv150.bestbefore.Preferences.TimePreference5
+                    android:name="Default notification time"
+                    android:dialogLayout="@layout/time_preference"
+                    android:key="time_in_fifth"
+                    android:dependency="five_days"
+                    android:title="Время напоминания"/>
+            </PreferenceCategory>
+
         </PreferenceScreen>
 
 

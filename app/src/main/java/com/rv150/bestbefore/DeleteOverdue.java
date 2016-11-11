@@ -76,16 +76,4 @@ public class DeleteOverdue {
             }
         }
     }
-
-    public static void removeOverduedFromList(List<Product> wrapperList) {
-        for (Iterator<Product> iterator = wrapperList.iterator(); iterator.hasNext(); ) {
-            Product currentItem = iterator.next();
-            Calendar date = currentItem.getDate();
-            Calendar createdAt = currentItem.getCreatedAt();
-            long difference = new GregorianCalendar().getTimeInMillis() - date.getTimeInMillis();
-            if (difference > 0) {
-                iterator.remove();
-            }
-        }
-    }
 }
