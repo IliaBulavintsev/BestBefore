@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.auth.api.Auth;
@@ -28,9 +30,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.drive.Drive;
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Group;
@@ -41,6 +45,7 @@ import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
+
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -61,6 +66,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     private GoogleApiClient mGoogleApiClient;
     private String idToken;
     Preference auth;
+
+   // private GoogleApiClient mGoogleDriveClient;
 
     SharedPreferences sPrefs;
     ProductDAO productDAO;
@@ -168,6 +175,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
         // Синхронизация
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestScopes(Drive.SCOPE_FILE)
                 .requestIdToken(getString(R.string.CLIENT_ID))
                 .requestEmail()
                 .build();
@@ -176,6 +184,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         // options specified by gso.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .addApi(Drive.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
@@ -205,13 +214,13 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         });
 
 
-        Preference backup = findPreference("backup");
-        backup.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                backup();
-                return true;
-            }
-        });
+//        Preference backup = findPreference("backup");
+//        backup.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+//            public boolean onPreferenceClick(Preference preference) {
+//                backup();
+//                return true;
+//            }
+//        });
 
         final Preference restore = findPreference("restore");
         restore.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -234,7 +243,18 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+
+        // Google Drive API
+//        mGoogleDriveClient = new GoogleApiClient.Builder(this)
+//                .addApi(Drive.API)
+//                .addScope(Drive.SCOPE_FILE)
+//                .addConnectionCallbacks(this)
+//                .addOnConnectionFailedListener(this)
+//                .build();
     }
+
+
 
 
 
@@ -254,6 +274,22 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         startActivityForResult(signInIntent, Resources.RC_SIGN_IN);
     }
 
+
+
+
+    // Drive
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        if (connectionResult.hasResolution()) {
+            try {
+                connectionResult.startResolutionForResult(this, Resources.RC_DRIVE_API);
+            } catch (IntentSender.SendIntentException e) {
+                // Unable to resolve, message user appropriately
+            }
+        } else {
+            GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), this, 0).show();
+        }
+    }
 
 
 
@@ -367,6 +403,9 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 Log.i("SIGN IN", "FAILED");
             }
         }
+        if (requestCode == Resources.RC_DRIVE_API && resultCode == RESULT_OK) {
+            mGoogleApiClient.connect();
+        }
     }
 
 
@@ -446,7 +485,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     @Override
     public void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
+        mGoogleApiClient.connect(GoogleApiClient.SIGN_IN_MODE_OPTIONAL);
+       // mGoogleDriveClient.connect();
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -485,10 +525,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         client.disconnect();
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.i("CONN", "FAIL");
-    }
+
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -528,4 +565,99 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             return null;
         }
     }
+
+
+
+
+
+    /**
+     * An asynchronous task that handles the Drive API call.
+     * Placing the API calls in their own task ensures the UI stays responsive.
+     */
+    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Exception mLastError = null;
+
+        MakeRequestTask(GoogleAccountCredential credential) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Drive API Android Quickstart")
+                    .build();
+        }
+
+        /**
+         * Background task to call Drive API.
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+
+        private List<String> getDataFromApi() throws IOException {
+            // Get a list of up to 10 files.
+            List<String> fileInfo = new ArrayList<String>();
+            FileList result = mService.files().list()
+                    .setPageSize(10)
+                    .setFields("nextPageToken, files(id, name)")
+                    .execute();
+            List<File> files = result.getFiles();
+            if (files != null) {
+                for (File file : files) {
+                    fileInfo.add(String.format("%s (%s)\n",
+                            file.getName(), file.getId()));
+                }
+            }
+            return fileInfo;
+        }
+
+
+        @Override
+        protected void onPreExecute() {
+            mOutputText.setText("");
+            mProgress.show();
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            mProgress.hide();
+            if (output == null || output.size() == 0) {
+                mOutputText.setText("No results returned.");
+            } else {
+                output.add(0, "Data retrieved using the Drive API:");
+                mOutputText.setText(TextUtils.join("\n", output));
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mProgress.hide();
+            if (mLastError != null) {
+                if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
+                    showGooglePlayServicesAvailabilityErrorDialog(
+                            ((GooglePlayServicesAvailabilityIOException) mLastError)
+                                    .getConnectionStatusCode());
+                } else if (mLastError instanceof UserRecoverableAuthIOException) {
+                    startActivityForResult(
+                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+                            MainActivity.REQUEST_AUTHORIZATION);
+                } else {
+                    mOutputText.setText("The following error occurred:\n"
+                            + mLastError.getMessage());
+                }
+            } else {
+                mOutputText.setText("Request cancelled.");
+            }
+        }
+    }
+
 }

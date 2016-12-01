@@ -44,9 +44,9 @@ public final class Resources {
     public static final String GROUP_NAME = "groupName";
     public static final int RC_ADD_ACTIVITY = 0;
     public static final int RC_SIGN_IN = 1;
+    public static final int RC_DRIVE_API = 2;
     public static final int RESULT_ADD = 1;
     public static final int RESULT_MODIFY = 2;
-    public static final int RESULT_EXIT = 0;
     public static final String SERVER_URL = "http://212.109.192.197:8080/";
     public static final String WHATS_NEW = "whats_new_17";
     public static final String WHATS_NEW_OLD = "whats_new_15";

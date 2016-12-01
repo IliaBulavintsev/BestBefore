@@ -632,7 +632,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Resources.RC_ADD_ACTIVITY && resultCode != Resources.RESULT_EXIT) {
+        if (requestCode == Resources.RC_ADD_ACTIVITY && resultCode != RESULT_CANCELED) {
             String name = data.getExtras().getString(Resources.NAME);
             Calendar date = (Calendar) data.getExtras().get(Resources.DATE);
             int quantity = (int) data.getExtras().get(Resources.QUANTITY);
