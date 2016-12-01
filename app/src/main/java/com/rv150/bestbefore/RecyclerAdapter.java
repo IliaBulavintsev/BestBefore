@@ -29,14 +29,16 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView nameTextView;
         TextView quantityTextView;
-        TextView dateTextView;
+        TextView bestBeforeTV;
+        TextView dateCreatedTV;
         TextView daysLeftTextView;
 
         ViewHolder(View itemView) {
             super(itemView);
             nameTextView = (TextView) itemView.findViewById(R.id.item_name);
             quantityTextView = (TextView) itemView.findViewById(R.id.item_quantity);
-            dateTextView = (TextView) itemView.findViewById(R.id.item_date);
+            bestBeforeTV = (TextView) itemView.findViewById(R.id.item_best_before);
+            dateCreatedTV = (TextView) itemView.findViewById(R.id.item_date_created);
             daysLeftTextView = (TextView) itemView.findViewById(R.id.item_days_left);
         }
     }
@@ -55,45 +57,66 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
     @Override
     public void onBindViewHolder(RecyclerAdapter.ViewHolder viewHolder, int position) {
         final Product item = items.get(position);
-            viewHolder.itemView.setBackgroundColor(Color.WHITE);
-            viewHolder.nameTextView.setVisibility(View.VISIBLE);
-            viewHolder.quantityTextView.setVisibility(View.VISIBLE);
-            viewHolder.dateTextView.setVisibility(View.VISIBLE);
-            viewHolder.daysLeftTextView.setVisibility(View.VISIBLE);
 
             TextView name = viewHolder.nameTextView;
             name.setText(item.getTitle());
 
             int quantity = item.getQuantity();
-            String quantityStr = "Кол-во: " + quantity;
+            String quantityStr = "Кол-во:  " + quantity;
             if (quantity < 10) {
                 quantityStr += "  ";
             }
             viewHolder.quantityTextView.setText(quantityStr);
 
-            Calendar calendar = item.getDate();
+            final Calendar calendar = item.getDate();
             int year = calendar.get(Calendar.YEAR);
             int month = calendar.get(Calendar.MONTH);
             int day = calendar.get(Calendar.DAY_OF_MONTH);
-            calendar.set(year, month, day, 23, 59);
 
-            TextView date = viewHolder.dateTextView;
+            TextView bestBeforeTV = viewHolder.bestBeforeTV;
             if (month < 9) {
                 if (day < 10) {
-                    date.setText("Годен до: 0" + day + "." + "0" + (month + 1) + "." + year);
+                    bestBeforeTV.setText(day + "." + "0" + (month + 1) + "." + year);
                 }
                 else {
-                    date.setText("Годен до: " + day + "." + "0" + (month + 1) + "." + year);
+                    bestBeforeTV.setText(day + "." + "0" + (month + 1) + "." + year);
                 }
             }
             else {
                 if (day < 10) {
-                    date.setText("Годен до: 0" + day + "." + (month + 1) + "." + year);
+                    bestBeforeTV.setText(day + "." + (month + 1) + "." + year);
                 }
                 else {
-                    date.setText("Годен до: " + day + "." + (month + 1) + "." + year);
+                    bestBeforeTV.setText(day + "." + (month + 1) + "." + year);
                 }
             }
+
+            TextView dateCreatedTV = viewHolder.dateCreatedTV;
+            Calendar createdAt = item.getCreatedAt();
+            year = createdAt.get(Calendar.YEAR);
+            month = createdAt.get(Calendar.MONTH);
+            day = createdAt.get(Calendar.DAY_OF_MONTH);
+            String dateCreated;
+            if (month < 9) {
+                if (day < 10) {
+                    dateCreated = day + "." + "0" + (month + 1) + "." + year;
+                }
+                else {
+                    dateCreated = day + "." + "0" + (month + 1) + "." + year;
+                }
+            }
+            else {
+                if (day < 10) {
+                    dateCreated = day + "." + (month + 1) + "." + year;
+                }
+                else {
+                    dateCreated = day + "." + (month + 1) + "." + year;
+                }
+            }
+
+            dateCreatedTV.setText(dateCreated);
+
+
 
             TextView daysLeft = viewHolder.daysLeftTextView;
             String daysLeftStr = getDaysLeft(calendar);

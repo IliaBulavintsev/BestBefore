@@ -42,7 +42,7 @@ public class Product {
         int myDay = Integer.parseInt(array[0]);
         int myMonth = Integer.parseInt(array[1]);
         int myYear = Integer.parseInt(array[2]);
-        this.mDate = new GregorianCalendar(myYear, myMonth, myDay);
+        this.mDate = new GregorianCalendar(myYear, myMonth, myDay, 23, 59);
 
         if (createdAt == null) {
             this.mCreatedAt = new GregorianCalendar();
