@@ -35,6 +35,12 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Group;
@@ -52,6 +58,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
+
+import static com.google.android.gms.drive.Drive.SCOPE_APPFOLDER;
 
 /**
  * Created by Rudnev on 01.07.2016.
@@ -72,6 +80,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     SharedPreferences sPrefs;
     ProductDAO productDAO;
     GroupDAO groupDAO;
+
+    private static final String TAG = "Preferences activity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +158,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         });
 
 
-
         Preference clearDictionary = findPreference("clear_dictionary");
         clearDictionary.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -156,26 +165,23 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 new AlertDialog.Builder(preference.getContext())
                         .setTitle(R.string.warning)
                         .setMessage(R.string.sure_you_want_clear_user_dictionary)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
-                        {
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 new ClearUserDictionaryTask(getApplicationContext()).execute();
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                       .show();
+                        .show();
                 return true;
             }
         });
 
 
-
-
-
         // Синхронизация
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestScopes(Drive.SCOPE_FILE)
+                .requestScopes(SCOPE_APPFOLDER)
                 .requestIdToken(getString(R.string.CLIENT_ID))
                 .requestEmail()
                 .build();
@@ -190,8 +196,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 .build();
 
 
-
-
         auth = findPreference("auth");
         if (isAuthenticated()) {
             auth.setTitle(R.string.log_out);
@@ -201,10 +205,10 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
         auth.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
-               if (isAuthenticated()) { // Выйти и предложить авторизоваться
-                   auth.setTitle(R.string.signin);
-                   auth.setSummary(R.string.auth_via_google);
-                   signOut();
+                if (isAuthenticated()) { // Выйти и предложить авторизоваться
+                    auth.setTitle(R.string.signin);
+                    auth.setSummary(R.string.auth_via_google);
+                    signOut();
                 } else {
                     // Авторизация и кнопка "Выйти"
                     signIn();
@@ -214,15 +218,15 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         });
 
 
-//        Preference backup = findPreference("backup");
-//        backup.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-//            public boolean onPreferenceClick(Preference preference) {
-//                backup();
-//                return true;
-//            }
-//        });
+        Preference backup = findPreference("backup");
+        backup.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                backup();
+                return true;
+            }
+        });
 
-        final Preference restore = findPreference("restore");
+        final Preference restore = findPreference("restore_deprecated");
         restore.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 restore();
@@ -239,20 +243,12 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         });
 
 
-
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
-
-
-        // Google Drive API
-//        mGoogleDriveClient = new GoogleApiClient.Builder(this)
-//                .addApi(Drive.API)
-//                .addScope(Drive.SCOPE_FILE)
-//                .addConnectionCallbacks(this)
-//                .addOnConnectionFailedListener(this)
-//                .build();
     }
+
+
 
 
 
@@ -295,55 +291,58 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void backup() {
-        List<Product> products = productDAO.getAll();
+        Drive.DriveApi.newDriveContents(mGoogleApiClient)
+                .setResultCallback(driveContentsCallback);
 
-        if (products.isEmpty()) {
-            Toast toast = Toast.makeText(getApplicationContext(),
-                             R.string.nothing_to_backup, Toast.LENGTH_SHORT);
-            toast.show();
-            return;
-        }
-
-        // Отсылаемый jsonArray
-
-
-        JSONObject result = new JSONObject();
-        try {
-            if (idToken == null) {
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        R.string.error_has_occured_try_to_relogin, Toast.LENGTH_SHORT);
-                toast.show();
-                return;
-            }
-            result.put("idToken", idToken);
-
-            // Массив свежих продуктов
-            JSONArray productsJson = new JSONArray();
-            for (Product item : products) {
-                JSONObject json = item.getJSON();
-                productsJson.put(json);
-            }
-
-
-            result.put("products", productsJson);
-
-            List<Group> groups = groupDAO.getAll();
-            JSONArray groupsJson = new JSONArray();
-            for (Group group: groups) {
-                JSONObject json = group.getJSON();
-                groupsJson.put(json);
-            }
-            result.put("groups", groupsJson);
-        }
-        catch (JSONException e) {
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
-            toast.show();
-            return;
-        }
-
-
-        new HttpPostBackup(this).execute(result.toString());
+//        List<Product> products = productDAO.getAll();
+//
+//        if (products.isEmpty()) {
+//            Toast toast = Toast.makeText(getApplicationContext(),
+//                             R.string.nothing_to_backup, Toast.LENGTH_SHORT);
+//            toast.show();
+//            return;
+//        }
+//
+//        // Отсылаемый jsonArray
+//
+//
+//        JSONObject result = new JSONObject();
+//        try {
+//            if (idToken == null) {
+//                Toast toast = Toast.makeText(getApplicationContext(),
+//                        R.string.error_has_occured_try_to_relogin, Toast.LENGTH_SHORT);
+//                toast.show();
+//                return;
+//            }
+//            result.put("idToken", idToken);
+//
+//            // Массив свежих продуктов
+//            JSONArray productsJson = new JSONArray();
+//            for (Product item : products) {
+//                JSONObject json = item.getJSON();
+//                productsJson.put(json);
+//            }
+//
+//
+//            result.put("products", productsJson);
+//
+//            List<Group> groups = groupDAO.getAll();
+//            JSONArray groupsJson = new JSONArray();
+//            for (Group group: groups) {
+//                JSONObject json = group.getJSON();
+//                groupsJson.put(json);
+//            }
+//            result.put("groups", groupsJson);
+//        }
+//        catch (JSONException e) {
+//            Toast toast = Toast.makeText(getApplicationContext(),
+//                    R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
+//            toast.show();
+//            return;
+//        }
+//
+//
+//        new HttpPostBackup(this).execute(result.toString());
     }
 
 
@@ -373,7 +372,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Resources.RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            if (result.isSuccess()) {
+            if (result != null && result.isSuccess()) {
                 // Signed in successfully, show authenticated UI.
                 GoogleSignInAccount acct = result.getSignInAccount();
 
@@ -486,7 +485,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     public void onStart() {
         super.onStart();
         mGoogleApiClient.connect(GoogleApiClient.SIGN_IN_MODE_OPTIONAL);
-       // mGoogleDriveClient.connect();
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -570,94 +568,38 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
 
-    /**
-     * An asynchronous task that handles the Drive API call.
-     * Placing the API calls in their own task ensures the UI stays responsive.
-     */
-    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
-        private com.google.api.services.drive.Drive mService = null;
-        private Exception mLastError = null;
+    // [START drive_contents_callback]
+    final private ResultCallback<DriveApi.DriveContentsResult> driveContentsCallback =
+            new ResultCallback<DriveApi.DriveContentsResult>() {
+                @Override
+                public void onResult(DriveApi.DriveContentsResult result) {
+                    if (!result.getStatus().isSuccess()) {
+                        Log.e(TAG, "Error while trying to create new file contents");
+                        return;
+                    }
 
-        MakeRequestTask(GoogleAccountCredential credential) {
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            mService = new com.google.api.services.drive.Drive.Builder(
-                    transport, jsonFactory, credential)
-                    .setApplicationName("Drive API Android Quickstart")
-                    .build();
-        }
-
-        /**
-         * Background task to call Drive API.
-         * @param params no parameters needed for this task.
-         */
-        @Override
-        protected List<String> doInBackground(Void... params) {
-            try {
-                return getDataFromApi();
-            } catch (Exception e) {
-                mLastError = e;
-                cancel(true);
-                return null;
-            }
-        }
-
-
-        private List<String> getDataFromApi() throws IOException {
-            // Get a list of up to 10 files.
-            List<String> fileInfo = new ArrayList<String>();
-            FileList result = mService.files().list()
-                    .setPageSize(10)
-                    .setFields("nextPageToken, files(id, name)")
-                    .execute();
-            List<File> files = result.getFiles();
-            if (files != null) {
-                for (File file : files) {
-                    fileInfo.add(String.format("%s (%s)\n",
-                            file.getName(), file.getId()));
+                    MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                            .setTitle("appconfig.txt")
+                            .setMimeType("text/plain")
+                            .build();
+                    Drive.DriveApi.getAppFolder(mGoogleApiClient)
+                            .createFile(mGoogleApiClient, changeSet, result.getDriveContents())
+                            .setResultCallback(fileCallback);
                 }
-            }
-            return fileInfo;
-        }
+            };
+    // [END drive_contents_callback]
 
-
-        @Override
-        protected void onPreExecute() {
-            mOutputText.setText("");
-            mProgress.show();
-        }
-
-        @Override
-        protected void onPostExecute(List<String> output) {
-            mProgress.hide();
-            if (output == null || output.size() == 0) {
-                mOutputText.setText("No results returned.");
-            } else {
-                output.add(0, "Data retrieved using the Drive API:");
-                mOutputText.setText(TextUtils.join("\n", output));
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mProgress.hide();
-            if (mLastError != null) {
-                if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
-                    showGooglePlayServicesAvailabilityErrorDialog(
-                            ((GooglePlayServicesAvailabilityIOException) mLastError)
-                                    .getConnectionStatusCode());
-                } else if (mLastError instanceof UserRecoverableAuthIOException) {
-                    startActivityForResult(
-                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            MainActivity.REQUEST_AUTHORIZATION);
-                } else {
-                    mOutputText.setText("The following error occurred:\n"
-                            + mLastError.getMessage());
+    final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new
+            ResultCallback<DriveFolder.DriveFileResult>() {
+                @Override
+                public void onResult(DriveFolder.DriveFileResult result) {
+                    if (!result.getStatus().isSuccess()) {
+                        Log.e(TAG, "Error while trying to create the file");
+                        return;
+                    }
+                    Log.i(TAG, "Created a file in App Folder: "
+                            + result.getDriveFile().getDriveId());
                 }
-            } else {
-                mOutputText.setText("Request cancelled.");
-            }
-        }
-    }
+            };
 
 }

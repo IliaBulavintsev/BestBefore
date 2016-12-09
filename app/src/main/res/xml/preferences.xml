@@ -170,13 +170,13 @@
             android:key="auth" />
         <Preference
             android:title="@string/make_backup"
-            android:key="backup_drive" />
+            android:key="backup" />
         <Preference
             android:title="@string/restore"
-            android:key="restore_drive" />
+            android:key="restore" />
         <Preference
             android:title="Восстановить данные со старого сервера"
-            android:key="restore" />
+            android:key="restore_deprecated" />
     </PreferenceScreen>
 
 
