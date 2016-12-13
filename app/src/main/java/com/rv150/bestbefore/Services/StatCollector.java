@@ -35,6 +35,7 @@ public class StatCollector {
         try {
 
             result.put("deviceId", deviceId);
+            result.put("version", 21);
 
 
 
