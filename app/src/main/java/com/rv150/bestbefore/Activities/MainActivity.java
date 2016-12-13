@@ -314,6 +314,12 @@ public class MainActivity extends AppCompatActivity {
                 .withIdentifier(Resources.ID_FOR_OVERDUED)
                 .withName(overdueGroupName);
 
+        PrimaryDrawerItem trash = new PrimaryDrawerItem()
+                .withIdentifier(Resources.ID_FOR_TRASH)
+                .withName(R.string.trash)
+                .withIcon(GoogleMaterial.Icon.gmd_delete);
+
+
         PrimaryDrawerItem settings = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_SETTINGS)
                 .withName(R.string.settings)
@@ -334,6 +340,7 @@ public class MainActivity extends AppCompatActivity {
                         addGroup,
                         new DividerDrawerItem(),
                         overdued,
+                        trash,
                         new DividerDrawerItem(),
                         settings,
                         feedback
@@ -390,7 +397,7 @@ public class MainActivity extends AppCompatActivity {
             composeEmail(addresses, subject);
             return;
         }
-        // Смена группы (не считая главной)
+        // Смена группы
         groupChoosen = id;
         changeGroup();
     }
@@ -409,7 +416,12 @@ public class MainActivity extends AppCompatActivity {
             setTitle(overdueGroupName);
             fab.hide();
         }
-        else {
+        else if (groupChoosen == Resources.ID_FOR_TRASH) {
+            wrapperList = productDAO.getRemoved();
+            setTitle(R.string.trash);
+            fab.hide();
+        }
+        else {  // Какая-то определенная категория
             Group group = groupDAO.get(groupChoosen);
             wrapperList = productDAO.getFreshFromGroup(group.getId());
             setTitle(group.getName());
