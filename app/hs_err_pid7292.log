@@ -155,8 +155,8 @@ Event: 5.154 Thread 0x0000000058712800 Uncommon trap: reason=null_check action=m
 Event: 5.184 Thread 0x0000000058712800 Uncommon trap: reason=class_check action=maybe_recompile pc=0x0000000002aee9d0 method=com.android.dx.rop.code.RegisterSpec.withSimpleType()Lcom/android/dx/rop/code/RegisterSpec; @ 6
 
 Internal exceptions (3 events):
-Event: 0.102 Thread 0x000000000224e800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.defineClass(Ljava/lang/String;[BII)Ljava/lang/Class; name or signature does not match> (0x00000000eab07cc0) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\srÖÊa+./∫?
-Event: 0.102 Thread 0x000000000224e800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.prefetchRead(Ljava/lang/Object;J)V name or signature does not match> (0x00000000eab07fa8) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\src\share\vm\prims\j’Ÿ¿§Bù@
+Event: 0.102 Thread 0x000000000224e800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.defineClass(Ljava/lang/String;[BII)Ljava/lang/Class; name or signature does not match> (0x00000000eab07cc0) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\srÔøΩÔøΩa+./ÔøΩ?
+Event: 0.102 Thread 0x000000000224e800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.prefetchRead(Ljava/lang/Object;J)V name or signature does not match> (0x00000000eab07fa8) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\src\share\vm\prims\jÔøΩÔøΩÔøΩÔøΩBÔøΩ@
 Event: 5.154 Thread 0x0000000058712800 Implicit null exception at 0x0000000002a03e52 to 0x0000000002a03f42
 
 Events (10 events):

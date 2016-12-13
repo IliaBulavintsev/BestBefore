@@ -197,7 +197,7 @@ Event: 3.704 Thread 0x00000000568b0800 Uncommon trap: reason=unloaded action=rei
 Event: 3.705 Thread 0x00000000568b0800 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000000002bdae4c method=com.android.dx.ssa.SsaMethod.updateOneDefinition(Lcom/android/dx/ssa/SsaInsn;Lcom/android/dx/rop/code/RegisterSpec;)V @ 4
 
 Internal exceptions (2 events):
-Event: 0.075 Thread 0x00000000000fe800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.defineClass(Ljava/lang/String;[BII)Ljava/lang/Class; name or signature does not match> (0x00000000eab07cc0) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\srxê"§+³?
+Event: 0.075 Thread 0x00000000000fe800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.defineClass(Ljava/lang/String;[BII)Ljava/lang/Class; name or signature does not match> (0x00000000eab07cc0) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\srxï¿½"ï¿½+ï¿½?
 Event: 0.075 Thread 0x00000000000fe800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.prefetchRead(Ljava/lang/Object;J)V name or signature does not match> (0x00000000eab07fa8) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\src\share\vm\prims\j
 
 Events (10 events):

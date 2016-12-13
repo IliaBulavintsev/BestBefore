@@ -159,11 +159,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 final long dateInMillis = item.getLong("date");
                 final long createdAtInMillis = item.getLong("createdAt");
                 final int quantity = item.getInt("quantity");
-                Long groupId = item.getLong("groupId");
+                long groupId = item.getLong("groupId");
                 final int viewed = item.getInt("viewed");
-                if (groupId == -1) {
-                    groupId = null;
-                }
                 Calendar date = new GregorianCalendar();
                 date.setTimeInMillis(dateInMillis);
                 // тк на сервере могут лежать старые данные еще до миграции, то
@@ -234,8 +231,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
         }
 
         for (Product product: products) {
-            Long oldGroupId = product.getGroupId();
-            if (oldGroupId != null) {
+            long oldGroupId = product.getGroupId();
+            if (oldGroupId != -1) {
                 long newGroupId =  oldIdToNew.get(oldGroupId);
                 product.setGroupId(newGroupId);
             }

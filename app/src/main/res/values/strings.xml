@@ -70,7 +70,7 @@
     <string name="error_timeout">Превышено время ожидания ответа</string>
     <string name="restore_failed">Ошибка при восстановлении данных</string>
     <string name="data_not_found">Данные не найдены</string>
-    <string name="help_add">Число справа означает количество оставшихся полных дней до конца срока. Чтобы удалить продукт, потяните его в левую сторону. Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
+    <string name="help_add">Число справа означает количество оставшихся полных дней до конца срока. Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
     <string name="help_add_for_old_users">Внимание! Все настройки уведомлений сдвинулись на день в связи с другим подсчетом дней, пожалуйста, проверьте текущие настройки напоминаний! \nО новом интерфейсе: число справа означает количество оставшихся полных дней до конца срока. Чтобы удалить продукт, потяните его в левую сторону. </string>
     <string name="warning">Внимание</string>
     <string name="do_you_want_to_overwite_existing">Вы хотите перезаписать существующие данные данными с сервера?</string>
@@ -115,4 +115,7 @@
     <string name="product_has_been_saved">Продукт сохранен</string>
     <string name="do_you_want_to_make_backup">Сохранить данные на сервере?</string>
     <string name="sync_with_google_deprecated">Синхронизация (старый способ)</string>
+    <string name="trash">Корзина</string>
+    <string name="want_restore_this_product">Вы хотите восстановить этот продукт?</string>
+    <string name="product_has_been_restored">Продукт восстановлен</string>
 </resources>

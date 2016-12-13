@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
     private Drawer drawer;
     private int drawerPosition;
     private long groupChoosen = Resources.ID_MAIN_GROUP;
+    private long deletedFromThisGroup;
 
 
     @Override
@@ -234,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
             int quantity = 5;
             Calendar date = new GregorianCalendar();
             date.add(Calendar.DAY_OF_MONTH, 2);
-            Product product = new Product(name, date, quantity, null);
+            Product product = new Product(name, date, quantity, -1);
             productDAO.insertProduct(product);
             wrapperList = productDAO.getAll();
             firstLaunch = false;
@@ -314,6 +315,12 @@ public class MainActivity extends AppCompatActivity {
                 .withIdentifier(Resources.ID_FOR_OVERDUED)
                 .withName(overdueGroupName);
 
+        PrimaryDrawerItem trash = new PrimaryDrawerItem()
+                .withIdentifier(Resources.ID_FOR_TRASH)
+                .withName(R.string.trash)
+                .withIcon(GoogleMaterial.Icon.gmd_delete);
+
+
         PrimaryDrawerItem settings = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_SETTINGS)
                 .withName(R.string.settings)
@@ -334,6 +341,7 @@ public class MainActivity extends AppCompatActivity {
                         addGroup,
                         new DividerDrawerItem(),
                         overdued,
+                        trash,
                         new DividerDrawerItem(),
                         settings,
                         feedback
@@ -390,7 +398,7 @@ public class MainActivity extends AppCompatActivity {
             composeEmail(addresses, subject);
             return;
         }
-        // Смена группы (не считая главной)
+        // Смена группы
         groupChoosen = id;
         changeGroup();
     }
@@ -409,7 +417,12 @@ public class MainActivity extends AppCompatActivity {
             setTitle(overdueGroupName);
             fab.hide();
         }
-        else {
+        else if (groupChoosen == Resources.ID_FOR_TRASH) {
+            wrapperList = productDAO.getRemoved();
+            setTitle(R.string.trash);
+            fab.hide();
+        }
+        else {  // Какая-то определенная категория
             Group group = groupDAO.get(groupChoosen);
             wrapperList = productDAO.getFreshFromGroup(group.getId());
             setTitle(group.getName());
@@ -503,6 +516,9 @@ public class MainActivity extends AppCompatActivity {
         else if (groupChoosen == Resources.ID_FOR_OVERDUED) {
             productDAO.deleteOverdued();
         }
+        else if (groupChoosen == Resources.ID_FOR_TRASH) {
+            productDAO.clearTrash();
+        }
         else {
             Group group = groupDAO.get(groupChoosen);
             productDAO.deleteFreshFromGroup(group.getId());
@@ -547,19 +563,33 @@ public class MainActivity extends AppCompatActivity {
         }
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
-        productDAO.deleteProduct(deletedProduct.getId());
+
+        if (groupChoosen == Resources.ID_FOR_TRASH) {
+            productDAO.removeProductFromTrash(deletedProduct.getId());
+        }
+        else
+        {
+            productDAO.deleteProduct(deletedProduct.getId());
+        }
+        deletedFromThisGroup = groupChoosen;
     }
 
     private void restoreItem() {
-        wrapperList.add(position, deletedProduct);
-        long id = productDAO.insertProduct(deletedProduct);
-        deletedProduct.setId(id);
-        deletedProduct = null;
+        if (deletedFromThisGroup == Resources.ID_FOR_TRASH) {
+            long id = productDAO.insertProduct(deletedProduct);
+            deletedProduct.setId(id);
+            deletedProduct = null;
+        }
+        else {
+            productDAO.markRestored(deletedProduct.getId());
+        }
+        if (deletedFromThisGroup == groupChoosen) {
+            wrapperList.add(position, deletedProduct);
+            isEmpty.setVisibility(View.INVISIBLE);
+        }
         position = -1;
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
-        // Надпись "Список пуст!"
-        isEmpty.setVisibility(View.INVISIBLE);
     }
 
 
@@ -615,14 +645,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onFabClick(View view) {
         Intent intent = new Intent(MainActivity.this, Add.class);
-        if (groupChoosen == Resources.ID_MAIN_GROUP) {
-            final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
-            intent.putExtra(Resources.GROUP_NAME, mainGroupName);
-        }
-        else {
-            Group group = groupDAO.get(groupChoosen);
-            intent.putExtra(Resources.GROUP_NAME, group.getName());
-        }
+        intent.putExtra(Resources.GROUP_ID, groupChoosen);
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 
@@ -633,28 +656,12 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == Resources.RC_ADD_ACTIVITY && resultCode != RESULT_CANCELED) {
-            String name = data.getExtras().getString(Resources.NAME);
-            Calendar date = (Calendar) data.getExtras().get(Resources.DATE);
-            int quantity = (int) data.getExtras().get(Resources.QUANTITY);
-            String groupName = (String) data.getExtras().get(Resources.GROUP_NAME);
-            Long groupId;
-            final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
-            if (groupName != null && groupName.equals(mainGroupName)) {
-                groupId = null;
-                groupChoosen = Resources.ID_MAIN_GROUP;
+            Product product = data.getExtras().getParcelable(Product.class.getName());
+            if (product == null) {
+                throw new RuntimeException("No extra data");
             }
-            else {
-                Group group = groupDAO.get(groupName);
-                groupId = group.getId();
-                groupChoosen = groupId;
-            }
-
 
             if (resultCode == Resources.RESULT_ADD) {                              // Добавление
-                Product newProduct = new Product(name, date, new GregorianCalendar(), quantity, groupId);
-                long id = productDAO.insertProduct(newProduct);
-                newProduct.setId(id);
-
                 // Справка
                 boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
                 if (showHelp) {
@@ -671,16 +678,16 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             } else if (resultCode == Resources.RESULT_MODIFY) {               // Изменение
-                Product product = wrapperList.get(position);
-                product.setTitle(name);
-                product.setDate(date);
-                product.setQuantity(quantity);
-                product.setGroupId(groupId);
-                productDAO.updateProduct(product);
                 position = -1;
             }
 
 
+            if (product.getGroupId() != -1) {
+                groupChoosen = product.getGroupId();
+            }
+            else {
+                groupChoosen = Resources.ID_MAIN_GROUP;
+            }
             changeGroup();
             Toast toast = Toast.makeText(getApplicationContext(),
                     R.string.product_has_been_saved, Toast.LENGTH_SHORT);
@@ -768,9 +775,37 @@ public class MainActivity extends AppCompatActivity {
 
         ItemClickSupport.addTo(rvProducts).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
             @Override
-            public void onItemClicked(RecyclerView recyclerView, int pos, View v) {
-                position = pos;
-                runAddActivity(position);
+            public void onItemClicked(RecyclerView recyclerView, final int pos, View v) {
+                if (groupChoosen != Resources.ID_FOR_TRASH) {
+                    position = pos;
+                    runAddActivity(position);
+                    return;
+                }
+                new AlertDialog.Builder(MainActivity.this)
+                        .setMessage(R.string.want_restore_this_product)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Product product = wrapperList.get(pos);
+                                productDAO.markRestored(product.getId());
+                                wrapperList.remove(pos);
+                                adapter = new RecyclerAdapter(wrapperList);
+                                rvProducts.swapAdapter(adapter, false);
+                                if (wrapperList.isEmpty()) {
+                                    isEmpty.setVisibility(View.VISIBLE);
+                                }
+                                else {
+                                    isEmpty.setVisibility(View.INVISIBLE);
+                                }
+                                Toast toast = Toast.makeText(getApplicationContext(),
+                                        R.string.product_has_been_restored, Toast.LENGTH_SHORT);
+                                toast.show();
+
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
+
             }
         });
     }
@@ -950,21 +985,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void runAddActivity(int clickedPosition) {
-        Intent intent = new Intent(this, Add.class);
         final Product item = wrapperList.get(clickedPosition);
-        intent.putExtra(Resources.NAME,item.getTitle());
-        Calendar date = item.getDate();
-        intent.putExtra(Resources.DATE, date);
-        intent.putExtra(Resources.QUANTITY, item.getQuantity());
-        Long groupId = item.getGroupId();
-        if (groupId == null) {
-            final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
-            intent.putExtra(Resources.GROUP_NAME, mainGroupName);
-        }
-        else {
-            Group group = groupDAO.get(groupId);
-            intent.putExtra(Resources.GROUP_NAME, group.getName());
-        }
+        Intent intent = new Intent(this, Add.class);
+        intent.putExtra(Product.class.getName(), item);
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 
@@ -1007,6 +1030,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (groupChoosen == Resources.ID_FOR_OVERDUED) {
             Collections.sort(wrapperList, Product.getFreshToSpoiledComparator());
+            return;
+        }
+
+        if (groupChoosen == Resources.ID_FOR_TRASH) {
             return;
         }
 

@@ -1,5 +1,8 @@
 package com.rv150.bestbefore.Models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -10,33 +13,38 @@ import java.util.GregorianCalendar;
 /**
  * Created by rv150 on 06.01.2016.
  */
-public class Product {
+public class Product implements Parcelable {
     private String mTitle;
     private Calendar mDate;
     private Calendar mCreatedAt;
     private int mQuantity;
-    private Long groupId;
-    private long id;
-    private int viewed = 0;
+    private long mGroupId = -1;
+    private long mId;
+    private int mViewed = 0;
+    private int mRemoved;
+    private long mRemovedAt;
 
+    public Product() {
+        mDate = mCreatedAt = Calendar.getInstance();
+    }
 
-    public Product(String title, Calendar date, int quantity, Long groupId) {
+    public Product(String title, Calendar date, int quantity, long groupId) {
         this(title, date, new GregorianCalendar(), quantity, groupId);
     }
 
-    public Product(String title, Calendar date, Calendar createdAt, int quantity, Long groupId) {
+    public Product(String title, Calendar date, Calendar createdAt, int quantity, long groupId) {
         this.mTitle = title;
         this.mDate = date;
         this.mCreatedAt = createdAt;
         this.mQuantity = quantity;
-        this.groupId = groupId;
+        this.mGroupId = groupId;
     }
 
-    public Product(String title, String date, int quantity, Long groupId) {
+    public Product(String title, String date, int quantity, long groupId) {
         this(title, date, null, quantity, groupId);
     }
 
-    public Product(String title, String date, String createdAt, int quantity, Long groupId) {
+    public Product(String title, String date, String createdAt, int quantity, long groupId) {
         this.mTitle = title;
         String[] array = date.split("\\.");
         int myDay = Integer.parseInt(array[0]);
@@ -59,15 +67,64 @@ public class Product {
                     (Year, Month, Day, Hour, Minute, Second);
         }
         this.mQuantity = quantity;
-        this.groupId = groupId;
+        this.mGroupId = groupId;
     }
 
+
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(mTitle);
+        parcel.writeLong(mDate.getTimeInMillis());
+        parcel.writeLong(mCreatedAt.getTimeInMillis());
+        parcel.writeInt(mQuantity);
+        parcel.writeLong(mGroupId);
+        parcel.writeLong(mId);
+        parcel.writeInt(mViewed);
+        parcel.writeInt(mRemoved);
+        parcel.writeLong(mRemovedAt);
+    }
+
+    public static final Parcelable.Creator<Product> CREATOR
+            = new Parcelable.Creator<Product>() {
+        public Product createFromParcel(Parcel in) {
+            return new Product(in);
+        }
+
+        public Product[] newArray(int size) {
+            return new Product[size];
+        }
+    };
+
+    private Product(Parcel in) {
+        mTitle = in.readString();
+        mDate = Calendar.getInstance();
+        mDate.setTimeInMillis(in.readLong());
+        mCreatedAt = Calendar.getInstance();
+        mCreatedAt.setTimeInMillis(in.readLong());
+        mQuantity = in.readInt();
+        mGroupId = in.readLong();
+        mId = in.readLong();
+        mViewed = in.readInt();
+        mRemoved = in.readInt();
+        mRemovedAt = in.readLong();
+    }
+
+
+
+
     public long getId() {
-        return id;
+        return mId;
     }
 
     public void setId(long id) {
-        this.id = id;
+        this.mId = id;
     }
 
     public String getTitle() {
@@ -94,12 +151,7 @@ public class Product {
         result.put("date", getDate().getTimeInMillis());
         result.put("createdAt", getCreatedAt().getTimeInMillis());
         result.put("quantity", getQuantity());
-        if (groupId == null) {
-            result.put("groupId", -1);
-        }
-        else {
-            result.put("groupId", groupId);
-        }
+        result.put("groupId", mGroupId);
         result.put("viewed", getViewed());
         return result;
     }
@@ -112,20 +164,36 @@ public class Product {
         this.mQuantity = quantity;
     }
 
-    public Long getGroupId() {
-        return groupId;
+    public long getGroupId() {
+        return mGroupId;
     }
 
-    public void setGroupId(Long groupId) {
-        this.groupId = groupId;
+    public void setGroupId(long groupId) {
+        this.mGroupId = groupId;
     }
 
     public int getViewed() {
-        return viewed;
+        return mViewed;
     }
 
     public void setViewed(int viewed) {
-        this.viewed = viewed;
+        this.mViewed = viewed;
+    }
+
+    public int getRemoved() {
+        return mRemoved;
+    }
+
+    public void setRemoved(int removed) {
+        this.mRemoved = removed;
+    }
+
+    public long getRemovedAt() {
+        return mRemovedAt;
+    }
+
+    public void setRemovedAt(long removedAt) {
+        this.mRemovedAt = removedAt;
     }
 
     public static Comparator<Product> getFreshToSpoiledComparator() {

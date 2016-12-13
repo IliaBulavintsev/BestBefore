@@ -1,5 +1,8 @@
 package com.rv150.bestbefore.Models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -7,28 +10,55 @@ import org.json.JSONObject;
  * Created by Rudnev on 05.11.2016.
  */
 
-public class Group {
-    private String name;
-    private long id;
+public class Group implements Parcelable {
+    private String mName;
+    private long mId;
 
     public Group(String name) {
-        this.name = name;
+        this.mName = name;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(mName);
+        parcel.writeLong(mId);
+    }
+
+    public static final Parcelable.Creator<Group> CREATOR
+            = new Parcelable.Creator<Group>() {
+        public Group createFromParcel(Parcel in) {
+            return new Group(in);
+        }
+
+        public Group[] newArray(int size) {
+            return new Group[size];
+        }
+    };
+
+    private Group(Parcel in) {
+        mName = in.readString();
+        mId = in.readLong();
     }
 
     public String getName() {
-        return name;
+        return mName;
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.mName = name;
     }
 
     public long getId() {
-        return id;
+        return mId;
     }
 
     public void setId(long id) {
-        this.id = id;
+        this.mId = id;
     }
 
     public JSONObject getJSON() throws JSONException {

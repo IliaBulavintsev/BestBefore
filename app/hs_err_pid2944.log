@@ -134,7 +134,7 @@ Event: 1.597 Thread 0x0000000056af5800 Uncommon trap: reason=unstable_if action=
 Event: 2.019 Thread 0x0000000056a4d000 Uncommon trap: reason=uninitialized action=reinterpret pc=0x0000000002d20df0 method=com.android.dx.cf.code.BytecodeArray.parseInstruction(ILcom/android/dx/cf/code/BytecodeArray$Visitor;)I @ 1031
 
 Internal exceptions (2 events):
-Event: 0.064 Thread 0x000000000224e800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.defineClass(Ljava/lang/String;[BII)Ljava/lang/Class; name or signature does not match> (0x00000000eab07cc0) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\srå+AÒ„€°?
+Event: 0.064 Thread 0x000000000224e800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.defineClass(Ljava/lang/String;[BII)Ljava/lang/Class; name or signature does not match> (0x00000000eab07cc0) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\srï¿½+AÒ„ï¿½ï¿½?
 Event: 0.064 Thread 0x000000000224e800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.prefetchRead(Ljava/lang/Object;J)V name or signature does not match> (0x00000000eab07fa8) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\src\share\vm\prims\j
 
 Events (10 events):
