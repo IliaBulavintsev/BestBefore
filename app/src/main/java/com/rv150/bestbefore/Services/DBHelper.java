@@ -29,10 +29,11 @@ public class DBHelper extends SQLiteOpenHelper {
         public static final String COLUMN_NAME_QUANTITY = "quantity";
         public static final String COLUMN_NAME_GROUP_ID = "group_id";
         public static final String COLUMN_NAME_VIEWED = "viewed";
+        public static final String COLUMN_NAME_REMOVED = "removed";
     }
 
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 4;
+    public static final int DATABASE_VERSION = 5;
     public static final String DATABASE_NAME = "BestBefore.db";
 
     private static final String SQL_CREATE_AUTOCOMPLETED_TABLE  =
@@ -54,6 +55,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     Product.COLUMN_NAME_QUANTITY + " INTEGER DEFAULT 1," +
                     Product.COLUMN_NAME_GROUP_ID + " INTEGER," +
                     Product.COLUMN_NAME_VIEWED + " INTEGER DEFAULT 0," +
+                    Product.COLUMN_NAME_REMOVED + " INTEGER DEFAULT 0," +
                     "FOREIGN KEY (" + Product.COLUMN_NAME_GROUP_ID + ") REFERENCES " +
                     Group.TABLE_NAME + "(" + Group._ID + ") ON DELETE CASCADE)";
 
@@ -70,8 +72,20 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(SQL_CREATE_GROUP_TABLE);
-        db.execSQL(SQL_CREATE_PRODUCT_TABLE);
+        switch (oldVersion) {
+            case 1:
+            case 2:
+            case 3: {
+                db.execSQL(SQL_CREATE_GROUP_TABLE);
+                db.execSQL(SQL_CREATE_PRODUCT_TABLE);
+            }
+            case 4:
+                db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
+                        " ADD COLUMN " + Product.COLUMN_NAME_REMOVED + " INTEGER DEFAULT 0");
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
