@@ -24,7 +24,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rv150.bestbefore.DAO.GroupDAO;
+import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Group;
+import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
@@ -66,8 +68,12 @@ public class Add extends AppCompatActivity {
     Cursor cursor;
 
     GroupDAO groupDAO;
+    ProductDAO productDAO;
     final List<String> groupNames = new ArrayList<>();
     ArrayAdapter<String> spinnerGroupsAdapter;
+    SharedPreferences sPrefs;
+
+    Product mProduct;
 
 
 
@@ -76,7 +82,6 @@ public class Add extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add);
-        TextView name = (TextView)findViewById(R.id.name);
         chooseDate = (TextView)findViewById(R.id.chooseDate);
         chooseDate2 = (TextView)findViewById(R.id.chooseDate2);
         bestBeforeTxt = (TextView)findViewById(R.id.bestBefore);
@@ -97,8 +102,10 @@ public class Add extends AppCompatActivity {
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerBestBefore.setAdapter(spinnerAdapter);
 
+        sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         groupDAO = new GroupDAO(getApplicationContext());
+        productDAO = new ProductDAO(getApplicationContext());
         dbHelper = new DBHelper(getApplicationContext());
         bestBefore = new GregorianCalendar();
 
@@ -163,16 +170,30 @@ public class Add extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            groupName = extras.getString(Resources.GROUP_NAME);
-            String nameStr = extras.getString("name");
-            if (nameStr != null) {          // Изменение продукта
+            mProduct = extras.getParcelable(Product.class.getName());
+            if (mProduct != null) {          // Изменение продукта
                 isChanging = true;
                 setTitle(R.string.changing_product);
-                enterName.setText(nameStr);
-                bestBefore = (Calendar) extras.get(Resources.DATE);
-                int quantity = extras.getInt(Resources.QUANTITY);
-                quantityET.setText(String.valueOf(quantity));
+                enterName.setText(mProduct.getTitle());
+                bestBefore = mProduct.getDate();
+                quantityET.setText(String.valueOf(mProduct.getQuantity()));
+                long groupId = mProduct.getGroupId();
+                if (groupId != -1) {
+                    Group group = groupDAO.get(groupId);
+                    groupName = group.getName();
+                }
             }
+            else {
+                mProduct = new Product();
+                long groupId = extras.getLong(Resources.GROUP_ID, Resources.ID_MAIN_GROUP);
+                if (groupId != Resources.ID_MAIN_GROUP) {
+                    Group group = groupDAO.get(groupId);
+                    groupName = group.getName();
+                }
+            }
+        }
+        else {
+            mProduct = new Product();
         }
 
         if (groupName != null) {
@@ -424,23 +445,40 @@ public class Add extends AppCompatActivity {
         }
 
 
-        Intent intent = new Intent();
+
         String name = enterName.getText().toString();
         name = name.substring(0, 1).toUpperCase() + name.substring(1);
-        intent.putExtra(Resources.NAME, name);
         bestBefore.set(Calendar.HOUR_OF_DAY, 23);
         bestBefore.set(Calendar.MINUTE, 59);
-        intent.putExtra(Resources.DATE, bestBefore);
-        intent.putExtra(Resources.QUANTITY, quantity);
 
         groupName = spinnerGroups.getSelectedItem().toString();
-        intent.putExtra(Resources.GROUP_NAME, groupName);
+        long groupId;
+        final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
+        if (groupName.equals(mainGroupName)) {
+            groupId = -1;
+        }
+        else {
+            Group group = groupDAO.get(groupName);
+            groupId = group.getId();
+        }
+
+        mProduct.setTitle(name);
+        mProduct.setDate(bestBefore);
+        mProduct.setQuantity(quantity);
+        mProduct.setGroupId(groupId);
+
+
+        Intent intent = new Intent();
         if (isChanging) {
+            productDAO.updateProduct(mProduct);
             setResult(Resources.RESULT_MODIFY, intent);   // Изменениe
         }
         else {
+            long id = productDAO.insertProduct(mProduct);
+            mProduct.setId(id);
             setResult(Resources.RESULT_ADD, intent);   // Добавление
         }
+        intent.putExtra(Product.class.getName(), mProduct);
         finish();
     }
 

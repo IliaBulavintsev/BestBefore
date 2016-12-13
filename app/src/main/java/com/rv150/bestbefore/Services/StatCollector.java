@@ -59,7 +59,8 @@ public class StatCollector {
                     name += " (" + message + ")";
                 }
                 final Product costyl =
-                        new Product(name, new GregorianCalendar(), 1, null);
+                        new Product();
+                costyl.setTitle(name);
                 productsArray.put(costyl.getJSON());
             }
 

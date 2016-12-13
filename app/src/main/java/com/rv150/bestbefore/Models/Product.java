@@ -18,18 +18,21 @@ public class Product implements Parcelable {
     private Calendar mDate;
     private Calendar mCreatedAt;
     private int mQuantity;
-    private Long mGroupId;
+    private long mGroupId = -1;
     private long mId;
     private int mViewed = 0;
     private int mRemoved;
     private long mRemovedAt;
 
+    public Product() {
+        mDate = mCreatedAt = Calendar.getInstance();
+    }
 
-    public Product(String title, Calendar date, int quantity, Long groupId) {
+    public Product(String title, Calendar date, int quantity, long groupId) {
         this(title, date, new GregorianCalendar(), quantity, groupId);
     }
 
-    public Product(String title, Calendar date, Calendar createdAt, int quantity, Long groupId) {
+    public Product(String title, Calendar date, Calendar createdAt, int quantity, long groupId) {
         this.mTitle = title;
         this.mDate = date;
         this.mCreatedAt = createdAt;
@@ -37,11 +40,11 @@ public class Product implements Parcelable {
         this.mGroupId = groupId;
     }
 
-    public Product(String title, String date, int quantity, Long groupId) {
+    public Product(String title, String date, int quantity, long groupId) {
         this(title, date, null, quantity, groupId);
     }
 
-    public Product(String title, String date, String createdAt, int quantity, Long groupId) {
+    public Product(String title, String date, String createdAt, int quantity, long groupId) {
         this.mTitle = title;
         String[] array = date.split("\\.");
         int myDay = Integer.parseInt(array[0]);
@@ -148,13 +151,8 @@ public class Product implements Parcelable {
         result.put("date", getDate().getTimeInMillis());
         result.put("createdAt", getCreatedAt().getTimeInMillis());
         result.put("quantity", getQuantity());
-        if (mGroupId == null) {
-            result.put("groupId", -1);
-        }
-        else {
-            result.put("groupId", mGroupId);
-        }
-        result.put("mViewed", getViewed());
+        result.put("groupId", mGroupId);
+        result.put("viewed", getViewed());
         return result;
     }
 
@@ -166,12 +164,12 @@ public class Product implements Parcelable {
         this.mQuantity = quantity;
     }
 
-    public Long getmGroupId() {
+    public long getGroupId() {
         return mGroupId;
     }
 
-    public void setmGroupId(Long mGroupId) {
-        this.mGroupId = mGroupId;
+    public void setGroupId(long groupId) {
+        this.mGroupId = groupId;
     }
 
     public int getViewed() {
@@ -182,20 +180,20 @@ public class Product implements Parcelable {
         this.mViewed = viewed;
     }
 
-    public int getmRemoved() {
+    public int getRemoved() {
         return mRemoved;
     }
 
-    public void setmRemoved(int mRemoved) {
-        this.mRemoved = mRemoved;
+    public void setRemoved(int removed) {
+        this.mRemoved = removed;
     }
 
-    public long getmRemovedAt() {
+    public long getRemovedAt() {
         return mRemovedAt;
     }
 
-    public void setmRemovedAt(long mRemovedAt) {
-        this.mRemovedAt = mRemovedAt;
+    public void setRemovedAt(long removedAt) {
+        this.mRemovedAt = removedAt;
     }
 
     public static Comparator<Product> getFreshToSpoiledComparator() {

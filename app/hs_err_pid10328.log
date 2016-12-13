@@ -114,7 +114,7 @@ Event: 1.720 Thread 0x0000000058dd8000 Uncommon trap: reason=unstable_if action=
 Event: 1.803 Thread 0x0000000056a64800 Uncommon trap: reason=bimorphic action=maybe_recompile pc=0x0000000002a07b4c method=java.util.HashMap.getNode(ILjava/lang/Object;)Ljava/util/HashMap$Node; @ 126
 
 Internal exceptions (2 events):
-Event: 0.110 Thread 0x00000000022ce800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.defineClass(Ljava/lang/String;[BII)Ljava/lang/Class; name or signature does not match> (0x00000000eab07cc0) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\srà~²ë-¼?
+Event: 0.110 Thread 0x00000000022ce800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.defineClass(Ljava/lang/String;[BII)Ljava/lang/Class; name or signature does not match> (0x00000000eab07cc0) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\srï¿½~ï¿½ï¿½-ï¿½?
 Event: 0.110 Thread 0x00000000022ce800 Exception <a 'java/lang/NoSuchMethodError': Method sun.misc.Unsafe.prefetchRead(Ljava/lang/Object;J)V name or signature does not match> (0x00000000eab07fa8) thrown at [C:\re\workspace\8-2-build-windows-amd64-cygwin\jdk8u91\7017\hotspot\src\share\vm\prims\j
 
 Events (10 events):

@@ -49,8 +49,8 @@ public class Group implements Parcelable {
         return mName;
     }
 
-    public void setName(String mName) {
-        this.mName = mName;
+    public void setName(String name) {
+        this.mName = name;
     }
 
     public long getId() {
@@ -63,8 +63,8 @@ public class Group implements Parcelable {
 
     public JSONObject getJSON() throws JSONException {
         JSONObject result = new JSONObject();
-        result.put("mName", getName());
-        result.put("mId", getId());
+        result.put("name", getName());
+        result.put("id", getId());
         return result;
     }
 }
