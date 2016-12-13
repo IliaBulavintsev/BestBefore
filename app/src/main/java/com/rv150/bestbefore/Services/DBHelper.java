@@ -30,6 +30,7 @@ public class DBHelper extends SQLiteOpenHelper {
         public static final String COLUMN_NAME_GROUP_ID = "group_id";
         public static final String COLUMN_NAME_VIEWED = "viewed";
         public static final String COLUMN_NAME_REMOVED = "removed";
+        public static final String COLUMN_NAME_REMOVED_AT = "removed_at";
     }
 
     // If you change the database schema, you must increment the database version.
@@ -56,6 +57,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     Product.COLUMN_NAME_GROUP_ID + " INTEGER," +
                     Product.COLUMN_NAME_VIEWED + " INTEGER DEFAULT 0," +
                     Product.COLUMN_NAME_REMOVED + " INTEGER DEFAULT 0," +
+                    Product.COLUMN_NAME_REMOVED_AT + " INTEGER DEFAULT 0," +
                     "FOREIGN KEY (" + Product.COLUMN_NAME_GROUP_ID + ") REFERENCES " +
                     Group.TABLE_NAME + "(" + Group._ID + ") ON DELETE CASCADE)";
 
@@ -82,6 +84,8 @@ public class DBHelper extends SQLiteOpenHelper {
             case 4:
                 db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
                         " ADD COLUMN " + Product.COLUMN_NAME_REMOVED + " INTEGER DEFAULT 0");
+                db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
+                        " ADD COLUMN " + Product.COLUMN_NAME_REMOVED_AT + " INTEGER DEFAULT 0");
                 break;
             default:
                 break;
