@@ -1,36 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="10dp"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/name"
-        android:id="@+id/name"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="false"
-        android:layout_marginLeft="28dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="35dp"
-        android:textSize="16sp"/>
-
-    <AutoCompleteTextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/enterName"
-        android:layout_alignBaseline="@+id/name"
-        android:layout_alignBottom="@+id/name"
-        android:layout_toRightOf="@+id/name"
-        android:layout_toEndOf="@+id/name"
-        android:layout_marginLeft="20dp"
-        android:layout_marginStart="20dp"
-        android:inputType="text"
-        android:layout_alignRight="@+id/spinner"
-        android:layout_alignEnd="@+id/spinner"
-        android:completionThreshold="1"/>
-
-
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <AutoCompleteTextView
+            android:id="@+id/enterName"
+            android:maxLength="100"
+            android:inputType="text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textSize="12sp"
+            android:hint="@string/name"/>
+    </android.support.design.widget.TextInputLayout>
 
 
 
@@ -38,11 +28,8 @@
     <RadioGroup
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="42dp"
-        android:id="@+id/radioGroup2"
-        android:layout_below="@+id/name"
-        android:layout_alignLeft="@+id/name"
-        android:layout_alignStart="@+id/name">
+        android:layout_marginTop="10dp"
+        android:id="@+id/radioGroup2">
 
         <RadioButton
             android:layout_width="wrap_content"
@@ -69,9 +56,6 @@
         android:layout_height="wrap_content"
         android:text="@string/chooseDateOfExpiry"
         android:id="@+id/chooseDate"
-        android:layout_below="@+id/radioGroup2"
-        android:layout_alignLeft="@+id/radioGroup2"
-        android:layout_alignStart="@+id/radioGroup2"
         android:layout_marginTop="32dp"
         android:visibility="invisible"
         android:textSize="16sp"/>
@@ -81,9 +65,6 @@
         android:layout_height="wrap_content"
         android:text="@string/chooseDateOfMan"
         android:id="@+id/chooseDate2"
-        android:layout_below="@+id/chooseDate"
-        android:layout_alignLeft="@+id/chooseDate"
-        android:layout_alignStart="@+id/chooseDate"
         android:visibility="visible"
         android:textSize="16sp"/>
 
@@ -92,10 +73,6 @@
         android:layout_height="wrap_content"
         android:text="@string/bestBefore"
         android:id="@+id/bestBefore"
-        android:layout_centerVertical="true"
-        android:layout_alignLeft="@+id/chooseDate2"
-        android:layout_alignStart="@+id/chooseDate2"
-        android:layout_below="@+id/chooseDate2"
         android:layout_marginTop="20dp"
         android:textSize="16sp"/>
 
@@ -104,15 +81,10 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/date"
-        android:layout_alignBottom="@+id/chooseDate2"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
         android:layout_marginRight="20dp"
         android:layout_marginEnd="20dp"
         android:onClick="onDateClick"
         android:textSize="22sp" />
-
-
 
 
     <EditText
@@ -123,9 +95,6 @@
         android:id="@+id/days"
         android:layout_marginStart="15dp"
         android:layout_marginLeft="15dp"
-        android:layout_toRightOf="@+id/bestBefore"
-        android:layout_toEndOf="@+id/bestBefore"
-        android:layout_below="@+id/chooseDate2"
         android:layout_marginTop="8dp" />
 
 
@@ -134,14 +103,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="200dp"
-        android:layout_alignTop="@+id/bestBefore"
-        android:layout_toRightOf="@+id/days"
-        android:layout_toEndOf="@+id/days"
         android:layout_marginLeft="10dp"
         android:layout_marginStart="10dp"
         android:background="@android:drawable/btn_dropdown"
         android:spinnerMode="dropdown"
-        android:layout_alignBottom="@+id/days"
         android:layout_marginRight="20dp"
         android:layout_marginEnd="20sp"/>
 
@@ -154,20 +119,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        android:layout_alignBottom="@+id/spinner_groups"
-        android:layout_marginBottom="20dp"
-        android:layout_alignLeft="@+id/quantity"
-        android:layout_alignStart="@+id/quantity" />
+        android:layout_marginBottom="20dp" />
     <Spinner
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/spinner_groups"
-        android:background="@android:drawable/btn_dropdown"
-        android:layout_below="@+id/spinner"
-        android:layout_alignRight="@+id/spinner"
-        android:layout_alignEnd="@+id/spinner" />
-
-
+        android:background="@android:drawable/btn_dropdown" />
 
 
 
@@ -175,9 +132,6 @@
         android:text="@string/quantity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/spinner_groups"
-        android:layout_alignLeft="@+id/bestBefore"
-        android:layout_alignStart="@+id/bestBefore"
         android:id="@+id/quantity"
         android:layout_marginTop="20sp"
         android:textSize="16sp"/>
@@ -189,10 +143,6 @@
         android:inputType="numberSigned"
         android:ems="10"
         android:id="@+id/enterQuantity"
-        android:layout_alignBaseline="@+id/quantity"
-        android:layout_alignBottom="@+id/quantity"
-        android:layout_toRightOf="@+id/quantity"
-        android:layout_toEndOf="@+id/quantity"
         android:layout_marginLeft="20dp"
         android:layout_marginStart="20dp"/>
 
@@ -209,7 +159,7 @@
         android:id="@+id/btnLL"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
         android:background="@color/buttons_back"
         android:divider="@drawable/vertical_divider"
         android:dividerPadding="12dip"
@@ -237,4 +187,4 @@
 
 
 
-</RelativeLayout>
+</LinearLayout>
