@@ -24,6 +24,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static class Product implements BaseColumns {
         public static final String TABLE_NAME = "product";
         public static final String COLUMN_NAME_NAME = "name";
+        public static final String COLUMN_NAME_PRODUCED = "produced";
         public static final String COLUMN_NAME_DATE = "date";
         public static final String COLUMN_NAME_CREATED_AT = "created_at";
         public static final String COLUMN_NAME_QUANTITY = "quantity";
@@ -51,6 +52,7 @@ public class DBHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + Product.TABLE_NAME + " (" +
                     Product._ID + " INTEGER PRIMARY KEY," +
                     Product.COLUMN_NAME_NAME + " VARCHAR(100) NOT NULL, " +
+                    Product.COLUMN_NAME_PRODUCED + " INTEGER NOT NULL," +
                     Product.COLUMN_NAME_DATE + " INTEGER NOT NULL," +
                     Product.COLUMN_NAME_CREATED_AT + " INTEGER NOT NULL," +
                     Product.COLUMN_NAME_QUANTITY + " INTEGER DEFAULT 1," +
@@ -86,6 +88,8 @@ public class DBHelper extends SQLiteOpenHelper {
                         " ADD COLUMN " + Product.COLUMN_NAME_REMOVED + " INTEGER DEFAULT 0");
                 db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
                         " ADD COLUMN " + Product.COLUMN_NAME_REMOVED_AT + " INTEGER DEFAULT 0");
+                db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
+                        " ADD COLUMN " + Product.COLUMN_NAME_PRODUCED + " INTEGER NOT NULL");
                 break;
             default:
                 break;

@@ -15,6 +15,7 @@ import java.util.GregorianCalendar;
  */
 public class Product implements Parcelable {
     private String mTitle;
+    private Calendar mProduced = Calendar.getInstance();
     private Calendar mDate;
     private Calendar mCreatedAt;
     private int mQuantity;
@@ -133,6 +134,14 @@ public class Product implements Parcelable {
 
     public void setTitle(String mTitle) {
         this.mTitle = mTitle;
+    }
+
+    public Calendar getProduced() {
+        return mProduced;
+    }
+
+    public void setProduced(Calendar produced) {
+        this.mProduced = produced;
     }
 
     public Calendar getDate() {
