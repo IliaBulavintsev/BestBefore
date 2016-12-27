@@ -159,8 +159,8 @@
 
 
     <com.rv150.bestbefore.Preferences.ListPreferenceWithSummary
-        android:entries="@array/listArray"
-        android:entryValues="@array/listValues"
+        android:entries="@array/sortOptions"
+        android:entryValues="@array/sortValues"
         android:key="how_to_sort"
         android:title="@string/sort"
         android:defaultValue="SPOILED_TO_FRESH">
