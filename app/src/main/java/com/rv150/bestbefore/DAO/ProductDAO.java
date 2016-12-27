@@ -120,6 +120,9 @@ public class ProductDAO {
         long createdAtInMillis = cursor.getLong(
                 cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_CREATED_AT));
 
+        long producedInMillis = cursor.getLong(
+                cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_PRODUCED));
+
         int quantity = cursor.getInt(
                 cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_QUANTITY));
 
@@ -144,17 +147,21 @@ public class ProductDAO {
                 cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_REMOVED_AT));
 
 
-        Calendar date = new GregorianCalendar();
+        Calendar date = Calendar.getInstance();
         date.setTimeInMillis(dateInMillis);
 
-        Calendar createdAt =  new GregorianCalendar();
+        Calendar createdAt =  Calendar.getInstance();
         createdAt.setTimeInMillis(createdAtInMillis);
+
+        Calendar produced = Calendar.getInstance();
+        produced.setTimeInMillis(producedInMillis);
 
         Product product = new Product(name, date, createdAt, quantity, groupId);
         product.setId(id);
         product.setViewed(viewed);
         product.setRemoved(removed);
         product.setRemovedAt(removedAt);
+        product.setProduced(produced);
         return product;
     }
 
@@ -176,6 +183,7 @@ public class ProductDAO {
             values.put(DBHelper.Product.COLUMN_NAME_VIEWED, product.getViewed());
             values.put(DBHelper.Product.COLUMN_NAME_REMOVED, product.getRemoved());
             values.put(DBHelper.Product.COLUMN_NAME_REMOVED_AT, product.getRemovedAt());
+            values.put(DBHelper.Product.COLUMN_NAME_PRODUCED, product.getProduced().getTimeInMillis());
             db.insert(DBHelper.Product.TABLE_NAME, null, values);
         }
     }
@@ -198,6 +206,7 @@ public class ProductDAO {
         values.put(DBHelper.Product.COLUMN_NAME_VIEWED, product.getViewed());
         values.put(DBHelper.Product.COLUMN_NAME_REMOVED, product.getRemoved());
         values.put(DBHelper.Product.COLUMN_NAME_REMOVED_AT, product.getRemovedAt());
+        values.put(DBHelper.Product.COLUMN_NAME_PRODUCED, product.getProduced().getTimeInMillis());
         return db.insert(DBHelper.Product.TABLE_NAME, null, values);
     }
 
@@ -240,6 +249,7 @@ public class ProductDAO {
         values.put(DBHelper.Product.COLUMN_NAME_VIEWED, product.getViewed());
         values.put(DBHelper.Product.COLUMN_NAME_REMOVED, product.getRemoved());
         values.put(DBHelper.Product.COLUMN_NAME_REMOVED_AT, product.getRemovedAt());
+        values.put(DBHelper.Product.COLUMN_NAME_PRODUCED, product.getProduced().getTimeInMillis());
         db.update(DBHelper.Product.TABLE_NAME, values,
                 DBHelper.Product._ID + " = ?", new String[] {String.valueOf(product.getId())});
 

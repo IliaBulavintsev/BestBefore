@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -235,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
             int quantity = 5;
             Calendar date = new GregorianCalendar();
             date.add(Calendar.DAY_OF_MONTH, 2);
-            Product product = new Product(name, date, quantity, -1);
+            Product product = new Product(name, date, Calendar.getInstance(), quantity, -1);
             productDAO.insertProduct(product);
             wrapperList = productDAO.getAll();
             firstLaunch = false;
@@ -578,11 +579,11 @@ public class MainActivity extends AppCompatActivity {
         if (deletedFromThisGroup == Resources.ID_FOR_TRASH) {
             long id = productDAO.insertProduct(deletedProduct);
             deletedProduct.setId(id);
-            deletedProduct = null;
         }
         else {
             productDAO.markRestored(deletedProduct.getId());
         }
+
         if (deletedFromThisGroup == groupChoosen) {
             wrapperList.add(position, deletedProduct);
             isEmpty.setVisibility(View.INVISIBLE);
@@ -590,6 +591,7 @@ public class MainActivity extends AppCompatActivity {
         position = -1;
         adapter = new RecyclerAdapter(wrapperList);
         rvProducts.swapAdapter(adapter, false);
+        deletedProduct = null;
     }
 
 
@@ -1017,7 +1019,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void composeEmail(String[] addresses, String subject) {
         Intent intent = new Intent(Intent.ACTION_SENDTO);
-        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+        intent.setData(Uri.parse("mailto:"));
         intent.putExtra(Intent.EXTRA_EMAIL, addresses);
         intent.putExtra(Intent.EXTRA_SUBJECT, subject);
         if (intent.resolveActivity(getPackageManager()) != null) {
@@ -1026,8 +1028,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sortMainList() {
-        // Сортировка
-
         if (groupChoosen == Resources.ID_FOR_OVERDUED) {
             Collections.sort(wrapperList, Product.getFreshToSpoiledComparator());
             return;

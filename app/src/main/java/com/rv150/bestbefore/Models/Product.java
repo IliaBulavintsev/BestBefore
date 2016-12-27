@@ -15,7 +15,7 @@ import java.util.GregorianCalendar;
  */
 public class Product implements Parcelable {
     private String mTitle;
-    private Calendar mProduced = Calendar.getInstance();
+    private Calendar mProduced;
     private Calendar mDate;
     private Calendar mCreatedAt;
     private int mQuantity;
@@ -26,12 +26,10 @@ public class Product implements Parcelable {
     private long mRemovedAt;
 
     public Product() {
-        mDate = mCreatedAt = Calendar.getInstance();
+        mDate = Calendar.getInstance();
+        mCreatedAt = Calendar.getInstance();
     }
 
-    public Product(String title, Calendar date, int quantity, long groupId) {
-        this(title, date, new GregorianCalendar(), quantity, groupId);
-    }
 
     public Product(String title, Calendar date, Calendar createdAt, int quantity, long groupId) {
         this.mTitle = title;
@@ -53,19 +51,17 @@ public class Product implements Parcelable {
         int myYear = Integer.parseInt(array[2]);
         this.mDate = new GregorianCalendar(myYear, myMonth, myDay, 23, 59);
 
-        if (createdAt == null) {
-            this.mCreatedAt = new GregorianCalendar();
-        }
-        else {
+        this.mCreatedAt = Calendar.getInstance();
+
+        if (createdAt != null) {
             String[] createdAtSplit = createdAt.split("\\.");
-            int Year = Integer.parseInt(createdAtSplit[0]);
-            int Month = Integer.parseInt(createdAtSplit[1]);
-            int Day = Integer.parseInt(createdAtSplit[2]);
-            int Hour = Integer.parseInt(createdAtSplit[3]);
-            int Minute = Integer.parseInt(createdAtSplit[4]);
-            int Second = Integer.parseInt(createdAtSplit[5]);
-            this.mCreatedAt = new GregorianCalendar
-                    (Year, Month, Day, Hour, Minute, Second);
+            int year = Integer.parseInt(createdAtSplit[0]);
+            int month = Integer.parseInt(createdAtSplit[1]);
+            int day = Integer.parseInt(createdAtSplit[2]);
+            int hour = Integer.parseInt(createdAtSplit[3]);
+            int minute = Integer.parseInt(createdAtSplit[4]);
+            int second = Integer.parseInt(createdAtSplit[5]);
+            mCreatedAt.set(year, month, day, hour, minute, second);
         }
         this.mQuantity = quantity;
         this.mGroupId = groupId;
@@ -90,6 +86,7 @@ public class Product implements Parcelable {
         parcel.writeInt(mViewed);
         parcel.writeInt(mRemoved);
         parcel.writeLong(mRemovedAt);
+        parcel.writeLong(mProduced.getTimeInMillis());
     }
 
     public static final Parcelable.Creator<Product> CREATOR
@@ -115,6 +112,8 @@ public class Product implements Parcelable {
         mViewed = in.readInt();
         mRemoved = in.readInt();
         mRemovedAt = in.readLong();
+        mProduced = Calendar.getInstance();
+        mProduced.setTimeInMillis(in.readLong());
     }
 
 

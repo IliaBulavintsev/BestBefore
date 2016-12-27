@@ -8,7 +8,6 @@
     <string name="enterName">Введите название продукта</string>
     <string name="dateOfMan">Дата изготовления</string>
     <string name="okayBefore">Годен до</string>
-    <string name="chooseDateOfMan">Дата изготовления</string>
     <string name="chooseDateOfExpiry">Дата окончания</string>
     <string name="chooseDateOfExpiry2">срока годности</string>
     <string name="chooseBestBefore">Укажите срок хранения (в сутках)</string>
@@ -36,7 +35,7 @@
     <string name="today_is_the_last_day">Сегодня последний день!</string>
     <string name="please_fill_all_fields">Заполните все поля!</string>
     <string name="wrong_date">Неверная дата!</string>
-    <string name="wrong_best_before">Неверный срок хранения!</string>
+    <string name="wrong_best_before">Неверный срок хранения! Разрешены натуральные числа, а также дроби с округлением до 0.5</string>
     <string name="product_is_expired">Товар просрочен!</string>
 
 
@@ -118,4 +117,5 @@
     <string name="trash">Корзина</string>
     <string name="want_restore_this_product">Вы хотите восстановить этот продукт?</string>
     <string name="product_has_been_restored">Продукт восстановлен</string>
+    <string name="dateFormat">DD.MM.YYYY</string>
 </resources>
