@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
@@ -18,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -42,11 +44,10 @@ import java.util.List;
  */
 public class Add extends AppCompatActivity {
     private TextView chooseDate;
-    private TextView chooseDate2;
+    private EditText chooseDate2;
     private TextView bestBeforeTxt;
 
     private AutoCompleteTextView enterName;
-    private TextView dateTV;
     private EditText days;
     private EditText quantityET;
     private RadioButton radio1;
@@ -83,11 +84,10 @@ public class Add extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add);
         chooseDate = (TextView)findViewById(R.id.chooseDate);
-        chooseDate2 = (TextView)findViewById(R.id.chooseDate2);
+        chooseDate2 = (EditText)findViewById(R.id.chooseDate2);
         bestBeforeTxt = (TextView)findViewById(R.id.bestBefore);
         spinnerBestBefore = (Spinner)findViewById(R.id.spinner);
         enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
-        dateTV = (TextView)findViewById(R.id.date);
         days = (EditText)findViewById(R.id.days);
         quantityET = (EditText) findViewById(R.id.enterQuantity);
         quantityET.setText("1");
@@ -499,10 +499,10 @@ public class Add extends AppCompatActivity {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         if (month < 9) {
-            dateTV.setText(day + "." + "0" + (month + 1) + "." + year);
+            chooseDate2.setText(day + "." + "0" + (month + 1) + "." + year);
         }
         else {
-            dateTV.setText(day + "." + (month + 1) + "." + year);
+            chooseDate2.setText(day + "." + (month + 1) + "." + year);
         }
     }
 
