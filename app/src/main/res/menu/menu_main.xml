@@ -4,6 +4,12 @@
     tools:context="com.rv150.bestbefore.Activities.MainActivity">
 
     <item
+        android:id="@+id/action_sort"
+        android:orderInCategory="100"
+        android:title="@string/sort"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_clear_list"
         android:orderInCategory="100"
         android:title="@string/clear_list"
@@ -20,5 +26,4 @@
         android:orderInCategory="100"
         android:title="@string/delete_group"
         app:showAsAction="never" />
-
 </menu>

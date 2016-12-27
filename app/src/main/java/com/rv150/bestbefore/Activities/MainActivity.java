@@ -605,6 +605,37 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+
+        if (id == R.id.action_sort) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.sort)
+                    .setItems(R.array.sortOptions, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            SharedPreferences.Editor editor = sPrefs.edit();
+                            switch (which) {
+                                case 0:
+                                    editor.putString(Resources.PREF_HOW_TO_SORT, Resources.SPOILED_TO_FRESH);
+                                    break;
+                                case 1:
+                                    editor.putString(Resources.PREF_HOW_TO_SORT, Resources.FRESH_TO_SPOILED);
+                                    break;
+                                case 2:
+                                    editor.putString(Resources.PREF_HOW_TO_SORT, Resources.STANDART);
+                                    break;
+                                case 3:
+                                    editor.putString(Resources.PREF_HOW_TO_SORT, Resources.BY_NAME);
+                                    break;
+                            }
+                            editor.apply();
+                            sortMainList();
+                            adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
+                            rvProducts.swapAdapter(adapter, false);
+                        }
+                    })
+                    .show();
+            return true;
+        }
+
         if (id == R.id.action_clear_list) {
             DialogFragment dialog = new DeleteAllDialog();
             dialog.show(getFragmentManager(), "deleteAll");
