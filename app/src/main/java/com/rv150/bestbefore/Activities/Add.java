@@ -159,14 +159,14 @@ public class Add extends AppCompatActivity {
             }
         });
 
-        showDateProduced = sPrefs.getBoolean("show_date_produced", true);
+        showDateProduced = sPrefs.getBoolean("use_date_produced", true);
         if (!showDateProduced) {
             dateProducedTV.setVisibility(View.GONE);
             dateProducedET.setVisibility(View.GONE);
             dateProducedIV.setVisibility(View.GONE);
         }
 
-        boolean showQuantity = sPrefs.getBoolean("show_quantity", true);
+        boolean showQuantity = sPrefs.getBoolean("use_quantity", true);
         if (!showQuantity) {
             TextView quantityTV = (TextView) findViewById(R.id.quantityTV);
             quantityTV.setVisibility(View.GONE);
@@ -208,6 +208,7 @@ public class Add extends AppCompatActivity {
                 }
                 else {
                     parseInputDate(okayBeforeOrDaysET.getText().toString(), okayBefore);
+                    int l = 4;
                 }
             }
         });

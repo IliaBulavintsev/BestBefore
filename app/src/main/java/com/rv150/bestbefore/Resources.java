@@ -45,6 +45,7 @@ public final class Resources {
     public static final int RC_ADD_ACTIVITY = 0;
     public static final int RC_SIGN_IN = 1;
     public static final int RC_DRIVE_API = 2;
+    public static final int RC_SETTINGS = 3;
     public static final int RESULT_ADD = 1;
     public static final int RESULT_MODIFY = 2;
     public static final String SERVER_URL = "http://212.109.192.197:8080/";

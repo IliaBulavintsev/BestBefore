@@ -1,7 +1,9 @@
 package com.rv150.bestbefore;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,8 +23,10 @@ import java.util.List;
 public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
 
     private List<Product> items;
-    public RecyclerAdapter(List<Product> items) {
+    private Context mContext;
+    public RecyclerAdapter(List<Product> items, Context context) {
         this.items = items;
+        mContext = context;
     }
 
 
@@ -58,83 +62,104 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
     public void onBindViewHolder(RecyclerAdapter.ViewHolder viewHolder, int position) {
         final Product item = items.get(position);
 
-            TextView name = viewHolder.nameTextView;
-            name.setText(item.getTitle());
+        TextView name = viewHolder.nameTextView;
+        name.setText(item.getTitle());
 
+        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        boolean quantityEnabled = sPrefs.getBoolean("use_quantity", true);
+        if (quantityEnabled) {
+            viewHolder.quantityTextView.setVisibility(View.VISIBLE);
             int quantity = item.getQuantity();
             String quantityStr = "Кол-во:  " + quantity;
             if (quantity < 10) {
                 quantityStr += "  ";
             }
             viewHolder.quantityTextView.setText(quantityStr);
+        }
+        else {
+            viewHolder.quantityTextView.setVisibility(View.GONE);
+        }
 
-            final Calendar calendar = item.getDate();
-            int year = calendar.get(Calendar.YEAR);
-            int month = calendar.get(Calendar.MONTH);
-            int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-            TextView bestBeforeTV = viewHolder.bestBeforeTV;
-            if (month < 9) {
-                if (day < 10) {
-                    bestBeforeTV.setText(day + "." + "0" + (month + 1) + "." + year);
-                }
-                else {
-                    bestBeforeTV.setText(day + "." + "0" + (month + 1) + "." + year);
-                }
-            }
-            else {
-                if (day < 10) {
-                    bestBeforeTV.setText(day + "." + (month + 1) + "." + year);
-                }
-                else {
-                    bestBeforeTV.setText(day + "." + (month + 1) + "." + year);
-                }
-            }
 
-            TextView dateCreatedTV = viewHolder.dateCreatedTV;
-            Calendar createdAt = item.getCreatedAt();
-            year = createdAt.get(Calendar.YEAR);
-            month = createdAt.get(Calendar.MONTH);
-            day = createdAt.get(Calendar.DAY_OF_MONTH);
+        TextView dateCreatedTV = viewHolder.dateCreatedTV;
+        boolean useDateProduced = sPrefs.getBoolean("use_date_produced", true);
+        if (useDateProduced) {
+            dateCreatedTV.setVisibility(View.VISIBLE);
+            Calendar produced = item.getProduced();
+            int year = produced.get(Calendar.YEAR);
+            int month = produced.get(Calendar.MONTH);
+            int day = produced.get(Calendar.DAY_OF_MONTH);
             String dateCreated;
             if (month < 9) {
                 if (day < 10) {
-                    dateCreated = day + "." + "0" + (month + 1) + "." + year;
+                    dateCreated = day + "." + "0" + (month + 1) + "." + year + "  -  ";
+                } else {
+                    dateCreated = day + "." + "0" + (month + 1) + "." + year + "  -  ";
                 }
-                else {
-                    dateCreated = day + "." + "0" + (month + 1) + "." + year;
+            } else {
+                if (day < 10) {
+                    dateCreated = day + "." + (month + 1) + "." + year + "  -  ";
+                } else {
+                    dateCreated = day + "." + (month + 1) + "." + year + "  -  ";
                 }
+            }
+            dateCreatedTV.setText(dateCreated);
+        }
+        else {
+            dateCreatedTV.setVisibility(View.GONE);
+        }
+
+
+        final Calendar date = item.getDate();
+        int year = date.get(Calendar.YEAR);
+        int month = date.get(Calendar.MONTH);
+        int day = date.get(Calendar.DAY_OF_MONTH);
+        String bestBeforeText = "";
+        if (!useDateProduced) {
+            bestBeforeText += "Годен до:  ";
+        }
+
+        if (month < 9) {
+            if (day < 10) {
+                bestBeforeText += day + "." + "0" + (month + 1) + "." + year;
             }
             else {
-                if (day < 10) {
-                    dateCreated = day + "." + (month + 1) + "." + year;
-                }
-                else {
-                    dateCreated = day + "." + (month + 1) + "." + year;
-                }
+                bestBeforeText += day + "." + "0" + (month + 1) + "." + year;
             }
+        }
+        else {
+            if (day < 10) {
+                bestBeforeText += day + "." + (month + 1) + "." + year;
+            }
+            else {
+                bestBeforeText += day + "." + (month + 1) + "." + year;
+            }
+        }
 
-            dateCreatedTV.setText(dateCreated);
+        TextView bestBeforeTV = viewHolder.bestBeforeTV;
+        bestBeforeTV.setText(bestBeforeText);
 
 
 
-            TextView daysLeft = viewHolder.daysLeftTextView;
-            String daysLeftStr = getDaysLeft(calendar);
-            daysLeft.setText(daysLeftStr);
-            if (daysLeftStr.length() == 3) {
-                daysLeft.setTextSize(21);
-            }
-            else if (daysLeftStr.length() > 3) {
-                daysLeft.setTextSize(18);
-            }
-            else if (daysLeftStr.equals("!")) {
-                daysLeft.setTextSize(26);
-            }
-            else
-            {
-                daysLeft.setTextSize(24);
-            }
-            setColor(daysLeft, calendar);
+
+        TextView daysLeft = viewHolder.daysLeftTextView;
+        String daysLeftStr = getDaysLeft(date);
+        daysLeft.setText(daysLeftStr);
+        if (daysLeftStr.length() == 3) {
+            daysLeft.setTextSize(21);
+        }
+        else if (daysLeftStr.length() > 3) {
+            daysLeft.setTextSize(18);
+        }
+        else if (daysLeftStr.equals("!")) {
+            daysLeft.setTextSize(26);
+        }
+        else
+        {
+            daysLeft.setTextSize(24);
+        }
+        setColor(daysLeft, date);
     }
 
     @Override

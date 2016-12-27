@@ -101,12 +101,13 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         isEmpty = (TextView)findViewById(R.id.isEmptyText);
         fab = (FloatingActionButton) findViewById(R.id.fab);
 
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-        sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
 
         final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
         setTitle(mainGroupName);
@@ -243,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        adapter = new RecyclerAdapter(wrapperList);
+        adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
         rvProducts.swapAdapter(adapter, false);
 
         // Надпись "Список пуст!"
@@ -390,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
         }
         if (id == Resources.ID_FOR_SETTINGS) {
             Intent intent = new Intent(this, Preferences.class);
-            startActivity(intent);
+            startActivityForResult(intent, Resources.RC_SETTINGS);
             return;
         }
         if (id == Resources.ID_FOR_FEEDBACK) {
@@ -430,7 +431,7 @@ public class MainActivity extends AppCompatActivity {
             fab.show();
         }
         sortMainList();
-        adapter = new RecyclerAdapter(wrapperList);
+        adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
         rvProducts.swapAdapter(adapter, false);
         if (wrapperList.isEmpty()) {
             isEmpty.setVisibility(View.VISIBLE);
@@ -526,7 +527,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         wrapperList.clear();
-        adapter = new RecyclerAdapter(wrapperList);
+        adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
         rvProducts.swapAdapter(adapter, false);
         isEmpty.setVisibility(View.VISIBLE);
         Toast toast = Toast.makeText(getApplicationContext(),
@@ -562,7 +563,7 @@ public class MainActivity extends AppCompatActivity {
         if (wrapperList.isEmpty()) {
             isEmpty.setVisibility(View.VISIBLE);
         }
-        adapter = new RecyclerAdapter(wrapperList);
+        adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
         rvProducts.swapAdapter(adapter, false);
 
         if (groupChoosen == Resources.ID_FOR_TRASH) {
@@ -589,7 +590,7 @@ public class MainActivity extends AppCompatActivity {
             isEmpty.setVisibility(View.INVISIBLE);
         }
         position = -1;
-        adapter = new RecyclerAdapter(wrapperList);
+        adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
         rvProducts.swapAdapter(adapter, false);
         deletedProduct = null;
     }
@@ -695,6 +696,10 @@ public class MainActivity extends AppCompatActivity {
                     R.string.product_has_been_saved, Toast.LENGTH_SHORT);
             toast.show();
         }
+        if (requestCode == Resources.RC_SETTINGS) {
+            adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
+            rvProducts.swapAdapter(adapter, false);
+        }
     }
 
 
@@ -791,7 +796,7 @@ public class MainActivity extends AppCompatActivity {
                                 Product product = wrapperList.get(pos);
                                 productDAO.markRestored(product.getId());
                                 wrapperList.remove(pos);
-                                adapter = new RecyclerAdapter(wrapperList);
+                                adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
                                 rvProducts.swapAdapter(adapter, false);
                                 if (wrapperList.isEmpty()) {
                                     isEmpty.setVisibility(View.VISIBLE);
