@@ -118,4 +118,10 @@
     <string name="want_restore_this_product">Вы хотите восстановить этот продукт?</string>
     <string name="product_has_been_restored">Продукт восстановлен</string>
     <string name="dateFormat">DD.MM.YYYY</string>
+    <string name="quantity_attribute">Атрибут \'Количество\'</string>
+    <string name="interface_settings">Настройки отображения</string>
+    <string name="date_produced_attribute">Атрибут \'Дата изготовления\'</string>
+    <string name="date_produced_attribute_summary">Всегда указывать дату производства продукта</string>
+    <string name="ability_to_divide_into_groups">Возможность разделять на группы</string>
+    <string name="groups">Группы</string>
 </resources>

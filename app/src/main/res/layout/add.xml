@@ -62,6 +62,7 @@
                 android:layout_height="wrap_content">
 
             <TextView
+                android:id="@+id/date_produced_TV"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/dateOfMan"
@@ -175,7 +176,7 @@
                 android:text="@string/quantity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/quantity"
+                android:id="@+id/quantityTV"
                 android:textSize="14sp"/>
 
             <EditText
@@ -183,7 +184,7 @@
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
                 android:inputType="numberSigned"
-                android:id="@+id/enterQuantity" />
+                android:id="@+id/quantityET" />
         </LinearLayout>
     </LinearLayout>
 

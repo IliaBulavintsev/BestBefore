@@ -38,12 +38,16 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+import javax.crypto.spec.IvParameterSpec;
+
 /**
  * Created by rv150 on 07.01.2016.
  */
 public class Add extends AppCompatActivity {
     private AutoCompleteTextView enterName;
+    private TextView dateProducedTV;
     private EditText dateProducedET;
+    private ImageView dateProducedIV;
     private TextView okayBeforeOrDaysTV;
     private EditText okayBeforeOrDaysET;
 
@@ -60,6 +64,8 @@ public class Add extends AppCompatActivity {
     private boolean okayBeforeFirstTimeGetFocused = true;
     private boolean quantityFirstTimeGetFocused = true;
 
+    boolean showDateProduced;
+
     // Для отличия, какой date picker открыт
     private boolean firstDialogOpened;
 
@@ -71,8 +77,6 @@ public class Add extends AppCompatActivity {
     private Calendar okayBefore;
 
     private DBHelper dbHelper;
-    private SQLiteDatabase db;
-    private Cursor cursor;
 
     private GroupDAO groupDAO;
     private ProductDAO productDAO;
@@ -90,15 +94,16 @@ public class Add extends AppCompatActivity {
         setContentView(R.layout.add);
 
         enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
+        dateProducedTV = (TextView) findViewById(R.id.date_produced_TV);
         dateProducedET = (EditText) findViewById(R.id.date_produced_ET);
+        dateProducedIV = (ImageView) findViewById(R.id.date_produced_IV);
         okayBeforeOrDaysTV = (TextView) findViewById(R.id.best_before_or_days_TV);
         okayBeforeOrDaysET = (EditText) findViewById(R.id.best_before_or_days_ET);
         okayBeforeIV = (ImageView) findViewById(R.id.okay_before_IV);
 
         spinnerStorageLife = (Spinner)findViewById(R.id.spinner_storage_life);
 
-
-        quantityET = (EditText) findViewById(R.id.enterQuantity);
+        quantityET = (EditText) findViewById(R.id.quantityET);
         quantityET.setText("1");
         spinnerGroups = (Spinner) findViewById(R.id.spinner_groups);;
         radioDateProduced = (RadioButton)findViewById(R.id.radioButtonDateProduced);
@@ -154,6 +159,29 @@ public class Add extends AppCompatActivity {
             }
         });
 
+        showDateProduced = sPrefs.getBoolean("show_date_produced", true);
+        if (!showDateProduced) {
+            dateProducedTV.setVisibility(View.GONE);
+            dateProducedET.setVisibility(View.GONE);
+            dateProducedIV.setVisibility(View.GONE);
+        }
+
+        boolean showQuantity = sPrefs.getBoolean("show_quantity", true);
+        if (!showQuantity) {
+            TextView quantityTV = (TextView) findViewById(R.id.quantityTV);
+            quantityTV.setVisibility(View.GONE);
+            quantityET.setVisibility(View.GONE);
+        }
+
+        boolean useGroups = sPrefs.getBoolean("use_groups", true);
+        if (!useGroups) {
+            TextView groupTV = (TextView) findViewById(R.id.groupTV);
+            groupTV.setVisibility(View.GONE);
+            spinnerGroups.setVisibility(View.GONE);
+        }
+
+
+
 
         dateProducedET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -205,6 +233,7 @@ public class Add extends AppCompatActivity {
                 setTitle(R.string.changing_product);
                 enterName.setText(mProduct.getTitle());
                 okayBefore = mProduct.getDate();
+                dateProduced = mProduct.getProduced();
                 quantityET.setText(String.valueOf(mProduct.getQuantity()));
                 long groupId = mProduct.getGroupId();
                 if (groupId != -1) {
@@ -231,6 +260,7 @@ public class Add extends AppCompatActivity {
         }
 
 
+        setDateText(dateProduced, dateProducedET);
         setDateText(okayBefore, okayBeforeOrDaysET); // Установка нужной даты в TextView
 
         String [] popularProducts = {
@@ -323,8 +353,8 @@ public class Add extends AppCompatActivity {
                 DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME + " ASC";
 
         //получаем данные из бд
-        db = dbHelper.getReadableDatabase();
-        cursor = db.query(
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.query(
                 DBHelper.AutoCompletedProducts.TABLE_NAME, // The table to query
                 projection,                               // The columns to return
                 null,                                   // The columns for the WHERE clause
@@ -412,6 +442,11 @@ public class Add extends AppCompatActivity {
         okayBeforeOrDaysET.setText("");
         spinnerStorageLife.setVisibility(View.GONE);
         okayBeforeIV.setVisibility(View.VISIBLE);
+        if (!showDateProduced) {
+            dateProducedTV.setVisibility(View.GONE);
+            dateProducedET.setVisibility(View.GONE);
+            dateProducedIV.setVisibility(View.GONE);
+        }
     }
 
     public void onRadioDateManClick(View view) {
@@ -420,6 +455,9 @@ public class Add extends AppCompatActivity {
         okayBeforeOrDaysET.setText("");
         spinnerStorageLife.setVisibility(View.VISIBLE);
         okayBeforeIV.setVisibility(View.GONE);
+        dateProducedTV.setVisibility(View.VISIBLE);
+        dateProducedET.setVisibility(View.VISIBLE);
+        dateProducedIV.setVisibility(View.VISIBLE);
     }
 
 
