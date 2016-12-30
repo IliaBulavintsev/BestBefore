@@ -117,7 +117,10 @@ public class Product implements Parcelable {
     }
 
 
-
+    public boolean isFresh() {
+        Calendar now = Calendar.getInstance();
+        return now.before(mDate);
+    }
 
     public long getId() {
         return mId;

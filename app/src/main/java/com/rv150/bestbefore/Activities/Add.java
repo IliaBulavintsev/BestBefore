@@ -192,7 +192,7 @@ public class Add extends AppCompatActivity {
         okayBeforeOrDaysET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus){
+                if(!hasFocus && !radioDateProduced.isChecked()){
                     parseInputDate(okayBeforeOrDaysET.getText().toString(), okayBefore);
                 }
             }
@@ -425,7 +425,7 @@ public class Add extends AppCompatActivity {
     public void onRadioOkayBeforeClick(View view) {
         okayBeforeOrDaysTV.setText(R.string.okayBefore);
         okayBeforeOrDaysET.setHint(R.string.dateFormat);
-        okayBeforeOrDaysET.setText("");
+        setDateText(okayBefore, okayBeforeOrDaysET);
         spinnerStorageLife.setVisibility(View.GONE);
         okayBeforeIV.setVisibility(View.VISIBLE);
         if (!showDateProduced) {
@@ -507,7 +507,6 @@ public class Add extends AppCompatActivity {
                 return;
             }
         }
-
         else {
             if (compare(okayBefore, currentDate) < 0) {
                 Toast toast = Toast.makeText(getApplicationContext(),
@@ -516,6 +515,8 @@ public class Add extends AppCompatActivity {
                 return;
             }
         }
+        okayBefore.set(Calendar.HOUR_OF_DAY, 23);
+        okayBefore.set(Calendar.MINUTE, 59);
 
         final int quantity = Integer.parseInt(quantityET.getText().toString());
         if (quantity <= 0) {
@@ -529,8 +530,6 @@ public class Add extends AppCompatActivity {
 
         String name = enterName.getText().toString();
         name = name.substring(0, 1).toUpperCase() + name.substring(1);
-        okayBefore.set(Calendar.HOUR_OF_DAY, 23);
-        okayBefore.set(Calendar.MINUTE, 59);
 
         groupName = spinnerGroups.getSelectedItem().toString();
         long groupId;

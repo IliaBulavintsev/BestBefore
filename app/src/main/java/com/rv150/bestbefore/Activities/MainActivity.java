@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -576,7 +575,7 @@ public class MainActivity extends AppCompatActivity {
         deletedFromThisGroup = groupChoosen;
     }
 
-    private void restoreItem() {
+    private void undoRemove() {
         if (deletedFromThisGroup == Resources.ID_FOR_TRASH) {
             long id = productDAO.insertProduct(deletedProduct);
             deletedProduct.setId(id);
@@ -600,6 +599,29 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        if (groupChoosen == Resources.ID_FOR_TRASH) {
+            menu.getItem(0).setVisible(false);
+            menu.getItem(1).setVisible(true);
+            menu.getItem(2).setVisible(false);
+            menu.getItem(3).setVisible(false);
+        } else if (groupChoosen == Resources.ID_MAIN_GROUP || groupChoosen == Resources.ID_FOR_OVERDUED) {
+            menu.getItem(0).setVisible(true);
+            menu.getItem(1).setVisible(true);
+            menu.getItem(2).setVisible(true);
+            menu.getItem(3).setVisible(false);
+        }
+        else {
+            menu.getItem(0).setVisible(true);
+            menu.getItem(1).setVisible(true);
+            menu.getItem(2).setVisible(true);
+            menu.getItem(3).setVisible(true);
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -826,6 +848,11 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 Product product = wrapperList.get(pos);
                                 productDAO.markRestored(product.getId());
+                                product.setRemoved(0);
+                                if (!product.isFresh()) {
+                                    product.setViewed(1);
+                                    productDAO.updateProduct(product);
+                                }
                                 wrapperList.remove(pos);
                                 adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
                                 rvProducts.swapAdapter(adapter, false);
@@ -891,7 +918,7 @@ public class MainActivity extends AppCompatActivity {
                         .setAction(R.string.undo, new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                restoreItem();
+                                undoRemove();
                             }
                         });
 
