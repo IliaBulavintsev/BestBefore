@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.rv150.bestbefore.Activities.Add;
 import com.rv150.bestbefore.Models.Product;
 
 import java.util.Calendar;
@@ -66,20 +67,6 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
         name.setText(item.getTitle());
 
         SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        boolean quantityEnabled = sPrefs.getBoolean("use_quantity", true);
-        if (quantityEnabled) {
-            viewHolder.quantityTextView.setVisibility(View.VISIBLE);
-            int quantity = item.getQuantity();
-            String quantityStr = "Кол-во:  " + quantity;
-            if (quantity < 10) {
-                quantityStr += "  ";
-            }
-            viewHolder.quantityTextView.setText(quantityStr);
-        }
-        else {
-            viewHolder.quantityTextView.setVisibility(View.GONE);
-        }
-
 
 
         TextView dateCreatedTV = viewHolder.dateCreatedTV;
@@ -161,6 +148,24 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
             daysLeft.setTextSize(24);
         }
         setColor(daysLeft, date);
+
+
+
+        boolean quantityEnabled = sPrefs.getBoolean("use_quantity", true);
+        if (quantityEnabled) {
+            viewHolder.quantityTextView.setVisibility(View.VISIBLE);
+            int quantity = item.getQuantity();
+            String quantityStr = "Кол-во:  " + quantity + " " +
+                    Add.Measures.values()[item.getMeasure()].getText();
+            if (quantity < 10) {
+                quantityStr += "  ";
+            }
+            viewHolder.quantityTextView.setText(quantityStr);
+        }
+        else {
+            viewHolder.quantityTextView.setVisibility(View.GONE);
+        }
+
     }
 
     @Override
