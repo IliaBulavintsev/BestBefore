@@ -243,10 +243,10 @@ public class Product implements Parcelable {
         return new Comparator<Product>() {
             public int compare(Product one, Product two) {
                 if (one.getCreatedAt().before(two.getCreatedAt())) {
-                    return -1;
+                    return 1;
                 }
                 else {
-                    return 1;
+                    return -1;
                 }
             }
         };
