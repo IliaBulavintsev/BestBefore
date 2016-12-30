@@ -185,7 +185,7 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
 
 
     private String getDaysLeft (Calendar sourceDate) {
-        Calendar currentDate = new GregorianCalendar();
+        Calendar currentDate = Calendar.getInstance();
         long difference = sourceDate.getTimeInMillis() - currentDate.getTimeInMillis();
         int days = (int) (difference / (24 * 60 * 60 * 1000));
         if (days < 0) {

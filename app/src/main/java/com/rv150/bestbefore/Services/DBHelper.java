@@ -35,8 +35,8 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 5;
-    public static final String DATABASE_NAME = "BestBefore.db";
+    private static final int DATABASE_VERSION = 5;
+    private static final String DATABASE_NAME = "BestBefore.db";
 
     private static final String SQL_CREATE_AUTOCOMPLETED_TABLE  =
             "CREATE TABLE " + AutoCompletedProducts.TABLE_NAME + " (" +
@@ -52,7 +52,7 @@ public class DBHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + Product.TABLE_NAME + " (" +
                     Product._ID + " INTEGER PRIMARY KEY," +
                     Product.COLUMN_NAME_NAME + " VARCHAR(100) NOT NULL, " +
-                    Product.COLUMN_NAME_PRODUCED + " INTEGER NOT NULL," +
+                    Product.COLUMN_NAME_PRODUCED + " INTEGER DEFAULT 1480622647703," + // 1.12.2016
                     Product.COLUMN_NAME_DATE + " INTEGER NOT NULL," +
                     Product.COLUMN_NAME_CREATED_AT + " INTEGER NOT NULL," +
                     Product.COLUMN_NAME_QUANTITY + " INTEGER DEFAULT 1," +
@@ -89,7 +89,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
                         " ADD COLUMN " + Product.COLUMN_NAME_REMOVED_AT + " INTEGER DEFAULT 0");
                 db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
-                        " ADD COLUMN " + Product.COLUMN_NAME_PRODUCED + " INTEGER NOT NULL");
+                        " ADD COLUMN " + Product.COLUMN_NAME_PRODUCED + " INTEGER DEFAULT 1480622647703");
                 break;
             default:
                 break;

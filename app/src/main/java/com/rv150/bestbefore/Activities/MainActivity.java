@@ -305,10 +305,7 @@ public class MainActivity extends AppCompatActivity {
                 .withIdentifier(Resources.ID_MAIN_GROUP)
                 .withName(mainGroupName);
 
-        SecondaryDrawerItem addGroup = new SecondaryDrawerItem()
-                .withIdentifier(Resources.ID_FOR_ADD_GROUP)
-                .withName(R.string.add_group)
-                .withSelectable(false);
+
 
 
         final String overdueGroupName = sPrefs.getString(Resources.OVERDUED_GROUP_NAME, getString(R.string.overdue_products));
@@ -333,28 +330,61 @@ public class MainActivity extends AppCompatActivity {
                 .withSelectable(false)
                 .withIcon(GoogleMaterial.Icon.gmd_email);
 
-        drawer = new DrawerBuilder()
-                .withActivity(this)
-                .withToolbar(toolbar)
-                .withHeader(R.layout.drawer_header)
-                .addDrawerItems(
-                        allProducts,
-                        addGroup,
-                        new DividerDrawerItem(),
-                        overdued,
-                        trash,
-                        new DividerDrawerItem(),
-                        settings,
-                        feedback
-                )
-                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                    @Override
-                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                        drawerPushed(drawerItem);
-                        return true;
-                    }
-                })
-                .build();
+        boolean useGroups = sPrefs.getBoolean("use_groups", true);
+        if (useGroups) {
+            SecondaryDrawerItem addGroup = new SecondaryDrawerItem()
+                    .withIdentifier(Resources.ID_FOR_ADD_GROUP)
+                    .withName(R.string.add_group)
+                    .withSelectable(false);
+            drawer = new DrawerBuilder()
+                    .withActivity(this)
+                    .withToolbar(toolbar)
+                    .withHeader(R.layout.drawer_header)
+                    .addDrawerItems(
+                            allProducts,
+                            addGroup,
+                            new DividerDrawerItem(),
+                            overdued,
+                            trash,
+                            new DividerDrawerItem(),
+                            settings,
+                            feedback
+                    )
+                    .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                        @Override
+                        public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                            drawerPushed(drawerItem);
+                            return true;
+                        }
+                    })
+                    .build();
+        }
+        else {
+            drawer = new DrawerBuilder()
+                    .withActivity(this)
+                    .withToolbar(toolbar)
+                    .withHeader(R.layout.drawer_header)
+                    .addDrawerItems(
+                            allProducts,
+                            new DividerDrawerItem(),
+                            overdued,
+                            trash,
+                            new DividerDrawerItem(),
+                            settings,
+                            feedback
+                    )
+                    .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                        @Override
+                        public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                            drawerPushed(drawerItem);
+                            return true;
+                        }
+                    })
+                    .build();
+        }
+
+
+
         List<Group> userGroups = groupDAO.getAll();
         for (Group group: userGroups) {
             PrimaryDrawerItem newItem = new PrimaryDrawerItem()
@@ -721,8 +751,18 @@ public class MainActivity extends AppCompatActivity {
                 // Справка
                 boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, true);
                 if (showHelp) {
+                    Calendar currentDate = Calendar.getInstance();
+                    long difference = product.getDate().getTimeInMillis() - currentDate.getTimeInMillis();
+                    int days = (int) (difference / (24 * 60 * 60 * 1000));
+                    String msg;
+                    if (days == 0 && difference >= 0) {
+                        msg = getString(R.string.help_add_with_last_day);
+                    }
+                    else {
+                        msg = getString(R.string.help_add);
+                    }
                     new AlertDialog.Builder(this).setTitle(R.string.help)
-                            .setMessage(R.string.help_add)
+                            .setMessage(msg)
                             .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
@@ -820,7 +860,8 @@ public class MainActivity extends AppCompatActivity {
                     fab.hide();
                 }
                 else {
-                    if (groupChoosen != Resources.ID_FOR_OVERDUED) {
+                    if (groupChoosen != Resources.ID_FOR_OVERDUED &&
+                            groupChoosen != Resources.ID_FOR_TRASH) {
                         fab.show();
                     }
                 }

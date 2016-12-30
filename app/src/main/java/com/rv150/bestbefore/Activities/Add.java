@@ -181,22 +181,7 @@ public class Add extends AppCompatActivity {
 
 
 
-        dateProducedET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus){
-                    parseInputDate(dateProducedET.getText().toString(), dateProduced);
-                }
-            }
-        });
-        okayBeforeOrDaysET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus && !radioDateProduced.isChecked()){
-                    parseInputDate(okayBeforeOrDaysET.getText().toString(), okayBefore);
-                }
-            }
-        });
+
         quantityET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -463,12 +448,22 @@ public class Add extends AppCompatActivity {
             return;
         }
 
-        Calendar currentDate = Calendar.getInstance();
+        // Чтение из полей ввода
+        boolean isOk = parseInputDate(dateProducedET.getText().toString(), dateProduced);
+        if (!radioDateProduced.isChecked()) {
+            isOk = isOk & parseInputDate(okayBeforeOrDaysET.getText().toString(), okayBefore);
+        }
+
+        if (!isOk) {
+            return;
+        }
+
+
 
         String text_spinner = spinnerStorageLife.getSelectedItem().toString();
         boolean is_days = text_spinner.equals(getString(R.string.days_in_add_act));
 
-
+        Calendar currentDate = Calendar.getInstance();
         // Проверка "Даты изготовления"
         if (dateProducedET.getVisibility() != View.GONE && compare(dateProduced, currentDate) > 0) {
             Toast toast = Toast.makeText(getApplicationContext(),
