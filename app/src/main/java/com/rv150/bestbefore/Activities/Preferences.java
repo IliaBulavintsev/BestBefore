@@ -294,55 +294,55 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                 .setResultCallback(driveContentsCallback);
 
-//        List<Product> products = productDAO.getAll();
-//
-//        if (products.isEmpty()) {
-//            Toast toast = Toast.makeText(getApplicationContext(),
-//                             R.string.nothing_to_backup, Toast.LENGTH_SHORT);
-//            toast.show();
-//            return;
-//        }
-//
-//        // Отсылаемый jsonArray
-//
-//
-//        JSONObject result = new JSONObject();
-//        try {
-//            if (idToken == null) {
-//                Toast toast = Toast.makeText(getApplicationContext(),
-//                        R.string.error_has_occured_try_to_relogin, Toast.LENGTH_SHORT);
-//                toast.show();
-//                return;
-//            }
-//            result.put("idToken", idToken);
-//
-//            // Массив свежих продуктов
-//            JSONArray productsJson = new JSONArray();
-//            for (Product item : products) {
-//                JSONObject json = item.getJSON();
-//                productsJson.put(json);
-//            }
-//
-//
-//            result.put("products", productsJson);
-//
-//            List<Group> groups = groupDAO.getAll();
-//            JSONArray groupsJson = new JSONArray();
-//            for (Group group: groups) {
-//                JSONObject json = group.getJSON();
-//                groupsJson.put(json);
-//            }
-//            result.put("groups", groupsJson);
-//        }
-//        catch (JSONException e) {
-//            Toast toast = Toast.makeText(getApplicationContext(),
-//                    R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
-//            toast.show();
-//            return;
-//        }
-//
-//
-//        new HttpPostBackup(this).execute(result.toString());
+        List<Product> products = productDAO.getAll();
+
+        if (products.isEmpty()) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                             R.string.nothing_to_backup, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
+        // Отсылаемый jsonArray
+
+
+        JSONObject result = new JSONObject();
+        try {
+            if (idToken == null) {
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        R.string.error_has_occured_try_to_relogin, Toast.LENGTH_SHORT);
+                toast.show();
+                return;
+            }
+            result.put("idToken", idToken);
+
+            // Массив свежих продуктов
+            JSONArray productsJson = new JSONArray();
+            for (Product item : products) {
+                JSONObject json = item.getJSON();
+                productsJson.put(json);
+            }
+
+
+            result.put("products", productsJson);
+
+            List<Group> groups = groupDAO.getAll();
+            JSONArray groupsJson = new JSONArray();
+            for (Group group: groups) {
+                JSONObject json = group.getJSON();
+                groupsJson.put(json);
+            }
+            result.put("groups", groupsJson);
+        }
+        catch (JSONException e) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
+
+        new HttpPostBackup(this).execute(result.toString());
     }
 
 

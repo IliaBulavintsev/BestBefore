@@ -193,9 +193,6 @@
             android:key="backup" />
         <Preference
             android:title="@string/restore"
-            android:key="restore" />
-        <Preference
-            android:title="Восстановить данные со старого сервера"
             android:key="restore_deprecated" />
     </PreferenceScreen>
 
