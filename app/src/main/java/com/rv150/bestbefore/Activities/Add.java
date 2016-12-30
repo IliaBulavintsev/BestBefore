@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.icu.util.Measure;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
@@ -54,6 +55,7 @@ public class Add extends AppCompatActivity {
     private ImageView okayBeforeIV;
     private Spinner spinnerStorageLife;
     private Spinner spinnerGroups;
+    private Spinner spinnerQuantity;
 
     // For spinner with groups
     private int wasSelected = 0;
@@ -101,16 +103,29 @@ public class Add extends AppCompatActivity {
 
         quantityET = (EditText) findViewById(R.id.quantityET);
         quantityET.setText("1");
-        spinnerGroups = (Spinner) findViewById(R.id.spinner_groups);;
+        spinnerGroups = (Spinner) findViewById(R.id.spinner_groups);
         radioDateProduced = (RadioButton)findViewById(R.id.radioButtonDateProduced);
 
-        String[] spinnerItems = new String[]{
+        spinnerQuantity = (Spinner) findViewById(R.id.spinner_quantity);
+
+        String[] terms = new String[]{
                 getString(R.string.days_in_add_act),
                 getString(R.string.months_in_add_act)};
         ArrayAdapter<String> spinnerAdapter =
-                new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, spinnerItems);
+                new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, terms);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerStorageLife.setAdapter(spinnerAdapter);
+
+        int size = Measures.values().length;
+        String[] measures = new String[size];
+        for (int i = 0; i < size; ++i) {
+            measures[i] = Measures.values()[i].getText();
+        }
+
+        ArrayAdapter<String> spinnerQuantityAdapter =
+                new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, measures);
+        spinnerQuantityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerQuantity.setAdapter(spinnerQuantityAdapter);
 
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -222,6 +237,8 @@ public class Add extends AppCompatActivity {
                     Group group = groupDAO.get(groupId);
                     groupName = group.getName();
                 }
+                int measure = mProduct.getMeasure();
+                spinnerQuantity.setSelection(measure);
             }
             else {
                 mProduct = new Product();
@@ -557,6 +574,12 @@ public class Add extends AppCompatActivity {
 
         mProduct.setDate(okayBefore);
         mProduct.setQuantity(quantity);
+
+
+        String choosenMeasure = spinnerQuantity.getSelectedItem().toString();
+        int measureValue = Measures.fromString(choosenMeasure).ordinal();
+        mProduct.setMeasure(measureValue);
+
         mProduct.setGroupId(groupId);
 
 
@@ -669,6 +692,32 @@ public class Add extends AppCompatActivity {
                     R.string.error_parse_date, Toast.LENGTH_SHORT);
             toast.show();
             return false;
+        }
+    }
+
+    public enum Measures {
+        PIECE("шт"),
+        KG("кг"),
+        G("г"),
+        L("л"),
+        ML("мл");
+        private String text;
+        Measures(String text) {
+            this.text = text;
+        }
+        public String getText() {
+            return this.text;
+        }
+
+        public static Measures fromString(String text) {
+            if (text != null) {
+                for (Measures b : Measures.values()) {
+                    if (text.equalsIgnoreCase(b.text)) {
+                        return b;
+                    }
+                }
+            }
+            return null;
         }
     }
 }

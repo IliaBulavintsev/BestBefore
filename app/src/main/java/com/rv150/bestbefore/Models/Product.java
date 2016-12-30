@@ -24,6 +24,7 @@ public class Product implements Parcelable {
     private int mViewed = 0;
     private int mRemoved;
     private long mRemovedAt;
+    private int measure;
 
     public Product() {
         mDate = Calendar.getInstance();
@@ -93,6 +94,7 @@ public class Product implements Parcelable {
         parcel.writeInt(mRemoved);
         parcel.writeLong(mRemovedAt);
         parcel.writeLong(mProduced.getTimeInMillis());
+        parcel.writeInt(measure);
     }
 
     public static final Parcelable.Creator<Product> CREATOR
@@ -120,6 +122,7 @@ public class Product implements Parcelable {
         mRemovedAt = in.readLong();
         mProduced = Calendar.getInstance();
         mProduced.setTimeInMillis(in.readLong());
+        measure = in.readInt();
     }
 
 
@@ -211,6 +214,14 @@ public class Product implements Parcelable {
 
     public void setRemovedAt(long removedAt) {
         this.mRemovedAt = removedAt;
+    }
+
+    public int getMeasure() {
+        return measure;
+    }
+
+    public void setMeasure(int measure) {
+        this.measure = measure;
     }
 
     public static Comparator<Product> getFreshToSpoiledComparator() {

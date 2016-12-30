@@ -126,6 +126,9 @@ public class ProductDAO {
         int quantity = cursor.getInt(
                 cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_QUANTITY));
 
+        int measure = cursor.getInt(
+                cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_MEASURE));
+
         long groupId;
         if (cursor.isNull(cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_GROUP_ID))) {
             groupId = -1;
@@ -162,6 +165,7 @@ public class ProductDAO {
         product.setRemoved(removed);
         product.setRemovedAt(removedAt);
         product.setProduced(produced);
+        product.setMeasure(measure);
         return product;
     }
 
@@ -173,6 +177,7 @@ public class ProductDAO {
             values.put(DBHelper.Product.COLUMN_NAME_DATE, product.getDate().getTimeInMillis());
             values.put(DBHelper.Product.COLUMN_NAME_CREATED_AT, product.getCreatedAt().getTimeInMillis());
             values.put(DBHelper.Product.COLUMN_NAME_QUANTITY, product.getQuantity());
+            values.put(DBHelper.Product.COLUMN_NAME_MEASURE, product.getMeasure());
             long groupId = product.getGroupId();
             if (groupId == -1) {
                 values.putNull(DBHelper.Product.COLUMN_NAME_GROUP_ID);
@@ -196,6 +201,7 @@ public class ProductDAO {
         values.put(DBHelper.Product.COLUMN_NAME_DATE, product.getDate().getTimeInMillis());
         values.put(DBHelper.Product.COLUMN_NAME_CREATED_AT, product.getCreatedAt().getTimeInMillis());
         values.put(DBHelper.Product.COLUMN_NAME_QUANTITY, product.getQuantity());
+        values.put(DBHelper.Product.COLUMN_NAME_MEASURE, product.getMeasure());
         long groupId = product.getGroupId();
         if (groupId == -1) {
             values.putNull(DBHelper.Product.COLUMN_NAME_GROUP_ID);
@@ -239,6 +245,7 @@ public class ProductDAO {
         values.put(DBHelper.Product.COLUMN_NAME_NAME, product.getTitle());
         values.put(DBHelper.Product.COLUMN_NAME_DATE, product.getDate().getTimeInMillis());
         values.put(DBHelper.Product.COLUMN_NAME_QUANTITY, product.getQuantity());
+        values.put(DBHelper.Product.COLUMN_NAME_MEASURE, product.getMeasure());
         long groupId = product.getGroupId();
         if (groupId == -1) {
             values.putNull(DBHelper.Product.COLUMN_NAME_GROUP_ID);

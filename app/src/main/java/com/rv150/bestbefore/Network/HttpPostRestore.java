@@ -170,9 +170,6 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 createdAt.setTimeInMillis(createdAtInMillis);
                 Product product = new Product(name, date, createdAt, quantity, groupId);
                 product.setViewed(viewed);
-
-                // тк на сервере могут лежать старые данные еще до миграции, то
-
                 products.add(product);
             }
 
