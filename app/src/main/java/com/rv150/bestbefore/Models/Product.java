@@ -28,6 +28,8 @@ public class Product implements Parcelable {
     public Product() {
         mDate = Calendar.getInstance();
         mCreatedAt = Calendar.getInstance();
+        mProduced = Calendar.getInstance();
+        mProduced.setTimeInMillis(0);
     }
 
 
@@ -37,6 +39,8 @@ public class Product implements Parcelable {
         this.mCreatedAt = createdAt;
         this.mQuantity = quantity;
         this.mGroupId = groupId;
+        mProduced = Calendar.getInstance();
+        mProduced.setTimeInMillis(0);
     }
 
     public Product(String title, String date, int quantity, long groupId) {
@@ -65,6 +69,8 @@ public class Product implements Parcelable {
         }
         this.mQuantity = quantity;
         this.mGroupId = groupId;
+        mProduced = Calendar.getInstance();
+        mProduced.setTimeInMillis(0);
     }
 
 

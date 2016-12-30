@@ -538,7 +538,12 @@ public class Add extends AppCompatActivity {
         }
 
         mProduct.setTitle(name);
-        mProduct.setProduced(dateProduced);
+
+        // Если есть поле "Дата производства"
+        if (dateProducedET.getVisibility() != View.GONE) {
+            mProduct.setProduced(dateProduced);
+        }
+
         mProduct.setDate(okayBefore);
         mProduct.setQuantity(quantity);
         mProduct.setGroupId(groupId);

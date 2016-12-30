@@ -161,13 +161,13 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 final int quantity = item.getInt("quantity");
                 long groupId = item.getLong("groupId");
                 final int viewed = item.getInt("viewed");
-                Calendar date = new GregorianCalendar();
+                Calendar date = Calendar.getInstance();
                 date.setTimeInMillis(dateInMillis);
                 // тк на сервере могут лежать старые данные еще до миграции, то
                 date.set(Calendar.HOUR_OF_DAY, 23);
                 date.set(Calendar.MINUTE, 59);
 
-                Calendar createdAt = new GregorianCalendar();
+                Calendar createdAt = Calendar.getInstance();
                 createdAt.setTimeInMillis(createdAtInMillis);
                 Product product = new Product(name, date, createdAt, quantity, groupId);
                 product.setViewed(viewed);

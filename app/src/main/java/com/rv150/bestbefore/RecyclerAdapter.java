@@ -84,7 +84,8 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
 
         TextView dateCreatedTV = viewHolder.dateCreatedTV;
         boolean useDateProduced = sPrefs.getBoolean("use_date_produced", true);
-        if (useDateProduced) {
+        boolean defaultDate = item.getProduced().getTimeInMillis() == 0;
+        if (useDateProduced && !defaultDate) {
             dateCreatedTV.setVisibility(View.VISIBLE);
             Calendar produced = item.getProduced();
             int year = produced.get(Calendar.YEAR);
@@ -116,7 +117,7 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
         int month = date.get(Calendar.MONTH);
         int day = date.get(Calendar.DAY_OF_MONTH);
         String bestBeforeText = "";
-        if (!useDateProduced) {
+        if (!useDateProduced || defaultDate) {
             bestBeforeText += "Годен до:  ";
         }
 
