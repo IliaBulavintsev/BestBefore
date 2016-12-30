@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
             }).show();
             editor.putBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, false);
 
-            Calendar installedAt = new GregorianCalendar();
+            Calendar installedAt = Calendar.getInstance();
             int installDay = installedAt.get(Calendar.DAY_OF_MONTH);
             int installMonth = installedAt.get(Calendar.MONTH);
             int installYear = installedAt.get(Calendar.YEAR);
@@ -322,7 +322,8 @@ public class MainActivity extends AppCompatActivity {
         final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
         PrimaryDrawerItem allProducts = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_MAIN_GROUP)
-                .withName(mainGroupName);
+                .withName(mainGroupName)
+                .withIcon(GoogleMaterial.Icon.gmd_view_list);
 
 
 
@@ -330,7 +331,8 @@ public class MainActivity extends AppCompatActivity {
         final String overdueGroupName = sPrefs.getString(Resources.OVERDUED_GROUP_NAME, getString(R.string.overdue_products));
         PrimaryDrawerItem overdued = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_OVERDUED)
-                .withName(overdueGroupName);
+                .withName(overdueGroupName)
+                .withIcon(GoogleMaterial.Icon.gmd_history);
 
         PrimaryDrawerItem trash = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_TRASH)
@@ -408,7 +410,8 @@ public class MainActivity extends AppCompatActivity {
         for (Group group: userGroups) {
             PrimaryDrawerItem newItem = new PrimaryDrawerItem()
                     .withName(group.getName())
-                    .withIdentifier(group.getId());
+                    .withIdentifier(group.getId())
+                    .withIcon(GoogleMaterial.Icon.gmd_view_list);
             drawer.addItemAtPosition(newItem, drawerPosition++);
         }
         if (groupChoosen == Resources.ID_MAIN_GROUP) {
@@ -548,7 +551,8 @@ public class MainActivity extends AppCompatActivity {
         }
         PrimaryDrawerItem newItem = new PrimaryDrawerItem()
                 .withName(name)
-                .withIdentifier(id);
+                .withIdentifier(id)
+                .withIcon(GoogleMaterial.Icon.gmd_view_list);
         drawer.addItemAtPosition(newItem, drawerPosition);
         drawer.setSelectionAtPosition(drawerPosition);
         drawerPosition++;
@@ -1255,7 +1259,8 @@ public class MainActivity extends AppCompatActivity {
             editor.apply();
             newItem = new PrimaryDrawerItem()
                     .withName(result)
-                    .withIdentifier(Resources.ID_MAIN_GROUP);
+                    .withIdentifier(Resources.ID_MAIN_GROUP)
+                    .withIcon(GoogleMaterial.Icon.gmd_view_list);
         }
         else if (groupChoosen == Resources.ID_FOR_OVERDUED) {
             SharedPreferences.Editor editor = sPrefs.edit();
@@ -1263,7 +1268,8 @@ public class MainActivity extends AppCompatActivity {
             editor.apply();
             newItem = new PrimaryDrawerItem()
                     .withName(result)
-                    .withIdentifier(Resources.ID_FOR_OVERDUED);
+                    .withIdentifier(Resources.ID_FOR_OVERDUED)
+                    .withIcon(GoogleMaterial.Icon.gmd_history);
         }
         else {
             group = groupDAO.get(groupChoosen);
@@ -1271,7 +1277,8 @@ public class MainActivity extends AppCompatActivity {
             groupDAO.updateGroup(group);
             newItem = new PrimaryDrawerItem()
                     .withName(result)
-                    .withIdentifier(group.getId());
+                    .withIdentifier(group.getId())
+                    .withIcon(GoogleMaterial.Icon.gmd_view_list);
         }
 
 
