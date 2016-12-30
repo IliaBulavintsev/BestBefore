@@ -26,10 +26,10 @@
     <string name="help">Справка</string>
     <string name="notifications">Напоминания</string>
     <string name="whats_new_title">Что нового?</string>
-    <string name="whats_new">В приложении наконец-то можно группировать продукты по категориям. Не забудьте оценить приложение, если оно вам понравилось, а также писать свои пожелания :)</string>
+    <string name="whats_new">Удаленные продукты помещаеются в корзину. Переработан интерфейс, многое можно настроить</string>
     <string name="sort">Сортировка</string>
     <string name="last_overdue">Последние просроченные</string>
-    <string name="rate_app_msg">Вы не хотели бы оценить приложение в Google Play? Не стесняйтесь писать свои пожелания :)</string>
+    <string name="rate_app_msg">Вы не хотели бы оценить приложение в Google Play?</string>
     <string name="rate">Оценить</string>
     <string name="no">Нет</string>
     <string name="today_is_the_last_day">Сегодня последний день!</string>
@@ -124,4 +124,5 @@
     <string name="date_produced_attribute_summary">Всегда указывать дату производства продукта</string>
     <string name="ability_to_divide_into_groups">Возможность разделять на группы</string>
     <string name="groups">Группы</string>
+    <string name="error_parse_date">Ошибка при разборе введенной даты!</string>
 </resources>

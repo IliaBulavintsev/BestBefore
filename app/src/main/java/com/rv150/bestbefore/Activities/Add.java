@@ -60,8 +60,6 @@ public class Add extends AppCompatActivity {
     // For spinner with groups
     private int wasSelected = 0;
     // For clear only first time
-    private boolean dateProducedFirstTimeGetFocused = true;
-    private boolean okayBeforeFirstTimeGetFocused = true;
     private boolean quantityFirstTimeGetFocused = true;
 
     boolean showDateProduced;
@@ -186,13 +184,7 @@ public class Add extends AppCompatActivity {
         dateProducedET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus){
-                    if (dateProducedFirstTimeGetFocused) {
-                        dateProducedET.setText("");
-                        dateProducedFirstTimeGetFocused = false;
-                    }
-                }
-                else {
+                if(!hasFocus){
                     parseInputDate(dateProducedET.getText().toString(), dateProduced);
                 }
             }
@@ -200,15 +192,8 @@ public class Add extends AppCompatActivity {
         okayBeforeOrDaysET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus){
-                    if (okayBeforeFirstTimeGetFocused) {
-                        okayBeforeOrDaysET.setText("");
-                        okayBeforeFirstTimeGetFocused = false;
-                    }
-                }
-                else {
+                if(!hasFocus){
                     parseInputDate(okayBeforeOrDaysET.getText().toString(), okayBefore);
-                    int l = 4;
                 }
             }
         });
@@ -670,6 +655,9 @@ public class Add extends AppCompatActivity {
         }
         catch (Exception e) {
             Log.e(TAG, "Cannot parse input date: " + e.getMessage());
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.error_parse_date, Toast.LENGTH_SHORT);
+            toast.show();
             return false;
         }
     }
