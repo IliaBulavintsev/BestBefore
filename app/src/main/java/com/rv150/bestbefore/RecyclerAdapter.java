@@ -157,9 +157,6 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
             int quantity = item.getQuantity();
             String quantityStr = "Кол-во:  " + quantity + " " +
                     Add.Measures.values()[item.getMeasure()].getText();
-            if (quantity < 10) {
-                quantityStr += "  ";
-            }
             viewHolder.quantityTextView.setText(quantityStr);
         }
         else {
