@@ -9,6 +9,7 @@ public final class Resources {
     public static final String PREF_HOURS_NEEDED = "hours_needed_for_rate";
     public static final String PREF_SHOW_WELCOME_SCREEN = "showWelcomeScreen";
     public static final String PREF_SHOW_HELP_AFTER_FIRST_ADD = "showHelpForNewDesign";
+    public static final String PREF_SHOW_HELP_IN_ADD_ACTIVITY = "show_help_in_add_activity";
     public static final String PREF_INSTALL_DAY = "install_day";
     public static final String PREF_INSTALL_MONTH = "install_month";
     public static final String PREF_INSTALL_YEAR = "install_year";
@@ -38,8 +39,6 @@ public final class Resources {
     public static final String FRESH_TO_SPOILED = "FRESH_TO_SPOILED";
     public static final String BY_NAME = "BY_NAME";
     public static final String SHOW_OVERDUE_DIALOG = "needShowOverdue";
-    public static final String NAME = "name";
-    public static final String DATE = "date";
     public static final String QUANTITY = "quantity";
     public static final String GROUP_ID = "groupName";
     public static final int RC_ADD_ACTIVITY = 0;

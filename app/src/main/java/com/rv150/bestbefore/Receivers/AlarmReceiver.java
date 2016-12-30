@@ -12,7 +12,6 @@ import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.MyIntentService;
 
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by Ivan on 29.06.2016.

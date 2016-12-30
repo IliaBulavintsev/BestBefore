@@ -38,8 +38,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
-import javax.crypto.spec.IvParameterSpec;
-
 /**
  * Created by rv150 on 07.01.2016.
  */
@@ -180,8 +178,6 @@ public class Add extends AppCompatActivity {
 
 
 
-
-
         quantityET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -191,6 +187,21 @@ public class Add extends AppCompatActivity {
                 }
             }
         });
+
+
+        boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_IN_ADD_ACTIVITY, true);
+        if (showHelp) {
+            new AlertDialog.Builder(this).setTitle(R.string.help)
+                    .setMessage(R.string.help_in_add_activity)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
+            SharedPreferences.Editor editor = sPrefs.edit();
+            editor.putBoolean(Resources.PREF_SHOW_HELP_IN_ADD_ACTIVITY, false);
+            editor.apply();
+        }
     }
 
     @Override
