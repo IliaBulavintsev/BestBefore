@@ -168,33 +168,52 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             // Справка
-            boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW, true);
-            if (whatsNew) {
-                new AlertDialog.Builder(this).setTitle(R.string.whats_new_title)
-                        .setMessage(R.string.whats_new)
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
-                        .setNeutralButton(R.string.rate, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                rateApp();
-                            }
-                        })
-            .show();
+            boolean needCongratulate = sPrefs.getBoolean(Resources.CONGRATULATION, true);
+            if (needCongratulate) {
+                congratulate();
             }
             editor.remove(Resources.WHATS_NEW_OLD);
+            editor.putBoolean(Resources.CONGRATULATION, false);
+            editor.apply();
         }
 
-        editor.putBoolean(Resources.WHATS_NEW, false);
-        editor.apply();
+
 
         if (firstLaunch) {
             StatCollector.shareStatistic(this, "First launch ");
         }
         else {
             StatCollector.shareStatistic(this, "EMPTY :( ");
+        }
+    }
+
+    private void congratulate() {
+        Calendar now = Calendar.getInstance();
+
+        Calendar NY = Calendar.getInstance();
+        NY.set(2017, 0, 1, 0, 1);
+
+        Calendar christmas = Calendar.getInstance();
+        christmas.set(2017, 0, 7, 0, 1);
+
+        if (now.before(NY)) {
+            new AlertDialog.Builder(this).setTitle(R.string.on_coming)
+                    .setMessage(R.string.congratulation_text)
+                    .setPositiveButton(R.string.close, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .show();
+        } else if (NY.before(now) && now.before(christmas)) {
+            new AlertDialog.Builder(this)
+                    .setMessage(R.string.congratulation_text_after_ny)
+                    .setPositiveButton(R.string.close, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .show();
         }
     }
 

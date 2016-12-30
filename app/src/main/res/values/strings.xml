@@ -125,4 +125,8 @@
     <string name="ability_to_divide_into_groups">Возможность разделять на группы</string>
     <string name="groups">Группы</string>
     <string name="error_parse_date">Ошибка при разборе введенной даты!</string>
+    <string name="close">Закрыть</string>
+    <string name="on_coming">С наступающим!</string>
+    <string name="congratulation_text">Друзья! Поздравляю с наступающим Новым Годом! Пусть на столе всегда будет много вкусной, а главное свежей еды!</string>
+    <string name="congratulation_text_after_ny">Друзья! Поздравляю с Новым 2017 Годом, а также с наступающим Рождеством! Пусть на столе всегда будет много вкусной, а главное свежей еды!</string>
 </resources>
