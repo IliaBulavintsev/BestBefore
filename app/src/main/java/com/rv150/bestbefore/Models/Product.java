@@ -173,6 +173,9 @@ public class Product implements Parcelable {
         result.put("quantity", getQuantity());
         result.put("groupId", mGroupId);
         result.put("viewed", getViewed());
+        result.put("removed", mRemoved);
+        result.put("removedAt", mRemovedAt);
+        result.put("measure", measure);
         return result;
     }
 

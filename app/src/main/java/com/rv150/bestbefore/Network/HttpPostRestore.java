@@ -160,6 +160,9 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 final int quantity = item.getInt("quantity");
                 long groupId = item.getLong("groupId");
                 final int viewed = item.getInt("viewed");
+                int removed = item.getInt("removed");
+                long removedAt = item.getLong("removedAt");
+                int measure = item.getInt("measure");
                 Calendar date = Calendar.getInstance();
                 date.setTimeInMillis(dateInMillis);
                 // тк на сервере могут лежать старые данные еще до миграции, то
@@ -170,6 +173,9 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 createdAt.setTimeInMillis(createdAtInMillis);
                 Product product = new Product(name, date, createdAt, quantity, groupId);
                 product.setViewed(viewed);
+                product.setMeasure(measure);
+                product.setRemoved(removed);
+                product.setRemovedAt(removedAt);
                 products.add(product);
             }
 
