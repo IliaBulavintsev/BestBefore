@@ -7,24 +7,29 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.icu.util.Measure;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rv150.bestbefore.DAO.GroupDAO;
+import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Group;
+import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
@@ -32,75 +37,104 @@ import com.rv150.bestbefore.Services.DBHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
  * Created by rv150 on 07.01.2016.
  */
 public class Add extends AppCompatActivity {
-    private TextView chooseDate;
-    private TextView chooseDate2;
-    private TextView bestBeforeTxt;
-
     private AutoCompleteTextView enterName;
-    private TextView dateTV;
-    private EditText days;
+    private TextView dateProducedTV;
+    private EditText dateProducedET;
+    private ImageView dateProducedIV;
+    private TextView okayBeforeOrDaysTV;
+    private EditText okayBeforeOrDaysET;
+
     private EditText quantityET;
-    private RadioButton radio1;
-    private Spinner spinnerBestBefore;
+    private RadioButton radioDateProduced;
+    private ImageView okayBeforeIV;
+    private Spinner spinnerStorageLife;
     private Spinner spinnerGroups;
+    private Spinner spinnerQuantity;
 
     // For spinner with groups
-    int wasSelected = 0;
-    // For clear first time quantity ET
-    boolean isFirstTimeGetFocused = true;
+    private int wasSelected = 0;
+    // For clear only first time
+    private boolean quantityFirstTimeGetFocused = true;
 
-    private int DIALOG_DATE = 1;
+    boolean showDateProduced;
+
+    // Для отличия, какой date picker открыт
+    private boolean firstDialogOpened;
+
+    private final int DIALOG_DATE_PRODUCED = 1;
+    private final int DIALOG_OKAY_BEFORE = 2;
     private boolean isChanging = false;
     private String groupName;
-    private Calendar bestBefore;
+    private Calendar dateProduced;
+    private Calendar okayBefore;
 
-    DBHelper dbHelper;
-    SQLiteDatabase db;
-    Cursor cursor;
+    private DBHelper dbHelper;
 
-    GroupDAO groupDAO;
-    final List<String> groupNames = new ArrayList<>();
-    ArrayAdapter<String> spinnerGroupsAdapter;
+    private GroupDAO groupDAO;
+    private ProductDAO productDAO;
+    private final List<String> groupNames = new ArrayList<>();
+    private  ArrayAdapter<String> spinnerGroupsAdapter;
+    private SharedPreferences sPrefs;
 
+    private Product mProduct;
 
-
+    public static final String TAG = "Add activity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add);
-        TextView name = (TextView)findViewById(R.id.name);
-        chooseDate = (TextView)findViewById(R.id.chooseDate);
-        chooseDate2 = (TextView)findViewById(R.id.chooseDate2);
-        bestBeforeTxt = (TextView)findViewById(R.id.bestBefore);
-        spinnerBestBefore = (Spinner)findViewById(R.id.spinner);
-        enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
-        dateTV = (TextView)findViewById(R.id.date);
-        days = (EditText)findViewById(R.id.days);
-        quantityET = (EditText) findViewById(R.id.enterQuantity);
-        quantityET.setText("1");
-        spinnerGroups = (Spinner) findViewById(R.id.spinner_groups);;
-        radio1 = (RadioButton)findViewById(R.id.radioButton1);
 
-        String[] spinnerItems = new String[]{
+        enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
+        dateProducedTV = (TextView) findViewById(R.id.date_produced_TV);
+        dateProducedET = (EditText) findViewById(R.id.date_produced_ET);
+        dateProducedIV = (ImageView) findViewById(R.id.date_produced_IV);
+        okayBeforeOrDaysTV = (TextView) findViewById(R.id.best_before_or_days_TV);
+        okayBeforeOrDaysET = (EditText) findViewById(R.id.best_before_or_days_ET);
+        okayBeforeIV = (ImageView) findViewById(R.id.okay_before_IV);
+
+        spinnerStorageLife = (Spinner)findViewById(R.id.spinner_storage_life);
+
+        quantityET = (EditText) findViewById(R.id.quantityET);
+        quantityET.setText("1");
+        spinnerGroups = (Spinner) findViewById(R.id.spinner_groups);
+        radioDateProduced = (RadioButton)findViewById(R.id.radioButtonDateProduced);
+
+        spinnerQuantity = (Spinner) findViewById(R.id.spinner_quantity);
+
+        String[] terms = new String[]{
                 getString(R.string.days_in_add_act),
                 getString(R.string.months_in_add_act)};
         ArrayAdapter<String> spinnerAdapter =
-                new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, spinnerItems);
+                new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, terms);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerBestBefore.setAdapter(spinnerAdapter);
+        spinnerStorageLife.setAdapter(spinnerAdapter);
 
+        int size = Measures.values().length;
+        String[] measures = new String[size];
+        for (int i = 0; i < size; ++i) {
+            measures[i] = Measures.values()[i].getText();
+        }
+
+        ArrayAdapter<String> spinnerQuantityAdapter =
+                new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, measures);
+        spinnerQuantityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerQuantity.setAdapter(spinnerQuantityAdapter);
+
+        sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         groupDAO = new GroupDAO(getApplicationContext());
+        productDAO = new ProductDAO(getApplicationContext());
         dbHelper = new DBHelper(getApplicationContext());
-        bestBefore = new GregorianCalendar();
+
+        okayBefore = Calendar.getInstance();
+        dateProduced = Calendar.getInstance();
 
         SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -136,43 +170,87 @@ public class Add extends AppCompatActivity {
             }
         });
 
+        showDateProduced = sPrefs.getBoolean("use_date_produced", true);
+        if (!showDateProduced) {
+            dateProducedTV.setVisibility(View.GONE);
+            dateProducedET.setVisibility(View.GONE);
+            dateProducedIV.setVisibility(View.GONE);
+        }
+
+        boolean showQuantity = sPrefs.getBoolean("use_quantity", true);
+        if (!showQuantity) {
+            TextView quantityTV = (TextView) findViewById(R.id.quantityTV);
+            quantityTV.setVisibility(View.GONE);
+            quantityET.setVisibility(View.GONE);
+        }
+
+        boolean useGroups = sPrefs.getBoolean("use_groups", true);
+        if (!useGroups) {
+            TextView groupTV = (TextView) findViewById(R.id.groupTV);
+            groupTV.setVisibility(View.GONE);
+            spinnerGroups.setVisibility(View.GONE);
+        }
+
+
 
         quantityET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus && isFirstTimeGetFocused){
+                if(hasFocus && quantityFirstTimeGetFocused){
                     quantityET.setText("");
-                    isFirstTimeGetFocused = false;
+                    quantityFirstTimeGetFocused = false;
                 }
             }
         });
+
+
+        boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_IN_ADD_ACTIVITY, true);
+        if (showHelp) {
+            new AlertDialog.Builder(this).setTitle(R.string.help)
+                    .setMessage(R.string.help_in_add_activity)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
+            SharedPreferences.Editor editor = sPrefs.edit();
+            editor.putBoolean(Resources.PREF_SHOW_HELP_IN_ADD_ACTIVITY, false);
+            editor.apply();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        // Показать сразу "годен до"
-        chooseDate2.setVisibility(View.VISIBLE);
-        chooseDate2.setText(R.string.chooseDateOfExpiry2);
-        chooseDate.setVisibility(View.VISIBLE);
-        chooseDate.setText(R.string.chooseDateOfExpiry);
-        bestBeforeTxt.setVisibility(View.INVISIBLE);
-        spinnerBestBefore.setVisibility(View.INVISIBLE);
-        days.setVisibility(View.INVISIBLE);
-
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            groupName = extras.getString(Resources.GROUP_NAME);
-            String nameStr = extras.getString("name");
-            if (nameStr != null) {          // Изменение продукта
+            mProduct = extras.getParcelable(Product.class.getName());
+            if (mProduct != null) {          // Изменение продукта
                 isChanging = true;
                 setTitle(R.string.changing_product);
-                enterName.setText(nameStr);
-                bestBefore = (Calendar) extras.get(Resources.DATE);
-                int quantity = extras.getInt(Resources.QUANTITY);
-                quantityET.setText(String.valueOf(quantity));
+                enterName.setText(mProduct.getTitle());
+                okayBefore = mProduct.getDate();
+                dateProduced = mProduct.getProduced();
+                quantityET.setText(String.valueOf(mProduct.getQuantity()));
+                long groupId = mProduct.getGroupId();
+                if (groupId != -1) {
+                    Group group = groupDAO.get(groupId);
+                    groupName = group.getName();
+                }
+                int measure = mProduct.getMeasure();
+                spinnerQuantity.setSelection(measure);
             }
+            else {
+                mProduct = new Product();
+                long groupId = extras.getLong(Resources.GROUP_ID, Resources.ID_MAIN_GROUP);
+                if (groupId != Resources.ID_MAIN_GROUP) {
+                    Group group = groupDAO.get(groupId);
+                    groupName = group.getName();
+                }
+            }
+        }
+        else {
+            mProduct = new Product();
         }
 
         if (groupName != null) {
@@ -181,7 +259,8 @@ public class Add extends AppCompatActivity {
         }
 
 
-        setDateText(bestBefore); // Установка нужной даты в TextView
+        setDateText(dateProduced, dateProducedET);
+        setDateText(okayBefore, okayBeforeOrDaysET); // Установка нужной даты в TextView
 
         String [] popularProducts = {
                 "баранина",
@@ -273,8 +352,8 @@ public class Add extends AppCompatActivity {
                 DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME + " ASC";
 
         //получаем данные из бд
-        db = dbHelper.getReadableDatabase();
-        cursor = db.query(
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.query(
                 DBHelper.AutoCompletedProducts.TABLE_NAME, // The table to query
                 projection,                               // The columns to return
                 null,                                   // The columns for the WHERE clause
@@ -310,10 +389,16 @@ public class Add extends AppCompatActivity {
 
 
     protected Dialog onCreateDialog(int id) {
-        if (id == DIALOG_DATE) {
-            int year = bestBefore.get(Calendar.YEAR);
-            int month = bestBefore.get(Calendar.MONTH);
-            int day = bestBefore.get(Calendar.DAY_OF_MONTH);
+        if (id == DIALOG_DATE_PRODUCED) {
+            int year = dateProduced.get(Calendar.YEAR);
+            int month = dateProduced.get(Calendar.MONTH);
+            int day = dateProduced.get(Calendar.DAY_OF_MONTH);
+            return new DatePickerDialog(this, myCallBack, year, month, day);
+        }
+        if (id == DIALOG_OKAY_BEFORE) {
+            int year = okayBefore.get(Calendar.YEAR);
+            int month = okayBefore.get(Calendar.MONTH);
+            int day = okayBefore.get(Calendar.DAY_OF_MONTH);
             return new DatePickerDialog(this, myCallBack, year, month, day);
         }
         return super.onCreateDialog(id);
@@ -322,64 +407,103 @@ public class Add extends AppCompatActivity {
 
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
-            bestBefore.set(Calendar.YEAR, year);
-            bestBefore.set(Calendar.MONTH, monthOfYear);
-            bestBefore.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            setDateText(bestBefore);
+            if (firstDialogOpened) {    // Установка даты изготовления
+                dateProduced.set(Calendar.YEAR, year);
+                dateProduced.set(Calendar.MONTH, monthOfYear);
+                dateProduced.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                setDateText(dateProduced, dateProducedET);
+            }
+            else {  // Установка "годен до"
+                okayBefore.set(Calendar.YEAR, year);
+                okayBefore.set(Calendar.MONTH, monthOfYear);
+                okayBefore.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                setDateText(okayBefore, okayBeforeOrDaysET);
+            }
         }
     };
 
 
-    public void onDateClick(View view) {
-        showDialog(DIALOG_DATE);
+    public void onDateProducedClick(View view) {
+        firstDialogOpened = true;
+        showDialog(DIALOG_DATE_PRODUCED);
+    }
+    public void onOkayBeforeClick(View view)
+    {
+        firstDialogOpened = false;
+        showDialog(DIALOG_OKAY_BEFORE);
     }
 
-    public void onRadioOneClick(View view) {
-        bestBeforeTxt.setVisibility(View.VISIBLE);
-        days.setVisibility(View.VISIBLE);
-        chooseDate2.setText(R.string.chooseDateOfMan);
-        chooseDate.setVisibility(View.INVISIBLE);
-        spinnerBestBefore.setVisibility(View.VISIBLE);
+
+
+    public void onRadioOkayBeforeClick(View view) {
+        okayBeforeOrDaysTV.setText(R.string.okayBefore);
+        okayBeforeOrDaysET.setHint(R.string.dateFormat);
+        setDateText(okayBefore, okayBeforeOrDaysET);
+        spinnerStorageLife.setVisibility(View.GONE);
+        okayBeforeIV.setVisibility(View.VISIBLE);
+        if (!showDateProduced) {
+            dateProducedTV.setVisibility(View.GONE);
+            dateProducedET.setVisibility(View.GONE);
+            dateProducedIV.setVisibility(View.GONE);
+        }
     }
 
-    public void onRadioTwoClick(View view) {
-        chooseDate2.setVisibility(View.VISIBLE);
-        chooseDate2.setText(R.string.chooseDateOfExpiry2);
-        chooseDate.setVisibility(View.VISIBLE);
-        chooseDate.setText(R.string.chooseDateOfExpiry);
-        bestBeforeTxt.setVisibility(View.INVISIBLE);
-        spinnerBestBefore.setVisibility(View.INVISIBLE);
-        days.setVisibility(View.INVISIBLE);
+    public void onRadioDateManClick(View view) {
+        okayBeforeOrDaysTV.setText(R.string.bestBefore);
+        okayBeforeOrDaysET.setHint("");
+        okayBeforeOrDaysET.setText("");
+        spinnerStorageLife.setVisibility(View.VISIBLE);
+        okayBeforeIV.setVisibility(View.GONE);
+        dateProducedTV.setVisibility(View.VISIBLE);
+        dateProducedET.setVisibility(View.VISIBLE);
+        dateProducedIV.setVisibility(View.VISIBLE);
     }
+
+
+
+
 
     public void onSaveClick(View view) {
         if ((enterName.getText().toString().equals("")) ||
-                (radio1.isChecked() && days.getText().toString().equals(""))
-                || quantityET.getText().toString().equals("")) {
+                (dateProducedET.getVisibility() != View.GONE &&
+                        dateProducedET.getText().toString().equals("")) ||
+                okayBeforeOrDaysET.getText().toString().equals("")
+                || (quantityET.getVisibility() != View.GONE &&
+                quantityET.getText().toString().equals(""))) {
             Toast toast = Toast.makeText(getApplicationContext(),
                     R.string.please_fill_all_fields, Toast.LENGTH_SHORT);
             toast.show();
             return;
         }
 
+        // Чтение из полей ввода
+        boolean isOk = parseInputDate(dateProducedET.getText().toString(), dateProduced);
+        if (!radioDateProduced.isChecked()) {
+            isOk = isOk & parseInputDate(okayBeforeOrDaysET.getText().toString(), okayBefore);
+        }
 
-        Calendar currentDate = new GregorianCalendar();
+        if (!isOk) {
+            return;
+        }
 
-        String text_spinner = spinnerBestBefore.getSelectedItem().toString();
+
+
+        String text_spinner = spinnerStorageLife.getSelectedItem().toString();
         boolean is_days = text_spinner.equals(getString(R.string.days_in_add_act));
 
+        Calendar currentDate = Calendar.getInstance();
+        // Проверка "Даты изготовления"
+        if (dateProducedET.getVisibility() != View.GONE && compare(dateProduced, currentDate) > 0) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.wrong_date, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
 
-
-
-        if (radio1.isChecked()) {
-            if (compare(bestBefore, currentDate) > 0) {
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        R.string.wrong_date, Toast.LENGTH_SHORT);
-                toast.show();
-                return;
-            }
-
-            double term = Double.parseDouble(days.getText().toString());
+        // Выбрано "Дата изготовления"
+        // dateProduced ВСЕГДА хранит дату изготовления, дата окончания в okayBefore
+        if (radioDateProduced.isChecked()) {
+            double term = Double.parseDouble(okayBeforeOrDaysET.getText().toString());
             if (term <= 0 || term % 0.5 != 0) {
                 Toast toast = Toast.makeText(getApplicationContext(),
                         R.string.wrong_best_before, Toast.LENGTH_SHORT);
@@ -387,33 +511,35 @@ public class Add extends AppCompatActivity {
                 return;
             }
 
+            okayBefore = (Calendar) dateProduced.clone();
             if (is_days) {
-                bestBefore.add(Calendar.DAY_OF_MONTH, (int) term);
+                okayBefore.add(Calendar.DAY_OF_MONTH, (int) term);
             }
             else {
-                bestBefore.add(Calendar.MONTH,  (int) term);
+                okayBefore.add(Calendar.MONTH,  (int) term);
                 if (term % 1 != 0 ) { // Если есть еще половинка
-                    int daysInMonth = bestBefore.getActualMaximum(Calendar.DAY_OF_MONTH);
-                    bestBefore.add(Calendar.DAY_OF_MONTH, daysInMonth / 2);
+                    int daysInMonth = okayBefore.getActualMaximum(Calendar.DAY_OF_MONTH);
+                    okayBefore.add(Calendar.DAY_OF_MONTH, daysInMonth / 2);
                 }
             }
 
-            if (compare(bestBefore, currentDate) < 0) {
+            if (compare(okayBefore, currentDate) < 0) {
                 Toast toast = Toast.makeText(getApplicationContext(),
                         R.string.product_is_expired, Toast.LENGTH_SHORT);
                 toast.show();
                 return;
             }
         }
-
         else {
-            if (compare(bestBefore, currentDate) < 0) {
+            if (compare(okayBefore, currentDate) < 0) {
                 Toast toast = Toast.makeText(getApplicationContext(),
                         R.string.wrong_date, Toast.LENGTH_SHORT);
                 toast.show();
                 return;
             }
         }
+        okayBefore.set(Calendar.HOUR_OF_DAY, 23);
+        okayBefore.set(Calendar.MINUTE, 59);
 
         final int quantity = Integer.parseInt(quantityET.getText().toString());
         if (quantity <= 0) {
@@ -424,23 +550,50 @@ public class Add extends AppCompatActivity {
         }
 
 
-        Intent intent = new Intent();
+
         String name = enterName.getText().toString();
         name = name.substring(0, 1).toUpperCase() + name.substring(1);
-        intent.putExtra(Resources.NAME, name);
-        bestBefore.set(Calendar.HOUR_OF_DAY, 23);
-        bestBefore.set(Calendar.MINUTE, 59);
-        intent.putExtra(Resources.DATE, bestBefore);
-        intent.putExtra(Resources.QUANTITY, quantity);
 
         groupName = spinnerGroups.getSelectedItem().toString();
-        intent.putExtra(Resources.GROUP_NAME, groupName);
+        long groupId;
+        final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
+        if (groupName.equals(mainGroupName)) {
+            groupId = -1;
+        }
+        else {
+            Group group = groupDAO.get(groupName);
+            groupId = group.getId();
+        }
+
+        mProduct.setTitle(name);
+
+        // Если есть поле "Дата производства"
+        if (dateProducedET.getVisibility() != View.GONE) {
+            mProduct.setProduced(dateProduced);
+        }
+
+        mProduct.setDate(okayBefore);
+        mProduct.setQuantity(quantity);
+
+
+        String choosenMeasure = spinnerQuantity.getSelectedItem().toString();
+        int measureValue = Measures.fromString(choosenMeasure).ordinal();
+        mProduct.setMeasure(measureValue);
+
+        mProduct.setGroupId(groupId);
+
+
+        Intent intent = new Intent();
         if (isChanging) {
+            productDAO.updateProduct(mProduct);
             setResult(Resources.RESULT_MODIFY, intent);   // Изменениe
         }
         else {
+            long id = productDAO.insertProduct(mProduct);
+            mProduct.setId(id);
             setResult(Resources.RESULT_ADD, intent);   // Добавление
         }
+        intent.putExtra(Product.class.getName(), mProduct);
         finish();
     }
 
@@ -456,15 +609,15 @@ public class Add extends AppCompatActivity {
         return d1.get(Calendar.DAY_OF_MONTH) - d2.get(Calendar.DAY_OF_MONTH);
     }
 
-    private void setDateText(Calendar calendar) {
+    private void setDateText(Calendar calendar, EditText editText) {
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         if (month < 9) {
-            dateTV.setText(day + "." + "0" + (month + 1) + "." + year);
+            editText.setText(day + "." + "0" + (month + 1) + "." + year);
         }
         else {
-            dateTV.setText(day + "." + (month + 1) + "." + year);
+            editText.setText(day + "." + (month + 1) + "." + year);
         }
     }
 
@@ -522,6 +675,52 @@ public class Add extends AppCompatActivity {
         int count = spinnerGroupsAdapter.getCount();
         spinnerGroupsAdapter.insert(name, count - 1);
         spinnerGroupsAdapter.notifyDataSetChanged();
+    }
+
+    private boolean parseInputDate(String text, Calendar calendar) {
+        try {
+            String[] parsed = text.split("(\\.)|(-)");
+            int day = Integer.valueOf(parsed[0]);
+            int month = Integer.valueOf(parsed[1]);
+            int year = Integer.valueOf(parsed[2]);
+            calendar.setLenient(false);
+            calendar.set(year, month - 1, day);
+            calendar.getTime();
+            return true;
+        }
+        catch (Exception e) {
+            Log.e(TAG, "Cannot parse input date: " + e.getMessage());
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.error_parse_date, Toast.LENGTH_SHORT);
+            toast.show();
+            return false;
+        }
+    }
+
+    public enum Measures {
+        PIECE("шт"),
+        KG("кг"),
+        G("г"),
+        L("л"),
+        ML("мл");
+        private String text;
+        Measures(String text) {
+            this.text = text;
+        }
+        public String getText() {
+            return this.text;
+        }
+
+        public static Measures fromString(String text) {
+            if (text != null) {
+                for (Measures b : Measures.values()) {
+                    if (text.equalsIgnoreCase(b.text)) {
+                        return b;
+                    }
+                }
+            }
+            return null;
+        }
     }
 }
 

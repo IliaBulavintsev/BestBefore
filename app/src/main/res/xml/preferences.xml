@@ -4,8 +4,7 @@
 
         <PreferenceScreen
             android:key="open_notifications"
-            android:title="@string/notifications"
-            android:persistent="false">
+            android:title="@string/notifications">
             <PreferenceCategory
                 android:title="Первое напоминание"
                 android:key="first_group">
@@ -136,11 +135,32 @@
         </PreferenceScreen>
 
 
+    <PreferenceScreen
+        android:key="interface_settings"
+        android:title="@string/interface_settings">
+        <CheckBoxPreference
+            android:key="use_quantity"
+            android:title="@string/quantity_attribute"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="use_date_produced"
+            android:title="@string/date_produced_attribute"
+            android:summary="@string/date_produced_attribute_summary"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="use_groups"
+            android:title="@string/groups"
+            android:summary="@string/ability_to_divide_into_groups"
+            android:defaultValue="true" />
+
+
+    </PreferenceScreen>
+
 
 
     <com.rv150.bestbefore.Preferences.ListPreferenceWithSummary
-        android:entries="@array/listArray"
-        android:entryValues="@array/listValues"
+        android:entries="@array/sortOptions"
+        android:entryValues="@array/sortValues"
         android:key="how_to_sort"
         android:title="@string/sort"
         android:defaultValue="SPOILED_TO_FRESH">
@@ -173,9 +193,6 @@
             android:key="backup" />
         <Preference
             android:title="@string/restore"
-            android:key="restore" />
-        <Preference
-            android:title="Восстановить данные со старого сервера"
             android:key="restore_deprecated" />
     </PreferenceScreen>
 

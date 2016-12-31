@@ -8,7 +8,6 @@
     <string name="enterName">Введите название продукта</string>
     <string name="dateOfMan">Дата изготовления</string>
     <string name="okayBefore">Годен до</string>
-    <string name="chooseDateOfMan">Дата изготовления</string>
     <string name="chooseDateOfExpiry">Дата окончания</string>
     <string name="chooseDateOfExpiry2">срока годности</string>
     <string name="chooseBestBefore">Укажите срок хранения (в сутках)</string>
@@ -18,7 +17,7 @@
     <string name="cancel">Отмена</string>
     <string name="notificationTime">17:00</string>
     <string name="welcomeTitle">Добрый день!</string>
-    <string name="welcomeText">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продукта в 17:00. Настроить напоминания, сортировку, а также сделать резервную копию данных можно в настройках. \nХорошего дня! </string>
+    <string name="welcomeText">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продукта в 17:00. Настроить напоминания, сортировку и формат отображения можно в настройках. \nХорошего дня! </string>
     <string name="overdue_products">Просроченные продукты</string>
     <string name="list_is_empty">Список пуст!</string>
     <string name="clear_list">Очистить список</string>
@@ -27,16 +26,15 @@
     <string name="help">Справка</string>
     <string name="notifications">Напоминания</string>
     <string name="whats_new_title">Что нового?</string>
-    <string name="whats_new">В приложении наконец-то можно группировать продукты по категориям. Не забудьте оценить приложение, если оно вам понравилось, а также писать свои пожелания :)</string>
     <string name="sort">Сортировка</string>
     <string name="last_overdue">Последние просроченные</string>
-    <string name="rate_app_msg">Вы не хотели бы оценить приложение в Google Play? Не стесняйтесь писать свои пожелания :)</string>
+    <string name="rate_app_msg">Вы не хотели бы оценить приложение в Google Play?</string>
     <string name="rate">Оценить</string>
     <string name="no">Нет</string>
     <string name="today_is_the_last_day">Сегодня последний день!</string>
     <string name="please_fill_all_fields">Заполните все поля!</string>
     <string name="wrong_date">Неверная дата!</string>
-    <string name="wrong_best_before">Неверный срок хранения!</string>
+    <string name="wrong_best_before">Неверный срок хранения! Разрешены натуральные числа, а также дроби с округлением до 0.5</string>
     <string name="product_is_expired">Товар просрочен!</string>
 
 
@@ -70,8 +68,8 @@
     <string name="error_timeout">Превышено время ожидания ответа</string>
     <string name="restore_failed">Ошибка при восстановлении данных</string>
     <string name="data_not_found">Данные не найдены</string>
-    <string name="help_add">Число справа означает количество оставшихся полных дней до конца срока. Чтобы удалить продукт, потяните его в левую сторону. Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
-    <string name="help_add_for_old_users">Внимание! Все настройки уведомлений сдвинулись на день в связи с другим подсчетом дней, пожалуйста, проверьте текущие настройки напоминаний! \nО новом интерфейсе: число справа означает количество оставшихся полных дней до конца срока. Чтобы удалить продукт, потяните его в левую сторону. </string>
+    <string name="help_add">Число справа означает количество оставшихся полных дней до конца срока. Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
+    <string name="help_add_with_last_day">Число справа означает количество оставшихся полных дней до конца срока (восклицательный знак означает, что сегодня последний день). Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
     <string name="warning">Внимание</string>
     <string name="do_you_want_to_overwite_existing">Вы хотите перезаписать существующие данные данными с сервера?</string>
     <string name="yes">Да</string>
@@ -115,4 +113,20 @@
     <string name="product_has_been_saved">Продукт сохранен</string>
     <string name="do_you_want_to_make_backup">Сохранить данные на сервере?</string>
     <string name="sync_with_google_deprecated">Синхронизация (старый способ)</string>
+    <string name="trash">Корзина</string>
+    <string name="want_restore_this_product">Вы хотите восстановить этот продукт?</string>
+    <string name="product_has_been_restored">Продукт восстановлен</string>
+    <string name="dateFormat">DD.MM.YYYY</string>
+    <string name="quantity_attribute">Атрибут Количество</string>
+    <string name="interface_settings">Настройки отображения</string>
+    <string name="date_produced_attribute">Атрибут Дата изготовления</string>
+    <string name="date_produced_attribute_summary">Всегда указывать дату производства продукта</string>
+    <string name="ability_to_divide_into_groups">Возможность разделять на группы</string>
+    <string name="groups">Группы</string>
+    <string name="error_parse_date">Ошибка при разборе введенной даты!</string>
+    <string name="close">Закрыть</string>
+    <string name="on_coming">С наступающим!</string>
+    <string name="congratulation_text">Друзья! Поздравляю с наступающим Новым Годом! Пусть на столе всегда будет много вкусной, а главное свежей еды! Ура!</string>
+    <string name="congratulation_text_after_ny">Друзья! Поздравляю с Новым 2017 Годом, а также с наступающим Рождеством! Пусть у вас на столе всегда будет много вкусной, а главное свежей еды!</string>
+    <string name="help_in_add_activity">Дату можно ввести в формате DD-MM-YYYY или DD.MM.YYYY, либо воспользоваться виджетом. Лишние атрибуты можно отключить в настройках.</string>
 </resources>

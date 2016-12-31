@@ -24,16 +24,20 @@ public class DBHelper extends SQLiteOpenHelper {
     public static class Product implements BaseColumns {
         public static final String TABLE_NAME = "product";
         public static final String COLUMN_NAME_NAME = "name";
+        public static final String COLUMN_NAME_PRODUCED = "produced";
         public static final String COLUMN_NAME_DATE = "date";
         public static final String COLUMN_NAME_CREATED_AT = "created_at";
         public static final String COLUMN_NAME_QUANTITY = "quantity";
         public static final String COLUMN_NAME_GROUP_ID = "group_id";
         public static final String COLUMN_NAME_VIEWED = "viewed";
+        public static final String COLUMN_NAME_REMOVED = "removed";
+        public static final String COLUMN_NAME_REMOVED_AT = "removed_at";
+        public static final String COLUMN_NAME_MEASURE = "measure";
     }
 
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 4;
-    public static final String DATABASE_NAME = "BestBefore.db";
+    private static final int DATABASE_VERSION = 6;
+    private static final String DATABASE_NAME = "BestBefore.db";
 
     private static final String SQL_CREATE_AUTOCOMPLETED_TABLE  =
             "CREATE TABLE " + AutoCompletedProducts.TABLE_NAME + " (" +
@@ -49,11 +53,15 @@ public class DBHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + Product.TABLE_NAME + " (" +
                     Product._ID + " INTEGER PRIMARY KEY," +
                     Product.COLUMN_NAME_NAME + " VARCHAR(100) NOT NULL, " +
+                    Product.COLUMN_NAME_PRODUCED + " INTEGER DEFAULT 0," +
                     Product.COLUMN_NAME_DATE + " INTEGER NOT NULL," +
                     Product.COLUMN_NAME_CREATED_AT + " INTEGER NOT NULL," +
                     Product.COLUMN_NAME_QUANTITY + " INTEGER DEFAULT 1," +
                     Product.COLUMN_NAME_GROUP_ID + " INTEGER," +
                     Product.COLUMN_NAME_VIEWED + " INTEGER DEFAULT 0," +
+                    Product.COLUMN_NAME_REMOVED + " INTEGER DEFAULT 0," +
+                    Product.COLUMN_NAME_REMOVED_AT + " INTEGER DEFAULT 0," +
+                    Product.COLUMN_NAME_MEASURE + " INTEGER DEFAULT 0," +
                     "FOREIGN KEY (" + Product.COLUMN_NAME_GROUP_ID + ") REFERENCES " +
                     Group.TABLE_NAME + "(" + Group._ID + ") ON DELETE CASCADE)";
 
@@ -70,8 +78,27 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(SQL_CREATE_GROUP_TABLE);
-        db.execSQL(SQL_CREATE_PRODUCT_TABLE);
+        switch (oldVersion) {
+            case 1:
+            case 2:
+            case 3: {
+                db.execSQL(SQL_CREATE_GROUP_TABLE);
+                db.execSQL(SQL_CREATE_PRODUCT_TABLE);
+            }
+            case 4:
+                db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
+                        " ADD COLUMN " + Product.COLUMN_NAME_REMOVED + " INTEGER DEFAULT 0");
+                db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
+                        " ADD COLUMN " + Product.COLUMN_NAME_REMOVED_AT + " INTEGER DEFAULT 0");
+                db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
+                        " ADD COLUMN " + Product.COLUMN_NAME_PRODUCED + " INTEGER DEFAULT 0");
+            case 5:
+                db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
+                        " ADD COLUMN " + Product.COLUMN_NAME_MEASURE + " INTEGER DEFAULT 0");
+                break;
+            default:
+                break;
+        }
     }
 
     @Override

@@ -12,7 +12,6 @@ import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.MyIntentService;
 
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by Ivan on 29.06.2016.
@@ -97,9 +96,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             calendar.set(Calendar.HOUR_OF_DAY, hour);
             calendar.set(Calendar.MINUTE, minute);
 
-            Date dat = new Date();// initializes to now
             Calendar cal_now = Calendar.getInstance();
-            cal_now.setTime(dat);
             if (calendar.before(cal_now)) {// if its in the past increment
                 calendar.add(Calendar.DATE, 1);
             }
@@ -118,9 +115,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             calendar.set(Calendar.HOUR_OF_DAY, hour);
             calendar.set(Calendar.MINUTE, minute);
 
-            Date dat = new Date();// initializes to now
             Calendar cal_now = Calendar.getInstance();
-            cal_now.setTime(dat);
             if (calendar.before(cal_now)) {// if its in the past increment
                 calendar.add(Calendar.DATE, 1);
             }
@@ -140,9 +135,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             calendar.set(Calendar.HOUR_OF_DAY, hour);
             calendar.set(Calendar.MINUTE, minute);
 
-            Date dat = new Date();// initializes to now
             Calendar cal_now = Calendar.getInstance();
-            cal_now.setTime(dat);
             if (calendar.before(cal_now)) {// if its in the past increment
                 calendar.add(Calendar.DATE, 1);
             }
@@ -160,9 +153,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             calendar.set(Calendar.HOUR_OF_DAY, hour);
             calendar.set(Calendar.MINUTE, minute);
 
-            Date dat = new Date();// initializes to now
             Calendar cal_now = Calendar.getInstance();
-            cal_now.setTime(dat);
             if (calendar.before(cal_now)) {// if its in the past increment
                 calendar.add(Calendar.DATE, 1);
             }
@@ -180,9 +171,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             calendar.set(Calendar.HOUR_OF_DAY, hour);
             calendar.set(Calendar.MINUTE, minute);
 
-            Date dat = new Date();// initializes to now
             Calendar cal_now = Calendar.getInstance();
-            cal_now.setTime(dat);
             if (calendar.before(cal_now)) {// if its in the past increment
                 calendar.add(Calendar.DATE, 1);
             }

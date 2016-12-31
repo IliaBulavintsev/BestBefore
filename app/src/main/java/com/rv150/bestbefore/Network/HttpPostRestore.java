@@ -30,7 +30,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,24 +158,24 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 final long dateInMillis = item.getLong("date");
                 final long createdAtInMillis = item.getLong("createdAt");
                 final int quantity = item.getInt("quantity");
-                Long groupId = item.getLong("groupId");
+                long groupId = item.getLong("groupId");
                 final int viewed = item.getInt("viewed");
-                if (groupId == -1) {
-                    groupId = null;
-                }
-                Calendar date = new GregorianCalendar();
+                int removed = item.getInt("removed");
+                long removedAt = item.getLong("removedAt");
+                int measure = item.getInt("measure");
+                Calendar date = Calendar.getInstance();
                 date.setTimeInMillis(dateInMillis);
                 // тк на сервере могут лежать старые данные еще до миграции, то
                 date.set(Calendar.HOUR_OF_DAY, 23);
                 date.set(Calendar.MINUTE, 59);
 
-                Calendar createdAt = new GregorianCalendar();
+                Calendar createdAt = Calendar.getInstance();
                 createdAt.setTimeInMillis(createdAtInMillis);
                 Product product = new Product(name, date, createdAt, quantity, groupId);
                 product.setViewed(viewed);
-
-                // тк на сервере могут лежать старые данные еще до миграции, то
-
+                product.setMeasure(measure);
+                product.setRemoved(removed);
+                product.setRemovedAt(removedAt);
                 products.add(product);
             }
 
@@ -234,8 +233,8 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
         }
 
         for (Product product: products) {
-            Long oldGroupId = product.getGroupId();
-            if (oldGroupId != null) {
+            long oldGroupId = product.getGroupId();
+            if (oldGroupId != -1) {
                 long newGroupId =  oldIdToNew.get(oldGroupId);
                 product.setGroupId(newGroupId);
             }

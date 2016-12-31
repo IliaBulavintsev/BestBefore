@@ -26,7 +26,8 @@
         android:layout_marginBottom="5dp"
         />
 
-    <LinearLayout
+
+    <RelativeLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -34,44 +35,35 @@
         <TextView
             android:id="@+id/item_date_created"
             android:textSize="14sp"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:textAlignment="textStart"
-            android:layout_gravity="start"
+
             />
 
-        <TextView
-            android:textSize="14sp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="-"
-            android:layout_weight="1"
-            android:textAlignment="textStart"
-            android:layout_gravity="start"
-            />
 
         <TextView
             android:id="@+id/item_best_before"
             android:textSize="14sp"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:textAlignment="textStart"
-            android:layout_gravity="start" />
+            android:layout_toRightOf="@id/item_date_created"
+            android:layout_toEndOf="@id/item_date_created"
+            />
 
 
         <TextView
             android:id="@+id/item_quantity"
             android:textSize="14sp"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="10"
-            android:textAlignment="center"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="25dp"
+            android:layout_marginEnd="25dp"
             />
 
-        </LinearLayout>
-        </LinearLayout>
+        </RelativeLayout>
+    </LinearLayout>
 
 
 

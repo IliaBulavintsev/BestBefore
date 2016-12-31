@@ -13,7 +13,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -35,6 +34,7 @@ public class StatCollector {
         try {
 
             result.put("deviceId", deviceId);
+            result.put("version", 21);
 
 
 
@@ -58,7 +58,8 @@ public class StatCollector {
                     name += " (" + message + ")";
                 }
                 final Product costyl =
-                        new Product(name, new GregorianCalendar(), 1, null);
+                        new Product();
+                costyl.setTitle(name);
                 productsArray.put(costyl.getJSON());
             }
 
