@@ -7,12 +7,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.icu.util.Measure;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Created by rv150 on 07.01.2016.
@@ -85,6 +87,14 @@ public class Add extends AppCompatActivity {
     private Product mProduct;
 
     public static final String TAG = "Add activity";
+
+    private boolean flagForDateProduced = true;
+    private int previousDateProducedLength = 0;
+    private boolean isDateProducedFirstTimeOpened = true;
+    private boolean flagForOkayBefore = true;
+    private int previousOkayBeforeLength = 0;
+    private boolean isOkayBeforeFirstTimeOpened = true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -217,6 +227,144 @@ public class Add extends AppCompatActivity {
             editor.putBoolean(Resources.PREF_SHOW_HELP_IN_ADD_ACTIVITY, false);
             editor.apply();
         }
+
+
+
+
+
+        dateProducedET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals("")) {
+                    previousDateProducedLength = 0;
+                    return;
+                }
+                int len = s.length();
+                int selectionPos = dateProducedET.getSelectionStart() == 0? 0 : dateProducedET.getSelectionStart() - 1;
+                if (flagForDateProduced && s.toString().charAt(selectionPos) == '.') {
+                    flagForDateProduced = false;
+                    String newValue = s.toString().substring(0, selectionPos) + s.toString().substring(selectionPos + 1, len);
+                    dateProducedET.setText(newValue);
+                    dateProducedET.setSelection(selectionPos);
+                    previousDateProducedLength = newValue.length();
+                    return;
+                }
+
+                // Добавление точки после второго введенного символа (или пятого)
+                if (flagForDateProduced && (selectionPos == 1 || selectionPos == 4) && (previousDateProducedLength < s.length())) {
+                    flagForDateProduced = false;
+                    String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
+                    dateProducedET.setText(newValue);
+                    dateProducedET.setSelection(selectionPos + 2);
+                    previousDateProducedLength = newValue.length();
+                    return;
+                }
+
+                // Добавление точки в случае стирания прошлой точки и нахождении даты в виде 15|____
+                if (flagForDateProduced && (selectionPos == 2 || selectionPos == 5) && (previousDateProducedLength < s.length())) {
+                    flagForDateProduced = false;
+                    String newValue = s.toString().substring(0, selectionPos) + '.' + s.toString().substring(selectionPos, len);
+                    dateProducedET.setText(newValue);
+                    dateProducedET.setSelection(selectionPos + 2);
+                    previousDateProducedLength = newValue.length();
+                    return;
+                }
+
+
+                flagForDateProduced = true;
+                previousDateProducedLength = s.length();
+            }
+
+
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        okayBeforeOrDaysET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals("")) {
+                    previousOkayBeforeLength = 0;
+                    return;
+                }
+                int len = s.length();
+                int selectionPos = okayBeforeOrDaysET.getSelectionStart() == 0? 0 : okayBeforeOrDaysET.getSelectionStart() - 1;
+                if (flagForOkayBefore && s.toString().charAt(selectionPos) == '.') {
+                    flagForOkayBefore = false;
+                    String newValue = s.toString().substring(0, selectionPos) + s.toString().substring(selectionPos + 1, len);
+                    okayBeforeOrDaysET.setText(newValue);
+                    okayBeforeOrDaysET.setSelection(selectionPos);
+                    previousOkayBeforeLength = newValue.length();
+                    return;
+                }
+
+                // Добавление точки после второго введенного символа (или пятого)
+                if (flagForOkayBefore && (selectionPos == 1 || selectionPos == 4) && (previousOkayBeforeLength < s.length())) {
+                    flagForOkayBefore = false;
+                    String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
+                    okayBeforeOrDaysET.setText(newValue);
+                    okayBeforeOrDaysET.setSelection(selectionPos + 2);
+                    previousOkayBeforeLength = newValue.length();
+                    return;
+                }
+
+                // Добавление точки в случае стирания прошлой точки и нахождении даты в виде 15|____
+                if (flagForOkayBefore && (selectionPos == 2 || selectionPos == 5) && (previousOkayBeforeLength < s.length())) {
+                    flagForOkayBefore = false;
+                    String newValue = s.toString().substring(0, selectionPos) + '.' + s.toString().substring(selectionPos, len);
+                    okayBeforeOrDaysET.setText(newValue);
+                    okayBeforeOrDaysET.setSelection(selectionPos + 2);
+                    previousOkayBeforeLength = newValue.length();
+                    return;
+                }
+
+
+                flagForOkayBefore = true;
+                previousOkayBeforeLength = s.length();
+            }
+
+
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+
+
+
+        dateProducedET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus && isDateProducedFirstTimeOpened) {
+                    dateProducedET.setText("");
+                    isDateProducedFirstTimeOpened = false;
+                }
+            }
+        });
+        okayBeforeOrDaysET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus && isOkayBeforeFirstTimeOpened) {
+                    okayBeforeOrDaysET.setText("");
+                    isOkayBeforeFirstTimeOpened = false;
+                }
+            }
+        });
     }
 
     @Override
@@ -260,7 +408,7 @@ public class Add extends AppCompatActivity {
 
 
         setDateText(dateProduced, dateProducedET);
-        setDateText(okayBefore, okayBeforeOrDaysET); // Установка нужной даты в TextView
+        setDateText(okayBefore, okayBeforeOrDaysET); // Установка нужной даты в EditText
 
         String [] popularProducts = {
                 "баранина",
