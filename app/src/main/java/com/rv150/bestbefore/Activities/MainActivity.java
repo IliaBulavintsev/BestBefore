@@ -167,13 +167,7 @@ public class MainActivity extends AppCompatActivity {
             editor.apply();
         }
         else {
-            // Справка
-            boolean needCongratulate = sPrefs.getBoolean(Resources.CONGRATULATION, true);
-            if (needCongratulate) {
-                congratulate();
-            }
-            editor.remove(Resources.WHATS_NEW_OLD);
-            editor.putBoolean(Resources.CONGRATULATION, false);
+            editor.remove(Resources.CONGRATULATION);
             editor.apply();
         }
 
@@ -187,35 +181,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void congratulate() {
-        Calendar now = Calendar.getInstance();
-
-        Calendar NY = Calendar.getInstance();
-        NY.set(2017, 0, 1, 0, 1);
-
-        Calendar christmas = Calendar.getInstance();
-        christmas.set(2017, 0, 7, 0, 1);
-
-        if (now.before(NY)) {
-            new AlertDialog.Builder(this).setTitle(R.string.on_coming)
-                    .setMessage(R.string.congratulation_text)
-                    .setPositiveButton(R.string.close, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    })
-                    .show();
-        } else if (NY.before(now) && now.before(christmas)) {
-            new AlertDialog.Builder(this)
-                    .setMessage(R.string.congratulation_text_after_ny)
-                    .setPositiveButton(R.string.close, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    })
-                    .show();
-        }
-    }
 
 
 
