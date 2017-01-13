@@ -226,18 +226,20 @@ public class Add extends AppCompatActivity {
             }
         });
 
+        
 
-        boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_IN_ADD_ACTIVITY, true);
-        if (showHelp) {
+        boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW, true);
+        if (whatsNew) {
             new AlertDialog.Builder(this).setTitle(R.string.help)
-                    .setMessage(R.string.help_in_add_activity)
+                    .setTitle(R.string.whats_new_title)
+                    .setMessage(R.string.whats_new_25)
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                         }
                     }).show();
             SharedPreferences.Editor editor = sPrefs.edit();
-            editor.putBoolean(Resources.PREF_SHOW_HELP_IN_ADD_ACTIVITY, false);
+            editor.putBoolean(Resources.WHATS_NEW, false);
             editor.apply();
         }
 
