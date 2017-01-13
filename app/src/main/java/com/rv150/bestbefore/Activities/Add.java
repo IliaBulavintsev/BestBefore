@@ -226,7 +226,7 @@ public class Add extends AppCompatActivity {
             }
         });
 
-        
+
 
         boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW, true);
         if (whatsNew) {
@@ -897,6 +897,9 @@ public class Add extends AppCompatActivity {
             int day = Integer.valueOf(parsed[0]);
             int month = Integer.valueOf(parsed[1]);
             int year = Integer.valueOf(parsed[2]);
+            if (year < 100) {
+                year += 2000;
+            }
             calendar.setLenient(false);
             calendar.set(year, month - 1, day);
             calendar.getTime();
