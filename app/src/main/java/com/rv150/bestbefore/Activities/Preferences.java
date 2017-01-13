@@ -48,6 +48,7 @@ import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
 
 import org.json.JSONArray;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -223,7 +224,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         final Preference restore = findPreference("restore_deprecated");
         restore.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
-                restore();
+                restore_deprecated();
                 return true;
             }
         });
@@ -301,6 +302,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
         JSONObject result = new JSONObject();
+
         try {
             if (idToken == null) {
                 Toast toast = Toast.makeText(getApplicationContext(),
@@ -340,7 +342,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     }
 
 
-    void restore() {
+    void restore_deprecated() {
         JSONObject request = new JSONObject();
         try {
             if (idToken == null) {

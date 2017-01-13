@@ -173,9 +173,14 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
                 createdAt.setTimeInMillis(createdAtInMillis);
                 Product product = new Product(name, date, createdAt, quantity, groupId);
                 product.setViewed(viewed);
+<<<<<<< HEAD
                 product.setMeasure(measure);
                 product.setRemoved(removed);
                 product.setRemovedAt(removedAt);
+=======
+
+
+>>>>>>> 41ca4bc25c08290d38f5acb3819af2461e44ff02
                 products.add(product);
             }
 
