@@ -54,6 +54,7 @@ public class Add extends AppCompatActivity {
 
     private EditText quantityET;
     private RadioButton radioDateProduced;
+    private RadioButton radioOkayBefore;
     private ImageView okayBeforeIV;
     private Spinner spinnerStorageLife;
     private Spinner spinnerGroups;
@@ -101,6 +102,8 @@ public class Add extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add);
 
+        sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
         enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
         dateProducedTV = (TextView) findViewById(R.id.date_produced_TV);
         dateProducedET = (EditText) findViewById(R.id.date_produced_ET);
@@ -114,7 +117,19 @@ public class Add extends AppCompatActivity {
         quantityET = (EditText) findViewById(R.id.quantityET);
         quantityET.setText("1");
         spinnerGroups = (Spinner) findViewById(R.id.spinner_groups);
+
+
+        radioOkayBefore = (RadioButton) findViewById(R.id.radioButtonOkayBefore);
         radioDateProduced = (RadioButton)findViewById(R.id.radioButtonDateProduced);
+        boolean lastCheckedIsOkayBefore = sPrefs.getBoolean(Resources.LAST_RADIO_WAS_OKAY_BEFORE, true);
+        boolean preferenceEnabled = sPrefs.getBoolean("remember_radiobuttons", true);
+        if (preferenceEnabled && !lastCheckedIsOkayBefore) {
+            radioOkayBefore.setChecked(false);
+            radioDateProduced.setChecked(true);
+            onRadioDateManClick(null);
+        }
+
+
 
         spinnerQuantity = (Spinner) findViewById(R.id.spinner_quantity);
 
@@ -136,8 +151,6 @@ public class Add extends AppCompatActivity {
                 new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, measures);
         spinnerQuantityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerQuantity.setAdapter(spinnerQuantityAdapter);
-
-        sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         groupDAO = new GroupDAO(getApplicationContext());
         productDAO = new ProductDAO(getApplicationContext());
@@ -430,7 +443,9 @@ public class Add extends AppCompatActivity {
 
 
         setDateText(dateProduced, dateProducedET);
-        setDateText(okayBefore, okayBeforeOrDaysET); // Установка нужной даты в EditText
+        if (radioOkayBefore.isChecked()) {
+            setDateText(okayBefore, okayBeforeOrDaysET); // Установка нужной даты в EditText
+        }
 
         String [] popularProducts = {
                 "баранина",
@@ -763,6 +778,17 @@ public class Add extends AppCompatActivity {
             mProduct.setId(id);
             setResult(Resources.RESULT_ADD, intent);   // Добавление
         }
+
+        // Запоминаем положение радиокнопок
+        SharedPreferences.Editor editor = sPrefs.edit();
+        if (radioOkayBefore.isChecked()) {
+            editor.putBoolean(Resources.LAST_RADIO_WAS_OKAY_BEFORE, true);
+        }
+        else {
+            editor.putBoolean(Resources.LAST_RADIO_WAS_OKAY_BEFORE, false);
+        }
+        editor.apply();
+
         intent.putExtra(Product.class.getName(), mProduct);
         finish();
     }

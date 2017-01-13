@@ -129,4 +129,6 @@
     <string name="congratulation_text">Друзья! Поздравляю с наступающим Новым Годом! Пусть на столе всегда будет много вкусной, а главное свежей еды! Ура!</string>
     <string name="congratulation_text_after_ny">Друзья! Поздравляю с Новым 2017 Годом, а также с наступающим Рождеством! Пусть у вас на столе всегда будет много вкусной, а главное свежей еды!</string>
     <string name="help_in_add_activity">Дату можно ввести в формате DD-MM-YYYY или DD.MM.YYYY, либо воспользоваться виджетом. Лишние атрибуты можно отключить в настройках.</string>
+    <string name="radiobuttons">Радиокнопки</string>
+    <string name="remember_radiobuttons_state">Запоминать прошлое положение переключателей при добавлении продукта</string>
 </resources>
