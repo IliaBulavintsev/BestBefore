@@ -327,7 +327,7 @@ public class Add extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals("")) {
+                if (s.toString().equals("") || radioDateProduced.isChecked()) {
                     previousOkayBeforeLength = 0;
                     return;
                 }
@@ -415,11 +415,7 @@ public class Add extends AppCompatActivity {
                 }
             }
         });
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             mProduct = extras.getParcelable(Product.class.getName());
@@ -437,8 +433,7 @@ public class Add extends AppCompatActivity {
                 }
                 int measure = mProduct.getMeasure();
                 spinnerQuantity.setSelection(measure);
-            }
-            else {
+            } else {
                 mProduct = new Product();
                 long groupId = extras.getLong(Resources.GROUP_ID, Resources.ID_MAIN_GROUP);
                 if (groupId != Resources.ID_MAIN_GROUP) {
@@ -446,8 +441,7 @@ public class Add extends AppCompatActivity {
                     groupName = group.getName();
                 }
             }
-        }
-        else {
+        } else {
             mProduct = new Product();
         }
 
@@ -462,7 +456,7 @@ public class Add extends AppCompatActivity {
             setDateText(okayBefore, okayBeforeOrDaysET); // Установка нужной даты в EditText
         }
 
-        String [] popularProducts = {
+        String[] popularProducts = {
                 "баранина",
                 "бекон",
                 "брокколи",
@@ -564,8 +558,6 @@ public class Add extends AppCompatActivity {
         );
 
 
-
-
         List<String> items = new ArrayList<>();
         items.addAll(Arrays.asList(popularProducts));
 
@@ -580,7 +572,7 @@ public class Add extends AppCompatActivity {
         cursor.close();
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>
-                    (this, R.layout.support_simple_spinner_dropdown_item, items);
+                (this, R.layout.support_simple_spinner_dropdown_item, items);
         enterName.setAdapter(adapter);
     }
 
@@ -703,8 +695,17 @@ public class Add extends AppCompatActivity {
         // Выбрано "Дата изготовления"
         // dateProduced ВСЕГДА хранит дату изготовления, дата окончания в okayBefore
         if (radioDateProduced.isChecked()) {
-            double term = Double.parseDouble(okayBeforeOrDaysET.getText().toString());
-            if (term <= 0 || term % 0.5 != 0) {
+            final double term;
+            try {
+                term = Double.parseDouble(okayBeforeOrDaysET.getText().toString());
+                if (term <= 0 || term % 0.5 != 0) {
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            R.string.wrong_best_before, Toast.LENGTH_SHORT);
+                    toast.show();
+                    return;
+                }
+            }
+            catch (RuntimeException e) {
                 Toast toast = Toast.makeText(getApplicationContext(),
                         R.string.wrong_best_before, Toast.LENGTH_SHORT);
                 toast.show();
