@@ -574,7 +574,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public void deleteItem() {
+    private void deleteItem() {
         deletedProduct = wrapperList.get(position);
         wrapperList.remove(position);
         if (wrapperList.isEmpty()) {
@@ -583,7 +583,8 @@ public class MainActivity extends AppCompatActivity {
         adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
         rvProducts.swapAdapter(adapter, false);
 
-        if (groupChoosen == Resources.ID_FOR_TRASH) {
+        if (groupChoosen == Resources.ID_FOR_TRASH ||
+                deletedProduct.getTitle().equals(getString(R.string.example_product))) {
             productDAO.removeProductFromTrash(deletedProduct.getId());
         }
         else
