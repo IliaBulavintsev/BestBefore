@@ -246,7 +246,7 @@ public class Add extends AppCompatActivity {
                 }
                 int len = s.length();
                 int selectionPos = dateProducedET.getSelectionStart() == 0? 0 : dateProducedET.getSelectionStart() - 1;
-                if (flagForDateProduced && s.toString().charAt(selectionPos) == '.') {
+                if (previousDateProducedLength > s.length() && flagForDateProduced && s.toString().charAt(selectionPos) == '.') {
                     flagForDateProduced = false;
                     String newValue = s.toString().substring(0, selectionPos) + s.toString().substring(selectionPos + 1, len);
                     dateProducedET.setText(newValue);
@@ -257,22 +257,33 @@ public class Add extends AppCompatActivity {
 
                 // Добавление точки после второго введенного символа (или пятого)
                 if (flagForDateProduced && (selectionPos == 1 || selectionPos == 4) && (previousDateProducedLength < s.length())) {
-                    flagForDateProduced = false;
-                    String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
-                    dateProducedET.setText(newValue);
-                    dateProducedET.setSelection(selectionPos + 2);
-                    previousDateProducedLength = newValue.length();
-                    return;
+                    if (s.toString().charAt(selectionPos) != '.') {
+                        flagForDateProduced = false;
+                        String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
+                        dateProducedET.setText(newValue);
+                        dateProducedET.setSelection(selectionPos + 2);
+                        previousDateProducedLength = newValue.length();
+                        return;
+                    }
+                    else {
+                        String newValue = s.toString().substring(0, selectionPos - 1) + '0' + s.toString().substring(selectionPos - 1, len);
+                        dateProducedET.setText(newValue);
+                        dateProducedET.setSelection(selectionPos + 2);
+                        previousDateProducedLength = newValue.length();
+                        return;
+                    }
                 }
 
                 // Добавление точки в случае стирания прошлой точки и нахождении даты в виде 15|____
                 if (flagForDateProduced && (selectionPos == 2 || selectionPos == 5) && (previousDateProducedLength < s.length())) {
-                    flagForDateProduced = false;
-                    String newValue = s.toString().substring(0, selectionPos) + '.' + s.toString().substring(selectionPos, len);
-                    dateProducedET.setText(newValue);
-                    dateProducedET.setSelection(selectionPos + 2);
-                    previousDateProducedLength = newValue.length();
-                    return;
+                    if (s.toString().charAt(selectionPos) != '.') {
+                        flagForDateProduced = false;
+                        String newValue = s.toString().substring(0, selectionPos) + '.' + s.toString().substring(selectionPos, len);
+                        dateProducedET.setText(newValue);
+                        dateProducedET.setSelection(selectionPos + 2);
+                        previousDateProducedLength = newValue.length();
+                        return;
+                    }
                 }
 
 
@@ -296,13 +307,13 @@ public class Add extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals("")) {
+                if (s.toString().equals("") || radioDateProduced.isChecked()) {
                     previousOkayBeforeLength = 0;
                     return;
                 }
                 int len = s.length();
                 int selectionPos = okayBeforeOrDaysET.getSelectionStart() == 0? 0 : okayBeforeOrDaysET.getSelectionStart() - 1;
-                if (flagForOkayBefore && s.toString().charAt(selectionPos) == '.') {
+                if (previousOkayBeforeLength > s.length() && flagForOkayBefore && s.toString().charAt(selectionPos) == '.') {
                     flagForOkayBefore = false;
                     String newValue = s.toString().substring(0, selectionPos) + s.toString().substring(selectionPos + 1, len);
                     okayBeforeOrDaysET.setText(newValue);
@@ -313,22 +324,33 @@ public class Add extends AppCompatActivity {
 
                 // Добавление точки после второго введенного символа (или пятого)
                 if (flagForOkayBefore && (selectionPos == 1 || selectionPos == 4) && (previousOkayBeforeLength < s.length())) {
-                    flagForOkayBefore = false;
-                    String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
-                    okayBeforeOrDaysET.setText(newValue);
-                    okayBeforeOrDaysET.setSelection(selectionPos + 2);
-                    previousOkayBeforeLength = newValue.length();
-                    return;
+                    if (s.toString().charAt(selectionPos) != '.') {
+                        flagForOkayBefore = false;
+                        String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
+                        okayBeforeOrDaysET.setText(newValue);
+                        okayBeforeOrDaysET.setSelection(selectionPos + 2);
+                        previousOkayBeforeLength = newValue.length();
+                        return;
+                    }
+                    else {
+                        String newValue = s.toString().substring(0, selectionPos - 1) + '0' + s.toString().substring(selectionPos - 1, len);
+                        okayBeforeOrDaysET.setText(newValue);
+                        okayBeforeOrDaysET.setSelection(selectionPos + 2);
+                        previousOkayBeforeLength = newValue.length();
+                        return;
+                    }
                 }
 
                 // Добавление точки в случае стирания прошлой точки и нахождении даты в виде 15|____
                 if (flagForOkayBefore && (selectionPos == 2 || selectionPos == 5) && (previousOkayBeforeLength < s.length())) {
-                    flagForOkayBefore = false;
-                    String newValue = s.toString().substring(0, selectionPos) + '.' + s.toString().substring(selectionPos, len);
-                    okayBeforeOrDaysET.setText(newValue);
-                    okayBeforeOrDaysET.setSelection(selectionPos + 2);
-                    previousOkayBeforeLength = newValue.length();
-                    return;
+                    if (s.toString().charAt(selectionPos) != '.') {
+                        flagForOkayBefore = false;
+                        String newValue = s.toString().substring(0, selectionPos) + '.' + s.toString().substring(selectionPos, len);
+                        okayBeforeOrDaysET.setText(newValue);
+                        okayBeforeOrDaysET.setSelection(selectionPos + 2);
+                        previousOkayBeforeLength = newValue.length();
+                        return;
+                    }
                 }
 
 
