@@ -159,6 +159,12 @@
             android:summary="@string/remember_radiobuttons_state"
             android:defaultValue="true" />
 
+        <CheckBoxPreference
+            android:key="clear_date_field"
+            android:title="@string/date_input"
+            android:summary="@string/clear_date_in_first_tap"
+            android:defaultValue="true" />
+
 
     </PreferenceScreen>
 

@@ -159,7 +159,7 @@ public class Add extends AppCompatActivity {
         okayBefore = Calendar.getInstance();
         dateProduced = Calendar.getInstance();
 
-        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        final SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         final List<Group> groups = groupDAO.getAll();
         final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
@@ -271,15 +271,22 @@ public class Add extends AppCompatActivity {
                 // Добавление точки после второго введенного символа (или пятого)
                 if (flagForDateProduced && (selectionPos == 1 || selectionPos == 4) && (previousDateProducedLength < s.length())) {
                     if (s.toString().charAt(selectionPos) != '.') {
+                        if (len <= selectionPos + 1 || len > selectionPos + 1 && s.toString().charAt(selectionPos + 1) != '.') {
+                            String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
+                            dateProducedET.setText(newValue);
+                            dateProducedET.setSelection(selectionPos + 2);
+                        }
                         flagForDateProduced = false;
-                        String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
-                        dateProducedET.setText(newValue);
-                        dateProducedET.setSelection(selectionPos + 2);
-                        previousDateProducedLength = newValue.length();
+                        previousDateProducedLength = dateProducedET.getText().toString().length();
                         return;
                     }
                     else {
                         String newValue = s.toString().substring(0, selectionPos - 1) + '0' + s.toString().substring(selectionPos - 1, len);
+
+                        if (len > selectionPos + 1 && s.toString().charAt(selectionPos + 1) == '.') {
+                            newValue = newValue.substring(0, selectionPos + 1) + newValue.substring(selectionPos + 2, len + 1);
+                        }
+
                         dateProducedET.setText(newValue);
                         dateProducedET.setSelection(selectionPos + 2);
                         previousDateProducedLength = newValue.length();
@@ -320,7 +327,7 @@ public class Add extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals("") || radioDateProduced.isChecked()) {
+                if (s.toString().equals("")) {
                     previousOkayBeforeLength = 0;
                     return;
                 }
@@ -338,15 +345,22 @@ public class Add extends AppCompatActivity {
                 // Добавление точки после второго введенного символа (или пятого)
                 if (flagForOkayBefore && (selectionPos == 1 || selectionPos == 4) && (previousOkayBeforeLength < s.length())) {
                     if (s.toString().charAt(selectionPos) != '.') {
+                        if (len <= selectionPos + 1 || len > selectionPos + 1 && s.toString().charAt(selectionPos + 1) != '.') {
+                            String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
+                            okayBeforeOrDaysET.setText(newValue);
+                            okayBeforeOrDaysET.setSelection(selectionPos + 2);
+                        }
                         flagForOkayBefore = false;
-                        String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
-                        okayBeforeOrDaysET.setText(newValue);
-                        okayBeforeOrDaysET.setSelection(selectionPos + 2);
-                        previousOkayBeforeLength = newValue.length();
+                        previousOkayBeforeLength = okayBeforeOrDaysET.getText().toString().length();
                         return;
                     }
                     else {
                         String newValue = s.toString().substring(0, selectionPos - 1) + '0' + s.toString().substring(selectionPos - 1, len);
+
+                        if (len > selectionPos + 1 && s.toString().charAt(selectionPos + 1) == '.') {
+                            newValue = newValue.substring(0, selectionPos + 1) + newValue.substring(selectionPos + 2, len + 1);
+                        }
+
                         okayBeforeOrDaysET.setText(newValue);
                         okayBeforeOrDaysET.setSelection(selectionPos + 2);
                         previousOkayBeforeLength = newValue.length();
@@ -372,7 +386,6 @@ public class Add extends AppCompatActivity {
             }
 
 
-
             @Override
             public void afterTextChanged(Editable s) {
 
@@ -385,7 +398,8 @@ public class Add extends AppCompatActivity {
         dateProducedET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus && isDateProducedFirstTimeOpened) {
+                boolean clear = sPrefs.getBoolean("clear_date_field", true);
+                if (hasFocus && clear && isDateProducedFirstTimeOpened) {
                     dateProducedET.setText("");
                     isDateProducedFirstTimeOpened = false;
                 }
@@ -394,7 +408,8 @@ public class Add extends AppCompatActivity {
         okayBeforeOrDaysET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus && isOkayBeforeFirstTimeOpened) {
+                boolean clear = sPrefs.getBoolean("clear_date_field", true);
+                if (hasFocus && clear && isOkayBeforeFirstTimeOpened) {
                     okayBeforeOrDaysET.setText("");
                     isOkayBeforeFirstTimeOpened = false;
                 }
