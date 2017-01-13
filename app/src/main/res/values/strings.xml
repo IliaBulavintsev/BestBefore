@@ -17,7 +17,7 @@
     <string name="cancel">Отмена</string>
     <string name="notificationTime">17:00</string>
     <string name="welcomeTitle">Добрый день!</string>
-    <string name="welcomeText">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продукта в 17:00. Настроить напоминания, сортировку и формат отображения можно в настройках. \nХорошего дня! </string>
+    <string name="welcomeText">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продукта в 17:00. Настроить напоминания, необходимые атрибуты и многое другое можно в настройках. \nХорошего дня! </string>
     <string name="overdue_products">Просроченные продукты</string>
     <string name="list_is_empty">Список пуст!</string>
     <string name="clear_list">Очистить список</string>
@@ -116,7 +116,7 @@
     <string name="trash">Корзина</string>
     <string name="want_restore_this_product">Вы хотите восстановить этот продукт?</string>
     <string name="product_has_been_restored">Продукт восстановлен</string>
-    <string name="dateFormat">DD.MM.YYYY</string>
+    <string name="dateFormat">DDMMYY</string>
     <string name="quantity_attribute">Атрибут Количество</string>
     <string name="interface_settings">Настройки отображения</string>
     <string name="date_produced_attribute">Атрибут Дата изготовления</string>
