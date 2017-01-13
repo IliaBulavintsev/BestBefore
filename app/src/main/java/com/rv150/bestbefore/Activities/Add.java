@@ -7,12 +7,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.icu.util.Measure;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Created by rv150 on 07.01.2016.
@@ -52,6 +54,7 @@ public class Add extends AppCompatActivity {
 
     private EditText quantityET;
     private RadioButton radioDateProduced;
+    private RadioButton radioOkayBefore;
     private ImageView okayBeforeIV;
     private Spinner spinnerStorageLife;
     private Spinner spinnerGroups;
@@ -86,10 +89,20 @@ public class Add extends AppCompatActivity {
 
     public static final String TAG = "Add activity";
 
+    private boolean flagForDateProduced = true;
+    private int previousDateProducedLength = 0;
+    private boolean isDateProducedFirstTimeOpened = true;
+    private boolean flagForOkayBefore = true;
+    private int previousOkayBeforeLength = 0;
+    private boolean isOkayBeforeFirstTimeOpened = true;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add);
+
+        sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
         dateProducedTV = (TextView) findViewById(R.id.date_produced_TV);
@@ -104,7 +117,19 @@ public class Add extends AppCompatActivity {
         quantityET = (EditText) findViewById(R.id.quantityET);
         quantityET.setText("1");
         spinnerGroups = (Spinner) findViewById(R.id.spinner_groups);
+
+
+        radioOkayBefore = (RadioButton) findViewById(R.id.radioButtonOkayBefore);
         radioDateProduced = (RadioButton)findViewById(R.id.radioButtonDateProduced);
+        boolean lastCheckedIsOkayBefore = sPrefs.getBoolean(Resources.LAST_RADIO_WAS_OKAY_BEFORE, true);
+        boolean preferenceEnabled = sPrefs.getBoolean("remember_radiobuttons", true);
+        if (preferenceEnabled && !lastCheckedIsOkayBefore) {
+            radioOkayBefore.setChecked(false);
+            radioDateProduced.setChecked(true);
+            onRadioDateManClick(null);
+        }
+
+
 
         spinnerQuantity = (Spinner) findViewById(R.id.spinner_quantity);
 
@@ -127,8 +152,6 @@ public class Add extends AppCompatActivity {
         spinnerQuantityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerQuantity.setAdapter(spinnerQuantityAdapter);
 
-        sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
         groupDAO = new GroupDAO(getApplicationContext());
         productDAO = new ProductDAO(getApplicationContext());
         dbHelper = new DBHelper(getApplicationContext());
@@ -136,7 +159,7 @@ public class Add extends AppCompatActivity {
         okayBefore = Calendar.getInstance();
         dateProduced = Calendar.getInstance();
 
-        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        final SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         final List<Group> groups = groupDAO.getAll();
         final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
@@ -204,24 +227,197 @@ public class Add extends AppCompatActivity {
         });
 
 
-        boolean showHelp = sPrefs.getBoolean(Resources.PREF_SHOW_HELP_IN_ADD_ACTIVITY, true);
-        if (showHelp) {
+
+        boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW, true);
+        if (whatsNew) {
             new AlertDialog.Builder(this).setTitle(R.string.help)
-                    .setMessage(R.string.help_in_add_activity)
+                    .setTitle(R.string.whats_new_title)
+                    .setMessage(R.string.whats_new_25)
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                         }
                     }).show();
             SharedPreferences.Editor editor = sPrefs.edit();
-            editor.putBoolean(Resources.PREF_SHOW_HELP_IN_ADD_ACTIVITY, false);
+            editor.putBoolean(Resources.WHATS_NEW, false);
             editor.apply();
         }
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+
+
+
+
+        dateProducedET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals("")) {
+                    previousDateProducedLength = 0;
+                    return;
+                }
+                int len = s.length();
+                int selectionPos = dateProducedET.getSelectionStart() == 0? 0 : dateProducedET.getSelectionStart() - 1;
+                if (previousDateProducedLength > s.length() && flagForDateProduced && s.toString().charAt(selectionPos) == '.') {
+                    flagForDateProduced = false;
+                    String newValue = s.toString().substring(0, selectionPos) + s.toString().substring(selectionPos + 1, len);
+                    dateProducedET.setText(newValue);
+                    dateProducedET.setSelection(selectionPos);
+                    previousDateProducedLength = newValue.length();
+                    return;
+                }
+
+                // Добавление точки после второго введенного символа (или пятого)
+                if (flagForDateProduced && (selectionPos == 1 || selectionPos == 4) && (previousDateProducedLength < s.length())) {
+                    if (s.toString().charAt(selectionPos) != '.') {
+                        if (len <= selectionPos + 1 || len > selectionPos + 1 && s.toString().charAt(selectionPos + 1) != '.') {
+                            String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
+                            dateProducedET.setText(newValue);
+                            dateProducedET.setSelection(selectionPos + 2);
+                        }
+                        flagForDateProduced = false;
+                        previousDateProducedLength = dateProducedET.getText().toString().length();
+                        return;
+                    }
+                    else {
+                        String newValue = s.toString().substring(0, selectionPos - 1) + '0' + s.toString().substring(selectionPos - 1, len);
+
+                        if (len > selectionPos + 1 && s.toString().charAt(selectionPos + 1) == '.') {
+                            newValue = newValue.substring(0, selectionPos + 1) + newValue.substring(selectionPos + 2, len + 1);
+                        }
+
+                        dateProducedET.setText(newValue);
+                        dateProducedET.setSelection(selectionPos + 2);
+                        previousDateProducedLength = newValue.length();
+                        return;
+                    }
+                }
+
+                // Добавление точки в случае стирания прошлой точки и нахождении даты в виде 15|____
+                if (flagForDateProduced && (selectionPos == 2 || selectionPos == 5) && (previousDateProducedLength < s.length())) {
+                    if (s.toString().charAt(selectionPos) != '.') {
+                        flagForDateProduced = false;
+                        String newValue = s.toString().substring(0, selectionPos) + '.' + s.toString().substring(selectionPos, len);
+                        dateProducedET.setText(newValue);
+                        dateProducedET.setSelection(selectionPos + 2);
+                        previousDateProducedLength = newValue.length();
+                        return;
+                    }
+                }
+
+
+                flagForDateProduced = true;
+                previousDateProducedLength = s.length();
+            }
+
+
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        okayBeforeOrDaysET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals("") || radioDateProduced.isChecked()) {
+                    previousOkayBeforeLength = 0;
+                    return;
+                }
+                int len = s.length();
+                int selectionPos = okayBeforeOrDaysET.getSelectionStart() == 0? 0 : okayBeforeOrDaysET.getSelectionStart() - 1;
+                if (previousOkayBeforeLength > s.length() && flagForOkayBefore && s.toString().charAt(selectionPos) == '.') {
+                    flagForOkayBefore = false;
+                    String newValue = s.toString().substring(0, selectionPos) + s.toString().substring(selectionPos + 1, len);
+                    okayBeforeOrDaysET.setText(newValue);
+                    okayBeforeOrDaysET.setSelection(selectionPos);
+                    previousOkayBeforeLength = newValue.length();
+                    return;
+                }
+
+                // Добавление точки после второго введенного символа (или пятого)
+                if (flagForOkayBefore && (selectionPos == 1 || selectionPos == 4) && (previousOkayBeforeLength < s.length())) {
+                    if (s.toString().charAt(selectionPos) != '.') {
+                        if (len <= selectionPos + 1 || len > selectionPos + 1 && s.toString().charAt(selectionPos + 1) != '.') {
+                            String newValue = s.toString().substring(0, selectionPos + 1) + '.' + s.toString().substring(selectionPos + 1, len);
+                            okayBeforeOrDaysET.setText(newValue);
+                            okayBeforeOrDaysET.setSelection(selectionPos + 2);
+                        }
+                        flagForOkayBefore = false;
+                        previousOkayBeforeLength = okayBeforeOrDaysET.getText().toString().length();
+                        return;
+                    }
+                    else {
+                        String newValue = s.toString().substring(0, selectionPos - 1) + '0' + s.toString().substring(selectionPos - 1, len);
+
+                        if (len > selectionPos + 1 && s.toString().charAt(selectionPos + 1) == '.') {
+                            newValue = newValue.substring(0, selectionPos + 1) + newValue.substring(selectionPos + 2, len + 1);
+                        }
+
+                        okayBeforeOrDaysET.setText(newValue);
+                        okayBeforeOrDaysET.setSelection(selectionPos + 2);
+                        previousOkayBeforeLength = newValue.length();
+                        return;
+                    }
+                }
+
+                // Добавление точки в случае стирания прошлой точки и нахождении даты в виде 15|____
+                if (flagForOkayBefore && (selectionPos == 2 || selectionPos == 5) && (previousOkayBeforeLength < s.length())) {
+                    if (s.toString().charAt(selectionPos) != '.') {
+                        flagForOkayBefore = false;
+                        String newValue = s.toString().substring(0, selectionPos) + '.' + s.toString().substring(selectionPos, len);
+                        okayBeforeOrDaysET.setText(newValue);
+                        okayBeforeOrDaysET.setSelection(selectionPos + 2);
+                        previousOkayBeforeLength = newValue.length();
+                        return;
+                    }
+                }
+
+
+                flagForOkayBefore = true;
+                previousOkayBeforeLength = s.length();
+            }
+
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+
+
+
+        dateProducedET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                boolean clear = sPrefs.getBoolean("clear_date_field", true);
+                if (hasFocus && clear && isDateProducedFirstTimeOpened) {
+                    dateProducedET.setText("");
+                    isDateProducedFirstTimeOpened = false;
+                }
+            }
+        });
+        okayBeforeOrDaysET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                boolean clear = sPrefs.getBoolean("clear_date_field", true);
+                if (hasFocus && clear && isOkayBeforeFirstTimeOpened) {
+                    okayBeforeOrDaysET.setText("");
+                    isOkayBeforeFirstTimeOpened = false;
+                }
+            }
+        });
+
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             mProduct = extras.getParcelable(Product.class.getName());
@@ -239,8 +435,7 @@ public class Add extends AppCompatActivity {
                 }
                 int measure = mProduct.getMeasure();
                 spinnerQuantity.setSelection(measure);
-            }
-            else {
+            } else {
                 mProduct = new Product();
                 long groupId = extras.getLong(Resources.GROUP_ID, Resources.ID_MAIN_GROUP);
                 if (groupId != Resources.ID_MAIN_GROUP) {
@@ -248,8 +443,7 @@ public class Add extends AppCompatActivity {
                     groupName = group.getName();
                 }
             }
-        }
-        else {
+        } else {
             mProduct = new Product();
         }
 
@@ -260,9 +454,11 @@ public class Add extends AppCompatActivity {
 
 
         setDateText(dateProduced, dateProducedET);
-        setDateText(okayBefore, okayBeforeOrDaysET); // Установка нужной даты в TextView
+        if (radioOkayBefore.isChecked()) {
+            setDateText(okayBefore, okayBeforeOrDaysET); // Установка нужной даты в EditText
+        }
 
-        String [] popularProducts = {
+        String[] popularProducts = {
                 "баранина",
                 "бекон",
                 "брокколи",
@@ -364,8 +560,6 @@ public class Add extends AppCompatActivity {
         );
 
 
-
-
         List<String> items = new ArrayList<>();
         items.addAll(Arrays.asList(popularProducts));
 
@@ -380,7 +574,7 @@ public class Add extends AppCompatActivity {
         cursor.close();
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>
-                    (this, R.layout.support_simple_spinner_dropdown_item, items);
+                (this, R.layout.support_simple_spinner_dropdown_item, items);
         enterName.setAdapter(adapter);
     }
 
@@ -503,8 +697,17 @@ public class Add extends AppCompatActivity {
         // Выбрано "Дата изготовления"
         // dateProduced ВСЕГДА хранит дату изготовления, дата окончания в okayBefore
         if (radioDateProduced.isChecked()) {
-            double term = Double.parseDouble(okayBeforeOrDaysET.getText().toString());
-            if (term <= 0 || term % 0.5 != 0) {
+            final double term;
+            try {
+                term = Double.parseDouble(okayBeforeOrDaysET.getText().toString());
+                if (term <= 0 || term % 0.5 != 0) {
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            R.string.wrong_best_before, Toast.LENGTH_SHORT);
+                    toast.show();
+                    return;
+                }
+            }
+            catch (RuntimeException e) {
                 Toast toast = Toast.makeText(getApplicationContext(),
                         R.string.wrong_best_before, Toast.LENGTH_SHORT);
                 toast.show();
@@ -593,6 +796,17 @@ public class Add extends AppCompatActivity {
             mProduct.setId(id);
             setResult(Resources.RESULT_ADD, intent);   // Добавление
         }
+
+        // Запоминаем положение радиокнопок
+        SharedPreferences.Editor editor = sPrefs.edit();
+        if (radioOkayBefore.isChecked()) {
+            editor.putBoolean(Resources.LAST_RADIO_WAS_OKAY_BEFORE, true);
+        }
+        else {
+            editor.putBoolean(Resources.LAST_RADIO_WAS_OKAY_BEFORE, false);
+        }
+        editor.apply();
+
         intent.putExtra(Product.class.getName(), mProduct);
         finish();
     }
@@ -683,6 +897,9 @@ public class Add extends AppCompatActivity {
             int day = Integer.valueOf(parsed[0]);
             int month = Integer.valueOf(parsed[1]);
             int year = Integer.valueOf(parsed[2]);
+            if (year < 100) {
+                year += 2000;
+            }
             calendar.setLenient(false);
             calendar.set(year, month - 1, day);
             calendar.getTime();

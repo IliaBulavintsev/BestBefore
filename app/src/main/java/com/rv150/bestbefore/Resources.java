@@ -49,7 +49,7 @@ public final class Resources {
     public static final int RESULT_MODIFY = 2;
     public static final String SERVER_URL = "http://212.109.192.197:8080/";
     public static final String CONGRATULATION = "happy_new_2017_year";
-    public static final String WHATS_NEW_OLD = "whats_new_17";
+    public static final String WHATS_NEW = "whats_new_25";
     public static final long ID_MAIN_GROUP = 99990;
     public static final String MAIN_GROUP_NAME = "mainGroupName";
     public static final long ID_FOR_SETTINGS = 99991;
@@ -59,4 +59,5 @@ public final class Resources {
     public static final long ID_FOR_TRASH = 99995;
     public static final String OVERDUED_GROUP_NAME = "overduedGroupName";
     public static final String NEED_MIGRATE = "needMigrate";
+    public static final String LAST_RADIO_WAS_OKAY_BEFORE = "lastRadioWasOkayBefore";
 }

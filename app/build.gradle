@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId "com.rv150.bestbefore"
         minSdkVersion 14
         targetSdkVersion 25
-        versionCode 23
-        versionName "2.3.2"
+        versionCode 25
+        versionName "2.3.4"
     }
     buildTypes {
         release {
