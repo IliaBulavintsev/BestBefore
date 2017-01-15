@@ -130,4 +130,5 @@
     <string name="clear_date_in_first_tap">Очищать поле ввода даты при первом нажатии</string>
     <string name="date_input">Ввод даты</string>
     <string name="whats_new_25">Переходите к другим полям нажатием клавиши Enter на клавиатуре. \nДату можно ввести в формате DDMMYY или DDMMYYYY (например, 251017). \nДобавлено больше настроек касательно ввода, обязательно посмотрите. \nПримеры вводимых дат: 07012017, 7.1.2017, 7.1.17 и т.д.</string>
+    <string name="restore_deprecated">Восстановить со старого сервера</string>
 </resources>

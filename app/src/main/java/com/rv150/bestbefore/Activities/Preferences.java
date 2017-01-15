@@ -38,7 +38,9 @@ import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.android.gms.drive.OpenFileActivityBuilder;
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Group;
@@ -232,8 +234,17 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             }
         });
 
-        final Preference restore = findPreference("restore_deprecated");
+        final Preference restore = findPreference("restore");
         restore.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                restore();
+                return true;
+            }
+        });
+
+
+        final Preference restoreDeprecated = findPreference("restore_deprecated");
+        restoreDeprecated.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 restore_deprecated();
                 return true;
@@ -300,18 +311,9 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                 .setResultCallback(driveContentsCallback);
     }
-    final ResultCallback<DriveApi.DriveContentsResult> driveContentsCallback =
-            new ResultCallback<DriveApi.DriveContentsResult>() {
-        @Override
-        public void onResult(DriveApi.DriveContentsResult result) {
 
-            if (result.getStatus().isSuccess()) {
-                if (fileOperation){
-                    CreateFileOnGoogleDrive(result);
-                }
-            }
-        }
-    };
+
+
 
 private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result){
 
@@ -319,31 +321,31 @@ private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result){
 
         // Perform I/O off the UI thread.
 
-//        new Thread() {
-//            @Override
-//            public void run() {
-//                // write content to DriveContents
-//                OutputStream outputStream = driveContents.getOutputStream();
-//                Writer writer = new OutputStreamWriter(outputStream);
-//                try {
-//                    writer.write("Hello abhay!");
-//                    writer.close();
-//
-//                } catch (IOException e) {
-//                    Log.e(TAG, e.getMessage());
-//                }
-//
-//                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-//                        .setTitle("abhaytest2")
-//                .setMimeType("text/plain")
-//                .setStarred(true).build();
-//
-//                // create a file in root folder
-//                Drive.DriveApi.getRootFolder(mGoogleApiClient)
-//                        .createFile(mGoogleApiClient, changeSet, driveContents)
-//                .setResultCallback(fileCallback);
-//            }
-//        }.start();
+        new Thread() {
+            @Override
+            public void run() {
+                // write content to DriveContents
+                OutputStream outputStream = driveContents.getOutputStream();
+                Writer writer = new OutputStreamWriter(outputStream);
+                try {
+                    writer.write("Hello abhay!");
+                    writer.close();
+
+                } catch (IOException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+
+                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                        .setTitle("abhaytest2")
+                .setMimeType("text/plain")
+                .setStarred(true).build();
+
+                // create a file in root folder
+                Drive.DriveApi.getRootFolder(mGoogleApiClient)
+                        .createFile(mGoogleApiClient, changeSet, driveContents)
+                .setResultCallback(fileCallback);
+            }
+        }.start();
     }
 
     final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new
@@ -356,6 +358,58 @@ private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result){
             }
         }
     };
+
+    private void restore (){
+        fileOperation = false;
+        // create new contents resource
+        Drive.DriveApi.newDriveContents(mGoogleApiClient)
+                .setResultCallback(driveContentsCallback);
+    }
+
+    final ResultCallback<DriveApi.DriveContentsResult> driveContentsCallback =
+            new ResultCallback<DriveApi.DriveContentsResult>() {
+        @Override
+        public void onResult(DriveApi.DriveContentsResult result) {
+
+            if (result.getStatus().isSuccess()) {
+
+                if (fileOperation) {
+
+                    CreateFileOnGoogleDrive(result);
+
+                } else {
+
+                    OpenFileFromGoogleDrive();
+
+                }
+            }
+        }
+    };
+
+    public void OpenFileFromGoogleDrive(){
+
+        IntentSender intentSender = Drive.DriveApi
+                .newOpenFileActivityBuilder()
+                .setMimeType(new String[] { "text/plain", "text/html" })
+        .build(mGoogleApiClient);
+        try {
+
+            startIntentSenderForResult(
+                    intentSender, Resources.RC_INTENT_SENDER, null, 0, 0, 0);
+
+        } catch (IntentSender.SendIntentException e) {
+            Log.w(TAG, "Unable to send intent", e);
+        }
+
+    }
+
+
+
+
+
+
+
+
 
 
 
@@ -417,6 +471,24 @@ private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result){
         }
         if (requestCode == Resources.RC_DRIVE_API && resultCode == RESULT_OK) {
             mGoogleApiClient.connect();
+        }
+
+        if (requestCode == Resources.RC_INTENT_SENDER) {
+            if (resultCode == RESULT_OK) {
+
+                DriveId mFileId = (DriveId) data.getParcelableExtra(
+                        OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
+                Log.i("OnActivityResult", "Information received");
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        "OnActivityResuuuult " + mFileId.getResourceId(), Toast.LENGTH_SHORT);
+                toast.show();
+
+
+                String url = "https://drive.google.com/open?id="+ mFileId.getResourceId();
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
+            }
         }
     }
 

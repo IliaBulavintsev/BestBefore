@@ -77,8 +77,6 @@ public class Add extends AppCompatActivity {
     private Calendar dateProduced;
     private Calendar okayBefore;
 
-    private DBHelper dbHelper;
-
     private GroupDAO groupDAO;
     private ProductDAO productDAO;
     private final List<String> groupNames = new ArrayList<>();
@@ -154,7 +152,7 @@ public class Add extends AppCompatActivity {
 
         groupDAO = new GroupDAO(getApplicationContext());
         productDAO = new ProductDAO(getApplicationContext());
-        dbHelper = new DBHelper(getApplicationContext());
+        DBHelper dbHelper = new DBHelper(getApplicationContext());
 
         okayBefore = Calendar.getInstance();
         dateProduced = Calendar.getInstance();
@@ -602,12 +600,14 @@ public class Add extends AppCompatActivity {
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
             if (firstDialogOpened) {    // Установка даты изготовления
+                isDateProducedFirstTimeOpened = false;
                 dateProduced.set(Calendar.YEAR, year);
                 dateProduced.set(Calendar.MONTH, monthOfYear);
                 dateProduced.set(Calendar.DAY_OF_MONTH, dayOfMonth);
                 setDateText(dateProduced, dateProducedET);
             }
             else {  // Установка "годен до"
+                isOkayBeforeFirstTimeOpened = false;
                 okayBefore.set(Calendar.YEAR, year);
                 okayBefore.set(Calendar.MONTH, monthOfYear);
                 okayBefore.set(Calendar.DAY_OF_MONTH, dayOfMonth);
