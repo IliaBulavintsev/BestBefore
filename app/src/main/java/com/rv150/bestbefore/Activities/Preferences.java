@@ -39,8 +39,15 @@ import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
+import com.google.android.gms.drive.DriveResource;
+import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.OpenFileActivityBuilder;
+import com.google.android.gms.drive.query.Filters;
+import com.google.android.gms.drive.query.Query;
+import com.google.android.gms.drive.query.SearchableField;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.services.drive.model.File;
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Group;
@@ -57,12 +64,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.android.gms.drive.Drive.SCOPE_APPFOLDER;
@@ -77,13 +91,12 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
-    private GoogleSignInOptions gso;
     private GoogleApiClient mGoogleApiClient;
     private String idToken;
     private Preference auth;
     private boolean fileOperation;
 
-   // private GoogleApiClient mGoogleDriveClient;
+    // private GoogleApiClient mGoogleDriveClient;
 
     SharedPreferences sPrefs;
     ProductDAO productDAO;
@@ -187,7 +200,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
         // Синхронизация
-        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestScopes(Drive.SCOPE_FILE)
                 .requestScopes(SCOPE_APPFOLDER)
                 .requestIdToken(getString(R.string.CLIENT_ID))
@@ -266,10 +279,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     }
 
 
-
-
-
-
     private void signOut() {
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
@@ -287,8 +296,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     }
 
 
-
-
     // Drive
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
@@ -304,8 +311,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     }
 
 
-
-
     private void backup() {
         fileOperation = true;
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
@@ -313,51 +318,47 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     }
 
 
-
-
-private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result){
+    private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result) {
 
         final DriveContents driveContents = result.getDriveContents();
 
         // Perform I/O off the UI thread.
 
-        new Thread() {
-            @Override
-            public void run() {
-                // write content to DriveContents
-                OutputStream outputStream = driveContents.getOutputStream();
-                Writer writer = new OutputStreamWriter(outputStream);
-                try {
-                    writer.write("Hello abhay!");
-                    writer.close();
 
-                } catch (IOException e) {
-                    Log.e(TAG, e.getMessage());
-                }
+        OutputStream outputStream = driveContents.getOutputStream();
+        ProductDAO productDAO = new ProductDAO(this);
+        List<Product> products = productDAO.getAll();
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(outputStream);
+            oos.writeObject("check check");
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage());
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    "Failed (writeObject crashed)", Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
 
-                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                        .setTitle("abhaytest2")
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                .setTitle("ProductsFile")
                 .setMimeType("text/plain")
                 .setStarred(true).build();
 
-                // create a file in root folder
-                Drive.DriveApi.getRootFolder(mGoogleApiClient)
-                        .createFile(mGoogleApiClient, changeSet, driveContents)
-                .setResultCallback(fileCallback);
-            }
-        }.start();
+        // create a file in root folder
+        Drive.DriveApi.getAppFolder(mGoogleApiClient)
+                .createFile(mGoogleApiClient, changeSet, driveContents)
+                .setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
+                @Override
+                public void onResult(DriveFolder.DriveFileResult result) {
+                   if (result.getStatus().isSuccess()) {
+                       Toast.makeText(getApplicationContext(),
+                               R.string.backup_success, Toast.LENGTH_SHORT).show();
+                   }
+                }
+            });
     }
 
-    final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new
-    ResultCallback<DriveFolder.DriveFileResult>() {
-        @Override
-        public void onResult(DriveFolder.DriveFileResult result) {
-            if (result.getStatus().isSuccess()) {
-                Toast.makeText(getApplicationContext(),
-                        R.string.backup_success, Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
+
 
     private void restore (){
         fileOperation = false;
@@ -378,7 +379,6 @@ private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result){
                     CreateFileOnGoogleDrive(result);
 
                 } else {
-
                     OpenFileFromGoogleDrive();
 
                 }
@@ -388,20 +388,72 @@ private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result){
 
     public void OpenFileFromGoogleDrive(){
 
-        IntentSender intentSender = Drive.DriveApi
-                .newOpenFileActivityBuilder()
-                .setMimeType(new String[] { "text/plain", "text/html" })
-        .build(mGoogleApiClient);
-        try {
+        Query query = new Query.Builder()
+                .addFilter(Filters.eq(SearchableField.TITLE, "ProductsFile"))
+                .build();
 
-            startIntentSenderForResult(
-                    intentSender, Resources.RC_INTENT_SENDER, null, 0, 0, 0);
 
-        } catch (IntentSender.SendIntentException e) {
-            Log.w(TAG, "Unable to send intent", e);
-        }
+        final DriveFolder folder = Drive.DriveApi.getAppFolder(mGoogleApiClient);
+        folder.queryChildren(mGoogleApiClient, query).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+            @Override
+            public void onResult(DriveApi.MetadataBufferResult metadataBufferResult) {
+                final MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+                int iCount = metadataBuffer.getCount();
+
+                if (iCount >= 1) {
+                    final DriveId myFileId = metadataBuffer.get(0).getDriveId();
+                    final DriveFile file = myFileId.asDriveFile();
+                    file.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
+                    .setResultCallback(contentsOpenedCallback);
+
+                }
+                else {
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            "File was not found", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+                metadataBuffer.release();
+            }
+        });
 
     }
+
+
+    ResultCallback<DriveApi.DriveContentsResult> contentsOpenedCallback =
+            new ResultCallback<DriveApi.DriveContentsResult>() {
+                @Override
+                public void onResult(DriveApi.DriveContentsResult result) {
+                    if (!result.getStatus().isSuccess()) {
+                        Toast toast = Toast.makeText(getApplicationContext(),
+                                R.string.restore_failed + " (result isn't success)", Toast.LENGTH_SHORT);
+                        toast.show();
+                        return;
+                    }
+                    DriveContents contents = result.getDriveContents();
+                    try {
+                        Toast toast = Toast.makeText(getApplicationContext(),
+                                "Parsing...", Toast.LENGTH_SHORT);
+                        toast.show();
+                        ObjectInputStream objectInputStream = new ObjectInputStream(contents.getInputStream());
+//                        List<Product> products = (List) objectInputStream.readObject();
+//                        String sss = ".";
+//                        for (Product product: products) {
+//                            sss += product.getTitle();
+//                            sss += '\n';
+//                        }
+                        String sss = (String) objectInputStream.readObject();
+                        toast = Toast.makeText(getApplicationContext(),
+                                sss + ".", Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+                    catch (IOException | ClassNotFoundException e) {
+                        Toast toast = Toast.makeText(getApplicationContext(),
+                                R.string.restore_failed + " (fail parsing object)", Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+                }
+            };
+
 
 
 
@@ -471,24 +523,6 @@ private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result){
         }
         if (requestCode == Resources.RC_DRIVE_API && resultCode == RESULT_OK) {
             mGoogleApiClient.connect();
-        }
-
-        if (requestCode == Resources.RC_INTENT_SENDER) {
-            if (resultCode == RESULT_OK) {
-
-                DriveId mFileId = (DriveId) data.getParcelableExtra(
-                        OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
-                Log.i("OnActivityResult", "Information received");
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        "OnActivityResuuuult " + mFileId.getResourceId(), Toast.LENGTH_SHORT);
-                toast.show();
-
-
-                String url = "https://drive.google.com/open?id="+ mFileId.getResourceId();
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
-            }
         }
     }
 
