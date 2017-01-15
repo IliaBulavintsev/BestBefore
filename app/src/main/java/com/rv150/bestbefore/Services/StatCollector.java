@@ -34,7 +34,7 @@ public class StatCollector {
         try {
 
             result.put("deviceId", deviceId);
-            result.put("version", 21);
+            result.put("version", 25);
 
 
 

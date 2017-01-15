@@ -201,6 +201,7 @@
             android:summary="@string/auth_via_google"
             android:key="auth" />
         <Preference
+            android:enabled="false"
             android:title="@string/make_backup"
             android:key="backup" />
         <Preference
