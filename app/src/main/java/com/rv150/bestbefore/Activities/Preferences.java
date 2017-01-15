@@ -10,7 +10,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -39,45 +38,32 @@ import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.DriveResource;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.OpenFileActivityBuilder;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.services.drive.model.File;
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
-import com.rv150.bestbefore.Network.HttpPostBackup;
 import com.rv150.bestbefore.Network.HttpPostRestore;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
 
-import org.json.JSONArray;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.android.gms.drive.Drive.SCOPE_APPFOLDER;
 
@@ -98,9 +84,9 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
     // private GoogleApiClient mGoogleDriveClient;
 
-    SharedPreferences sPrefs;
-    ProductDAO productDAO;
-    GroupDAO groupDAO;
+    private SharedPreferences sPrefs;
+    private ProductDAO productDAO;
+    private GroupDAO groupDAO;
 
     private static final String TAG = "Preferences activity";
 
@@ -318,57 +304,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     }
 
 
-    private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result) {
-
-        final DriveContents driveContents = result.getDriveContents();
-
-        // Perform I/O off the UI thread.
-
-
-        OutputStream outputStream = driveContents.getOutputStream();
-        ProductDAO productDAO = new ProductDAO(this);
-        List<Product> products = productDAO.getAll();
-        ObjectOutputStream oos = null;
-        try {
-            oos = new ObjectOutputStream(outputStream);
-            oos.writeObject(products);
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    "Failed (writeObject crashed)", Toast.LENGTH_SHORT);
-            toast.show();
-            return;
-        }
-        finally {
-            try {
-                oos.close();
-            }
-            catch (IOException e) {
-                Log.e(TAG, e.getMessage());
-            }
-        }
-
-        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setTitle("ProductsFile")
-                .setMimeType("text/plain")
-                .setStarred(true).build();
-
-        // create a file in root folder
-        Drive.DriveApi.getAppFolder(mGoogleApiClient)
-                .createFile(mGoogleApiClient, changeSet, driveContents)
-                .setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
-                @Override
-                public void onResult(DriveFolder.DriveFileResult result) {
-                   if (result.getStatus().isSuccess()) {
-                       Toast.makeText(getApplicationContext(),
-                               R.string.backup_success, Toast.LENGTH_SHORT).show();
-                   }
-                }
-            });
-    }
-
-
-
     private void restore (){
         fileOperation = false;
         // create new contents resource
@@ -384,7 +319,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             if (result.getStatus().isSuccess()) {
 
                 if (fileOperation) {
-
                     CreateFileOnGoogleDrive(result);
 
                 } else {
@@ -395,10 +329,58 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         }
     };
 
+
+    private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result) {
+
+        final DriveContents driveContents = result.getDriveContents();
+
+        List<Product> products = productDAO.getAll();
+        List<Group> groups = groupDAO.getAll();
+        Map<String, List> map = new HashMap<>();
+        map.put("products", products);
+        map.put("groups", groups);
+
+        final OutputStream outputStream = driveContents.getOutputStream();
+        final ObjectOutputStream oos;
+        try {
+            oos = new ObjectOutputStream(outputStream);
+            oos.writeObject(map);
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage());
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    "Failed (writeObject crashed)", Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
+
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                .setTitle("BestBeforeBackup")
+                .setMimeType("text/plain")
+                .setStarred(true).build();
+
+        // create a file in root folder
+        Drive.DriveApi.getAppFolder(mGoogleApiClient)
+                .createFile(mGoogleApiClient, changeSet, driveContents)
+                .setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
+                    @Override
+                    public void onResult(DriveFolder.DriveFileResult result) {
+                        if (result.getStatus().isSuccess()) {
+                            Toast toast = Toast.makeText(getApplicationContext(),
+                                    R.string.backup_success, Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
+                    }
+                });
+    }
+
+
+
+
     public void OpenFileFromGoogleDrive(){
 
         Query query = new Query.Builder()
-                .addFilter(Filters.eq(SearchableField.TITLE, "ProductsFile"))
+                .addFilter(Filters.eq(SearchableField.TITLE, "BestBeforeBackup"))
                 .build();
 
 
@@ -410,6 +392,11 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 int iCount = metadataBuffer.getCount();
 
                 if (iCount >= 1) {
+                    if (iCount > 1) {
+                        Toast toast = Toast.makeText(getApplicationContext(),
+                                "File was found, even " + iCount, Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
                     final DriveId myFileId = metadataBuffer.get(0).getDriveId();
                     final DriveFile file = myFileId.asDriveFile();
                     file.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
@@ -440,18 +427,43 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     }
                     DriveContents contents = result.getDriveContents();
                     try {
-                        ObjectInputStream objectInputStream = new ObjectInputStream(contents.getInputStream());
-                        List<Product> products = (List) objectInputStream.readObject();
-                        String sss = ".";
-                        for (Product product: products) {
-                            sss += product.getTitle();
-                            sss += '\n';
-                        }
-
                         Toast toast = Toast.makeText(getApplicationContext(),
-                                sss, Toast.LENGTH_SHORT);
+                                "Ready to read", Toast.LENGTH_SHORT);
                         toast.show();
+                        ObjectInputStream objectInputStream = new ObjectInputStream(contents.getInputStream());
+                        final Map<String, List> map = (Map) objectInputStream.readObject();
                         objectInputStream.close();
+
+                        List<Product> currentProducts = productDAO.getAll();
+                       toast = Toast.makeText(getApplicationContext(),
+                               "Map constructed", Toast.LENGTH_SHORT);
+                        toast.show();
+                        if (!currentProducts.isEmpty()) {
+                            new AlertDialog.Builder(getApplicationContext())
+                                    .setTitle(R.string.warning)
+                                    .setMessage(R.string.do_you_want_to_overwite_existing)
+                                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            saveRestored(map, false);
+                                        }
+
+                                    })
+                                    .setNeutralButton(R.string.combine, new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            saveRestored(map, true);
+                                        }
+
+                                    })
+                                    .setNegativeButton(R.string.no, null)
+                                    .show();
+                        }
+                        else {
+                            saveRestored(map, false);
+                        }
                     }
                     catch (IOException | ClassNotFoundException e) {
                         Toast toast = Toast.makeText(getApplicationContext(),
@@ -465,8 +477,42 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
 
+    private void saveRestored(Map<String, List> map, boolean union) {
+        List<Product> products = map.get("products");
+        List<Group> groups = map.get("groups");
 
+        Map<Long, Long> oldIdToNew = new HashMap<>(); // Старые ID к новым для правильных внешних ключей
 
+        if (!union) {
+            productDAO.deleteAll();
+            groupDAO.deleteAll();
+        }
+
+        for (Group group: groups) {
+            long oldId = group.getId();
+            long newId;
+            try {
+                newId = groupDAO.insertGroup(group);
+            }
+            catch (DuplicateEntryException e) {
+                newId = groupDAO.get(group.getName()).getId();
+            }
+            oldIdToNew.put(oldId, newId);
+        }
+
+        for (Product product: products) {
+            long oldGroupId = product.getGroupId();
+            if (oldGroupId != -1) {
+                long newGroupId =  oldIdToNew.get(oldGroupId);
+                product.setGroupId(newGroupId);
+            }
+            productDAO.insertProduct(product);
+        }
+
+        Toast toast = Toast.makeText(getApplicationContext(),
+                R.string.restore_success, Toast.LENGTH_SHORT);
+        toast.show();
+    }
 
 
 

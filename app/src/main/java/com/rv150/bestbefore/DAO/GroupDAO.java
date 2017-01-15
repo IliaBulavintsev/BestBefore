@@ -3,9 +3,10 @@ package com.rv150.bestbefore.DAO;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Services.DBHelper;
 
@@ -79,15 +80,15 @@ public class GroupDAO {
 
 
 
-    public long insertGroup(Group group) {
+    public long insertGroup(Group group) throws DuplicateEntryException {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DBHelper.Group.COLUMN_NAME_NAME, group.getName());
         try {
             return db.insertOrThrow(DBHelper.Group.TABLE_NAME, null, values);
         }
-        catch (SQLException e) {
-            throw new RuntimeException(e);
+        catch (SQLiteConstraintException e) {
+            throw new DuplicateEntryException(e);
         }
     }
 

@@ -18,7 +18,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -51,6 +50,7 @@ import com.rv150.bestbefore.DeleteOverdue;
 import com.rv150.bestbefore.Dialogs.DeleteAllDialog;
 import com.rv150.bestbefore.Dialogs.DeleteGroupDialog;
 import com.rv150.bestbefore.Dialogs.RateAppDialog;
+import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
 import com.rv150.bestbefore.ItemClickSupport;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
@@ -511,7 +511,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             id = groupDAO.insertGroup(newGroup);
         }
-        catch (RuntimeException e) {
+        catch (DuplicateEntryException e) {
             Toast toast = Toast.makeText(getApplicationContext(),
                     R.string.group_with_this_name_already_exists, Toast.LENGTH_SHORT);
             toast.show();

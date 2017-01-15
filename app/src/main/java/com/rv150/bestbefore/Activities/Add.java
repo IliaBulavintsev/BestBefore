@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
@@ -40,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Created by rv150 on 07.01.2016.
@@ -877,7 +877,7 @@ public class Add extends AppCompatActivity {
         try {
             groupDAO.insertGroup(newGroup);
         }
-        catch (RuntimeException e) {
+        catch (DuplicateEntryException e) {
             Toast toast = Toast.makeText(getApplicationContext(),
                     R.string.group_with_this_name_already_exists, Toast.LENGTH_SHORT);
             toast.show();
