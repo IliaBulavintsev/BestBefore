@@ -17,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -1027,7 +1028,7 @@ public class MainActivity extends AppCompatActivity {
     private void runAddActivity(int clickedPosition) {
         final Product item = wrapperList.get(clickedPosition);
         Intent intent = new Intent(this, Add.class);
-        intent.putExtra(Product.class.getName(), item);
+        intent.putExtra(Product.class.getName(), (Parcelable) item);
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 

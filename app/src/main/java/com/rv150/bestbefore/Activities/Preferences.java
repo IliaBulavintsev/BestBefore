@@ -328,15 +328,24 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         OutputStream outputStream = driveContents.getOutputStream();
         ProductDAO productDAO = new ProductDAO(this);
         List<Product> products = productDAO.getAll();
+        ObjectOutputStream oos = null;
         try {
-            ObjectOutputStream oos = new ObjectOutputStream(outputStream);
-            oos.writeObject("check check");
+            oos = new ObjectOutputStream(outputStream);
+            oos.writeObject(products);
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
             Toast toast = Toast.makeText(getApplicationContext(),
                     "Failed (writeObject crashed)", Toast.LENGTH_SHORT);
             toast.show();
             return;
+        }
+        finally {
+            try {
+                oos.close();
+            }
+            catch (IOException e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
 
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
@@ -431,20 +440,18 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     }
                     DriveContents contents = result.getDriveContents();
                     try {
-                        Toast toast = Toast.makeText(getApplicationContext(),
-                                "Parsing...", Toast.LENGTH_SHORT);
-                        toast.show();
                         ObjectInputStream objectInputStream = new ObjectInputStream(contents.getInputStream());
-//                        List<Product> products = (List) objectInputStream.readObject();
-//                        String sss = ".";
-//                        for (Product product: products) {
-//                            sss += product.getTitle();
-//                            sss += '\n';
-//                        }
-                        String sss = (String) objectInputStream.readObject();
-                        toast = Toast.makeText(getApplicationContext(),
-                                sss + ".", Toast.LENGTH_SHORT);
+                        List<Product> products = (List) objectInputStream.readObject();
+                        String sss = ".";
+                        for (Product product: products) {
+                            sss += product.getTitle();
+                            sss += '\n';
+                        }
+
+                        Toast toast = Toast.makeText(getApplicationContext(),
+                                sss, Toast.LENGTH_SHORT);
                         toast.show();
+                        objectInputStream.close();
                     }
                     catch (IOException | ClassNotFoundException e) {
                         Toast toast = Toast.makeText(getApplicationContext(),

@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -807,7 +808,7 @@ public class Add extends AppCompatActivity {
         }
         editor.apply();
 
-        intent.putExtra(Product.class.getName(), mProduct);
+        intent.putExtra(Product.class.getName(), (Parcelable) mProduct);
         finish();
     }
 

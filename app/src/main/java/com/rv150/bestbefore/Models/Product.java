@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
@@ -13,7 +14,7 @@ import java.util.GregorianCalendar;
 /**
  * Created by rv150 on 06.01.2016.
  */
-public class Product implements Parcelable {
+public class Product implements Parcelable, Serializable {
     private String mTitle;
     private Calendar mProduced;
     private Calendar mDate;
