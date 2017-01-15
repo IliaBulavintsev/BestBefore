@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         isEmpty = (TextView)findViewById(R.id.isEmptyText);
+        isEmpty.bringToFront();
         fab = (FloatingActionButton) findViewById(R.id.fab);
 
 
