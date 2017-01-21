@@ -122,7 +122,8 @@ public class Add extends AppCompatActivity {
         radioDateProduced = (RadioButton)findViewById(R.id.radioButtonDateProduced);
         boolean lastCheckedIsOkayBefore = sPrefs.getBoolean(Resources.LAST_RADIO_WAS_OKAY_BEFORE, true);
         boolean preferenceEnabled = sPrefs.getBoolean("remember_radiobuttons", true);
-        if (preferenceEnabled && !lastCheckedIsOkayBefore) {
+        Bundle extras = getIntent().getExtras();
+        if (preferenceEnabled && !lastCheckedIsOkayBefore && extras == null) {
             radioOkayBefore.setChecked(false);
             radioDateProduced.setChecked(true);
             onRadioDateManClick(null);
@@ -417,7 +418,7 @@ public class Add extends AppCompatActivity {
             }
         });
 
-        Bundle extras = getIntent().getExtras();
+
         if (extras != null) {
             mProduct = extras.getParcelable(Product.class.getName());
             if (mProduct != null) {          // Изменение продукта
