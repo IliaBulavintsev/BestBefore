@@ -194,7 +194,7 @@ public class Add extends AppCompatActivity {
         });
 
         showDateProduced = sPrefs.getBoolean("use_date_produced", true);
-        if (!showDateProduced) {
+        if (!showDateProduced && !radioDateProduced.isChecked()) {
             dateProducedTV.setVisibility(View.GONE);
             dateProducedET.setVisibility(View.GONE);
             dateProducedIV.setVisibility(View.GONE);
