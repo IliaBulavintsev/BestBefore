@@ -199,7 +199,7 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
 
 
 
-        List<Product> currentProducts = productDAO.getAll();
+        List<Product> currentProducts = productDAO.getAllNotRemoved();
         if (!currentProducts.isEmpty()) {
             new AlertDialog.Builder(context)
                     .setTitle(R.string.warning)

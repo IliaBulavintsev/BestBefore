@@ -23,7 +23,7 @@ public class StatCollector {
     public static void shareStatistic(Context context, String message) {
         ProductDAO productDAO = new ProductDAO(context);
         GroupDAO groupDAO = new GroupDAO(context);
-        List<Product> products = productDAO.getAll();
+        List<Product> products = productDAO.getAllNotRemoved();
         List<Group> groups = groupDAO.getAll();
 
         final String deviceId = Settings.Secure.getString(context.getContentResolver(),

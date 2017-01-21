@@ -125,8 +125,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-        // Что нового?
         firstLaunch = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
 
         SharedPreferences.Editor editor = sPrefs.edit();
@@ -203,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
         boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
         if (needShowOverdue) {
             // Удаление просроченных и показ сообщения
-            List<Product> temp = productDAO.getAll();        // берем все продукты из базы
+            List<Product> temp = productDAO.getAllNotRemoved();        // берем все продукты из базы
             List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp);
             DeleteOverdue.markViewed(productDAO, temp);
             if (!newOverdue.isEmpty()) {
@@ -225,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
             date.add(Calendar.DAY_OF_MONTH, 2);
             Product product = new Product(name, date, Calendar.getInstance(), quantity, -1);
             productDAO.insertProduct(product);
-            wrapperList = productDAO.getAll();
+            wrapperList = productDAO.getAllNotRemoved();
             firstLaunch = false;
         }
 
@@ -242,36 +240,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
         boolean alarm_set = sPrefs.getBoolean(Resources.PREF_ALARM_SET, false);
-        boolean firstNotif = sPrefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
-        boolean secondNotif = sPrefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
-        boolean thirdNotif = sPrefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
-        boolean fourthNotif = sPrefs.getBoolean(Resources.PREF_FOURH_NOTIF, false);
-        boolean fifthNotif = sPrefs.getBoolean(Resources.PREF_FIFTH_NOTIF, false);
         SharedPreferences.Editor editor = sPrefs.edit();
         if (wrapperList.isEmpty()) {
             AlarmReceiver am = new AlarmReceiver();
             am.cancelAlarm(this);
             editor.putBoolean(Resources.PREF_ALARM_SET, false);
         }
-        else if(!alarm_set && (firstNotif || secondNotif || thirdNotif || fourthNotif || fifthNotif)){
-            AlarmReceiver am = new AlarmReceiver();
-            am.setAlarm(this);
-            editor.putBoolean(Resources.PREF_ALARM_SET, true);
+        else if(!alarm_set) {
+            boolean firstNotif = sPrefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
+            boolean secondNotif = sPrefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
+            boolean thirdNotif = sPrefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
+            boolean fourthNotif = sPrefs.getBoolean(Resources.PREF_FOURH_NOTIF, false);
+            boolean fifthNotif = sPrefs.getBoolean(Resources.PREF_FIFTH_NOTIF, false);
+            if (firstNotif || secondNotif || thirdNotif || fourthNotif || fifthNotif) {
+                AlarmReceiver am = new AlarmReceiver();
+                am.setAlarm(this);
+                editor.putBoolean(Resources.PREF_ALARM_SET, true);
+            }
         }
         editor.apply();
-
         new InsertForAutocomplete(wrapperList).execute();
     }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -319,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
                 .withSelectable(false)
                 .withIcon(GoogleMaterial.Icon.gmd_email);
 
-        boolean useGroups = sPrefs.getBoolean("use_groups", true);
+        boolean useGroups = sPrefs.getBoolean(Resources.PREF_USE_GROUPS, true);
         if (useGroups) {
             SecondaryDrawerItem addGroup = new SecondaryDrawerItem()
                     .withIdentifier(Resources.ID_FOR_ADD_GROUP)
@@ -718,6 +707,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sPrefs.edit();
         editor.putInt(Resources.PREF_HOURS_NEEDED, hoursNeeded);
         editor.apply();
+        finishAct();
     }
 
 

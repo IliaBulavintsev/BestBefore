@@ -53,13 +53,13 @@ public class GroupDAO {
         cursor.moveToNext();
         String name = cursor.getString(
                     cursor.getColumnIndexOrThrow(DBHelper.Group.COLUMN_NAME_NAME));
+        cursor.close();
         Group group = new Group(name);
         group.setId(id);
-        cursor.close();
         return group;
     }
 
-    public Group get (String name) {
+    public Group get(String name) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String query = "SELECT * FROM " + DBHelper.Group.TABLE_NAME +
                 " WHERE " + DBHelper.Group.COLUMN_NAME_NAME + " = \"" + name + "\"";
@@ -72,9 +72,9 @@ public class GroupDAO {
         cursor.moveToNext();
         long id = cursor.getLong(
                 cursor.getColumnIndexOrThrow(DBHelper.Group._ID));
+        cursor.close();
         Group group = new Group(name);
         group.setId(id);
-        cursor.close();
         return group;
     }
 

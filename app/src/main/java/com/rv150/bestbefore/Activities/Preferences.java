@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -335,21 +336,38 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         final DriveContents driveContents = result.getDriveContents();
 
         List<Product> products = productDAO.getAll();
+        if (products.isEmpty()) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.nothing_to_backup, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
         List<Group> groups = groupDAO.getAll();
         Map<String, List> map = new HashMap<>();
         map.put("products", products);
-        map.put("groups", groups);
+        if (!groups.isEmpty()) {
+            map.put("groups", groups);
+        }
 
         final OutputStream outputStream = driveContents.getOutputStream();
-        final ObjectOutputStream oos;
+        ObjectOutputStream oos = null;
         try {
             oos = new ObjectOutputStream(outputStream);
             oos.writeObject(map);
+            oos.close();
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
             Toast toast = Toast.makeText(getApplicationContext(),
                     "Failed (writeObject crashed)", Toast.LENGTH_SHORT);
             toast.show();
+            if (oos != null) {
+                try {
+                    oos.close();
+                }
+                catch (IOException ee) {
+                    Log.e(TAG, "Error closing OutputStream");
+                }
+            }
             return;
         }
 
@@ -368,6 +386,11 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                         if (result.getStatus().isSuccess()) {
                             Toast toast = Toast.makeText(getApplicationContext(),
                                     R.string.backup_success, Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
+                        else {
+                            Toast toast = Toast.makeText(getApplicationContext(),
+                                    "Result is not success", Toast.LENGTH_SHORT);
                             toast.show();
                         }
                     }
@@ -392,15 +415,59 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 int iCount = metadataBuffer.getCount();
 
                 if (iCount >= 1) {
-                    if (iCount > 1) {
-                        Toast toast = Toast.makeText(getApplicationContext(),
-                                "File was found, even " + iCount, Toast.LENGTH_SHORT);
-                        toast.show();
-                    }
                     final DriveId myFileId = metadataBuffer.get(0).getDriveId();
                     final DriveFile file = myFileId.asDriveFile();
                     file.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
-                    .setResultCallback(contentsOpenedCallback);
+                    .setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
+                        @Override
+                        public void onResult(@NonNull DriveApi.DriveContentsResult result) {
+                            if (!result.getStatus().isSuccess()) {
+                                Toast toast = Toast.makeText(getApplicationContext(),
+                                        R.string.restore_failed + " (result isn't success)", Toast.LENGTH_SHORT);
+                                toast.show();
+                                return;
+                            }
+                            DriveContents contents = result.getDriveContents();
+                            try {
+                                ObjectInputStream objectInputStream = new ObjectInputStream(contents.getInputStream());
+                                final Map<String, List> map = (Map) objectInputStream.readObject();
+                                objectInputStream.close();
+
+                                List<Product> currentProducts = productDAO.getAll();
+                                if (!currentProducts.isEmpty()) {
+                                    new AlertDialog.Builder(Preferences.this)
+                                            .setTitle(R.string.warning)
+                                            .setMessage(R.string.do_you_want_to_overwite_existing)
+                                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
+                                            {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    saveRestored(map, false);
+                                                }
+
+                                            })
+                                            .setNeutralButton(R.string.combine, new DialogInterface.OnClickListener()
+                                            {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    saveRestored(map, true);
+                                                }
+
+                                            })
+                                            .setNegativeButton(R.string.no, null)
+                                            .show();
+                                }
+                                else {
+                                    saveRestored(map, false);
+                                }
+                            }
+                            catch (Exception e) {
+                                Toast toast = Toast.makeText(getApplicationContext(),
+                                        R.string.restore_failed + e.getMessage(), Toast.LENGTH_SHORT);
+                                toast.show();
+                            }
+                        }
+                    });
 
                 }
                 else {
@@ -415,71 +482,13 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     }
 
 
-    ResultCallback<DriveApi.DriveContentsResult> contentsOpenedCallback =
-            new ResultCallback<DriveApi.DriveContentsResult>() {
-                @Override
-                public void onResult(DriveApi.DriveContentsResult result) {
-                    if (!result.getStatus().isSuccess()) {
-                        Toast toast = Toast.makeText(getApplicationContext(),
-                                R.string.restore_failed + " (result isn't success)", Toast.LENGTH_SHORT);
-                        toast.show();
-                        return;
-                    }
-                    DriveContents contents = result.getDriveContents();
-                    try {
-                        Toast toast = Toast.makeText(getApplicationContext(),
-                                "Ready to read", Toast.LENGTH_SHORT);
-                        toast.show();
-                        ObjectInputStream objectInputStream = new ObjectInputStream(contents.getInputStream());
-                        final Map<String, List> map = (Map) objectInputStream.readObject();
-                        objectInputStream.close();
-
-                        List<Product> currentProducts = productDAO.getAll();
-                       toast = Toast.makeText(getApplicationContext(),
-                               "Map constructed", Toast.LENGTH_SHORT);
-                        toast.show();
-                        if (!currentProducts.isEmpty()) {
-                            new AlertDialog.Builder(getApplicationContext())
-                                    .setTitle(R.string.warning)
-                                    .setMessage(R.string.do_you_want_to_overwite_existing)
-                                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
-                                    {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            saveRestored(map, false);
-                                        }
-
-                                    })
-                                    .setNeutralButton(R.string.combine, new DialogInterface.OnClickListener()
-                                    {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            saveRestored(map, true);
-                                        }
-
-                                    })
-                                    .setNegativeButton(R.string.no, null)
-                                    .show();
-                        }
-                        else {
-                            saveRestored(map, false);
-                        }
-                    }
-                    catch (IOException | ClassNotFoundException e) {
-                        Toast toast = Toast.makeText(getApplicationContext(),
-                                R.string.restore_failed + " (fail parsing object)", Toast.LENGTH_SHORT);
-                        toast.show();
-                    }
-                }
-            };
-
 
 
 
 
     private void saveRestored(Map<String, List> map, boolean union) {
-        List<Product> products = map.get("products");
-        List<Group> groups = map.get("groups");
+        List<Product> products = (List) map.get("products");
+        List<Group> groups = (List) map.get("groups");
 
         Map<Long, Long> oldIdToNew = new HashMap<>(); // Старые ID к новым для правильных внешних ключей
 
@@ -488,16 +497,17 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             groupDAO.deleteAll();
         }
 
-        for (Group group: groups) {
-            long oldId = group.getId();
-            long newId;
-            try {
-                newId = groupDAO.insertGroup(group);
+        if (groups != null) {
+            for (Group group : groups) {
+                long oldId = group.getId();
+                long newId;
+                try {
+                    newId = groupDAO.insertGroup(group);
+                } catch (DuplicateEntryException e) {
+                    newId = groupDAO.get(group.getName()).getId();
+                }
+                oldIdToNew.put(oldId, newId);
             }
-            catch (DuplicateEntryException e) {
-                newId = groupDAO.get(group.getName()).getId();
-            }
-            oldIdToNew.put(oldId, newId);
         }
 
         for (Product product: products) {

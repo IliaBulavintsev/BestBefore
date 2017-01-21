@@ -34,6 +34,7 @@ public final class Resources {
     public static final String PREF_DAYS_IN_THIRD_NOTIF = "days_in_third";
     public static final String PREF_DAYS_IN_FOURTH_NOTIF = "days_in_fourth";
     public static final String PREF_DAYS_IN_FIFTH_NOTIF = "days_in_fifth";
+    public static final String PREF_USE_GROUPS = "use_groups";
     public static final String STANDART = "STANDART";
     public static final String SPOILED_TO_FRESH = "SPOILED_TO_FRESH";
     public static final String FRESH_TO_SPOILED = "FRESH_TO_SPOILED";
