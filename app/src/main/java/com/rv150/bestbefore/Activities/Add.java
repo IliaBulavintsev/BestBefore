@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -29,6 +30,7 @@ import android.widget.Toast;
 
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
@@ -39,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Created by rv150 on 07.01.2016.
@@ -76,8 +77,6 @@ public class Add extends AppCompatActivity {
     private String groupName;
     private Calendar dateProduced;
     private Calendar okayBefore;
-
-    private DBHelper dbHelper;
 
     private GroupDAO groupDAO;
     private ProductDAO productDAO;
@@ -123,7 +122,8 @@ public class Add extends AppCompatActivity {
         radioDateProduced = (RadioButton)findViewById(R.id.radioButtonDateProduced);
         boolean lastCheckedIsOkayBefore = sPrefs.getBoolean(Resources.LAST_RADIO_WAS_OKAY_BEFORE, true);
         boolean preferenceEnabled = sPrefs.getBoolean("remember_radiobuttons", true);
-        if (preferenceEnabled && !lastCheckedIsOkayBefore) {
+        Bundle extras = getIntent().getExtras();
+        if (preferenceEnabled && !lastCheckedIsOkayBefore && extras == null) {
             radioOkayBefore.setChecked(false);
             radioDateProduced.setChecked(true);
             onRadioDateManClick(null);
@@ -154,7 +154,7 @@ public class Add extends AppCompatActivity {
 
         groupDAO = new GroupDAO(getApplicationContext());
         productDAO = new ProductDAO(getApplicationContext());
-        dbHelper = new DBHelper(getApplicationContext());
+        DBHelper dbHelper = new DBHelper(getApplicationContext());
 
         okayBefore = Calendar.getInstance();
         dateProduced = Calendar.getInstance();
@@ -418,7 +418,7 @@ public class Add extends AppCompatActivity {
             }
         });
 
-        Bundle extras = getIntent().getExtras();
+
         if (extras != null) {
             mProduct = extras.getParcelable(Product.class.getName());
             if (mProduct != null) {          // Изменение продукта
@@ -602,12 +602,14 @@ public class Add extends AppCompatActivity {
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
             if (firstDialogOpened) {    // Установка даты изготовления
+                isDateProducedFirstTimeOpened = false;
                 dateProduced.set(Calendar.YEAR, year);
                 dateProduced.set(Calendar.MONTH, monthOfYear);
                 dateProduced.set(Calendar.DAY_OF_MONTH, dayOfMonth);
                 setDateText(dateProduced, dateProducedET);
             }
             else {  // Установка "годен до"
+                isOkayBeforeFirstTimeOpened = false;
                 okayBefore.set(Calendar.YEAR, year);
                 okayBefore.set(Calendar.MONTH, monthOfYear);
                 okayBefore.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -807,7 +809,7 @@ public class Add extends AppCompatActivity {
         }
         editor.apply();
 
-        intent.putExtra(Product.class.getName(), mProduct);
+        intent.putExtra(Product.class.getName(), (Parcelable) mProduct);
         finish();
     }
 
@@ -876,7 +878,7 @@ public class Add extends AppCompatActivity {
         try {
             groupDAO.insertGroup(newGroup);
         }
-        catch (RuntimeException e) {
+        catch (DuplicateEntryException e) {
             Toast toast = Toast.makeText(getApplicationContext(),
                     R.string.group_with_this_name_already_exists, Toast.LENGTH_SHORT);
             toast.show();

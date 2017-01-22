@@ -17,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -49,6 +50,7 @@ import com.rv150.bestbefore.DeleteOverdue;
 import com.rv150.bestbefore.Dialogs.DeleteAllDialog;
 import com.rv150.bestbefore.Dialogs.DeleteGroupDialog;
 import com.rv150.bestbefore.Dialogs.RateAppDialog;
+import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
 import com.rv150.bestbefore.ItemClickSupport;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
@@ -104,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         isEmpty = (TextView)findViewById(R.id.isEmptyText);
+        isEmpty.bringToFront();
         fab = (FloatingActionButton) findViewById(R.id.fab);
 
 
@@ -122,8 +125,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-        // Что нового?
         firstLaunch = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
 
         SharedPreferences.Editor editor = sPrefs.edit();
@@ -200,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
         boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
         if (needShowOverdue) {
             // Удаление просроченных и показ сообщения
-            List<Product> temp = productDAO.getAll();        // берем все продукты из базы
+            List<Product> temp = productDAO.getAllNotRemoved();        // берем все продукты из базы
             List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp);
             DeleteOverdue.markViewed(productDAO, temp);
             if (!newOverdue.isEmpty()) {
@@ -222,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
             date.add(Calendar.DAY_OF_MONTH, 2);
             Product product = new Product(name, date, Calendar.getInstance(), quantity, -1);
             productDAO.insertProduct(product);
-            wrapperList = productDAO.getAll();
+            wrapperList = productDAO.getAllNotRemoved();
             firstLaunch = false;
         }
 
@@ -239,36 +240,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
         boolean alarm_set = sPrefs.getBoolean(Resources.PREF_ALARM_SET, false);
-        boolean firstNotif = sPrefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
-        boolean secondNotif = sPrefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
-        boolean thirdNotif = sPrefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
-        boolean fourthNotif = sPrefs.getBoolean(Resources.PREF_FOURH_NOTIF, false);
-        boolean fifthNotif = sPrefs.getBoolean(Resources.PREF_FIFTH_NOTIF, false);
         SharedPreferences.Editor editor = sPrefs.edit();
         if (wrapperList.isEmpty()) {
             AlarmReceiver am = new AlarmReceiver();
             am.cancelAlarm(this);
             editor.putBoolean(Resources.PREF_ALARM_SET, false);
         }
-        else if(!alarm_set && (firstNotif || secondNotif || thirdNotif || fourthNotif || fifthNotif)){
-            AlarmReceiver am = new AlarmReceiver();
-            am.setAlarm(this);
-            editor.putBoolean(Resources.PREF_ALARM_SET, true);
+        else if(!alarm_set) {
+            boolean firstNotif = sPrefs.getBoolean(Resources.PREF_FIRST_NOTIF, true);
+            boolean secondNotif = sPrefs.getBoolean(Resources.PREF_SECOND_NOTIF, false);
+            boolean thirdNotif = sPrefs.getBoolean(Resources.PREF_THIRD_NOTIF, false);
+            boolean fourthNotif = sPrefs.getBoolean(Resources.PREF_FOURH_NOTIF, false);
+            boolean fifthNotif = sPrefs.getBoolean(Resources.PREF_FIFTH_NOTIF, false);
+            if (firstNotif || secondNotif || thirdNotif || fourthNotif || fifthNotif) {
+                AlarmReceiver am = new AlarmReceiver();
+                am.setAlarm(this);
+                editor.putBoolean(Resources.PREF_ALARM_SET, true);
+            }
         }
         editor.apply();
-
         new InsertForAutocomplete(wrapperList).execute();
     }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -316,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
                 .withSelectable(false)
                 .withIcon(GoogleMaterial.Icon.gmd_email);
 
-        boolean useGroups = sPrefs.getBoolean("use_groups", true);
+        boolean useGroups = sPrefs.getBoolean(Resources.PREF_USE_GROUPS, true);
         if (useGroups) {
             SecondaryDrawerItem addGroup = new SecondaryDrawerItem()
                     .withIdentifier(Resources.ID_FOR_ADD_GROUP)
@@ -508,7 +500,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             id = groupDAO.insertGroup(newGroup);
         }
-        catch (RuntimeException e) {
+        catch (DuplicateEntryException e) {
             Toast toast = Toast.makeText(getApplicationContext(),
                     R.string.group_with_this_name_already_exists, Toast.LENGTH_SHORT);
             toast.show();
@@ -715,6 +707,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sPrefs.edit();
         editor.putInt(Resources.PREF_HOURS_NEEDED, hoursNeeded);
         editor.apply();
+        finishAct();
     }
 
 
@@ -815,6 +808,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // Вызов окна с предложением оценить приложение
                     DialogFragment dialog = new RateAppDialog();
+                    dialog.setCancelable(false);
                     dialog.show(getFragmentManager(), "RateApp");
                 }
                 else {
@@ -920,7 +914,8 @@ public class MainActivity extends AppCompatActivity {
             private void init() {
                 background = new ColorDrawable(Color.RED);
                 xMark = ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_clear_24dp);
-                xMark.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+                xMark.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        R.color.md_light_background), PorterDuff.Mode.SRC_ATOP);
                 xMarkMargin = (int) MainActivity.this.getResources().getDimension(R.dimen.ic_clear_margin);
                 initiated = true;
             }
@@ -983,9 +978,7 @@ public class MainActivity extends AppCompatActivity {
                 int xMarkTop = itemView.getTop() + (itemHeight - intrinsicHeight)/2;
                 int xMarkBottom = xMarkTop + intrinsicHeight;
                 xMark.setBounds(xMarkLeft, xMarkTop, xMarkRight, xMarkBottom);
-
                 xMark.draw(c);
-
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             }
 
@@ -1016,62 +1009,6 @@ public class MainActivity extends AppCompatActivity {
                 if (!initiated) {
                     init();
                 }
-
-                // only if animation is in progress
-                if (parent.getItemAnimator().isRunning()) {
-
-                    // some items might be animating down and some items might be animating up to close the gap left by the removed item
-                    // this is not exclusive, both movement can be happening at the same time
-                    // to reproduce this leave just enough items so the first one and the last one would be just a little off screen
-                    // then remove one from the middle
-
-                    // find first child with translationY > 0
-                    // and last one with translationY < 0
-                    // we're after a rect that is not covered in recycler-view views at this point in time
-                    View lastViewComingDown = null;
-                    View firstViewComingUp = null;
-
-                    // this is fixed
-                    int left = 0;
-                    int right = parent.getWidth();
-
-                    // this we need to find out
-                    int top = 0;
-                    int bottom = 0;
-
-                    // find relevant translating views
-                    int childCount = parent.getLayoutManager().getChildCount();
-                    for (int i = 0; i < childCount; i++) {
-                        View child = parent.getLayoutManager().getChildAt(i);
-                        if (child.getTranslationY() < 0) {
-                            // view is coming down
-                            lastViewComingDown = child;
-                        } else if (child.getTranslationY() > 0) {
-                            // view is coming up
-                            if (firstViewComingUp == null) {
-                                firstViewComingUp = child;
-                            }
-                        }
-                    }
-
-                    if (lastViewComingDown != null && firstViewComingUp != null) {
-                        // views are coming down AND going up to fill the void
-                        top = lastViewComingDown.getBottom() + (int) lastViewComingDown.getTranslationY();
-                        bottom = firstViewComingUp.getTop() + (int) firstViewComingUp.getTranslationY();
-                    } else if (lastViewComingDown != null) {
-                        // views are going down to fill the void
-                        top = lastViewComingDown.getBottom() + (int) lastViewComingDown.getTranslationY();
-                        bottom = lastViewComingDown.getBottom();
-                    } else if (firstViewComingUp != null) {
-                        // views are coming up to fill the void
-                        top = firstViewComingUp.getTop();
-                        bottom = firstViewComingUp.getTop() + (int) firstViewComingUp.getTranslationY();
-                    }
-
-                    background.setBounds(left, top, right, bottom);
-                    background.draw(c);
-
-                }
                 super.onDraw(c, parent, state);
             }
 
@@ -1082,7 +1019,7 @@ public class MainActivity extends AppCompatActivity {
     private void runAddActivity(int clickedPosition) {
         final Product item = wrapperList.get(clickedPosition);
         Intent intent = new Intent(this, Add.class);
-        intent.putExtra(Product.class.getName(), item);
+        intent.putExtra(Product.class.getName(), (Parcelable) item);
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 

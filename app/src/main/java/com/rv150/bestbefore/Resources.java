@@ -34,6 +34,7 @@ public final class Resources {
     public static final String PREF_DAYS_IN_THIRD_NOTIF = "days_in_third";
     public static final String PREF_DAYS_IN_FOURTH_NOTIF = "days_in_fourth";
     public static final String PREF_DAYS_IN_FIFTH_NOTIF = "days_in_fifth";
+    public static final String PREF_USE_GROUPS = "use_groups";
     public static final String STANDART = "STANDART";
     public static final String SPOILED_TO_FRESH = "SPOILED_TO_FRESH";
     public static final String FRESH_TO_SPOILED = "FRESH_TO_SPOILED";
@@ -45,6 +46,7 @@ public final class Resources {
     public static final int RC_SIGN_IN = 1;
     public static final int RC_DRIVE_API = 2;
     public static final int RC_SETTINGS = 3;
+    public static final int RC_INTENT_SENDER = 4;
     public static final int RESULT_ADD = 1;
     public static final int RESULT_MODIFY = 2;
     public static final String SERVER_URL = "http://212.109.192.197:8080/";

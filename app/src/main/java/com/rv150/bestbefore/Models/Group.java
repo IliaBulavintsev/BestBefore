@@ -6,11 +6,13 @@ import android.os.Parcelable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
+
 /**
  * Created by Rudnev on 05.11.2016.
  */
 
-public class Group implements Parcelable {
+public class Group implements Parcelable, Serializable {
     private String mName;
     private long mId;
 
