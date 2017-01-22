@@ -316,6 +316,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
     private void restore (){
         fileOperation = false;
+        Drive.DriveApi.requestSync(mGoogleApiClient);
         // create new contents resource
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                 .setResultCallback(driveContentsCallback);
@@ -325,7 +326,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             new ResultCallback<DriveApi.DriveContentsResult>() {
         @Override
         public void onResult(DriveApi.DriveContentsResult result) {
-
             if (result.getStatus().isSuccess()) {
 
                 if (fileOperation) {
@@ -395,6 +395,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                             Toast toast = Toast.makeText(getApplicationContext(),
                                     R.string.backup_success, Toast.LENGTH_SHORT);
                             toast.show();
+                            Drive.DriveApi.requestSync(mGoogleApiClient);
 
                         } else {
                             Toast toast = Toast.makeText(getApplicationContext(),
@@ -424,9 +425,11 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
                         final MetadataBuffer content = result.getMetadataBuffer();
 
+
                         DriveResultsAdapter resultsAdapter = new DriveResultsAdapter(Preferences.this);
                         resultsAdapter.clear();
                         resultsAdapter.append(content);
+
 
                         new AlertDialog.Builder(Preferences.this)
                                 .setTitle("Выберите резервную копию")
@@ -583,6 +586,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     Toast toast = Toast.makeText(getApplicationContext(),
                             R.string.auth_success, Toast.LENGTH_SHORT);
                     toast.show();
+                    Drive.DriveApi.requestSync(mGoogleApiClient);
                 }
                 // Возможно излишне
                 else {
