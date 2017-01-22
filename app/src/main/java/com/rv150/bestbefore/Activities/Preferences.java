@@ -45,6 +45,7 @@ import com.google.android.gms.drive.OpenFileActivityBuilder;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
+import com.rv150.bestbefore.Adapters.DriveResultsAdapter;
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
@@ -379,13 +380,13 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             return;
         }
 
-        DateFormat ndf = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
+        DateFormat ndf = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss", Locale.US);
 
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setTitle("Backup " + ndf.format(new Date()))
+                .setTitle("Копия " + ndf.format(new Date()))
                 .setMimeType("text/plain")
                 .setStarred(true).build();
-        Drive.DriveApi.getRootFolder(mGoogleApiClient)
+        Drive.DriveApi.getAppFolder(mGoogleApiClient)
                 .createFile(mGoogleApiClient, changeSet, driveContents)
                 .setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
                     @Override
@@ -397,7 +398,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
                         } else {
                             Toast toast = Toast.makeText(getApplicationContext(),
-                                    R.string.backup_failed + " Result is not success", Toast.LENGTH_SHORT);
+                                    R.string.backup_failed, Toast.LENGTH_SHORT);
                             toast.show();
                         }
                     }
@@ -409,18 +410,92 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     public void OpenFileFromGoogleDrive(){
-        IntentSender intentSender = Drive.DriveApi
-                .newOpenFileActivityBuilder()
-                .setActivityStartFolder(Drive.DriveApi.getRootFolder(mGoogleApiClient).getDriveId())
-                .setMimeType(new String[] { "text/plain" })
-                .build(mGoogleApiClient);
-        try {
-            startIntentSenderForResult(
-                    intentSender, Resources.RC_INTENT_SENDER, null, 0, 0, 0);
-        } catch (IntentSender.SendIntentException e) {
-            Log.w(TAG, "Unable to send intent", e);
-        }
+        DriveFolder appFolder = Drive.DriveApi.getAppFolder(mGoogleApiClient);
+        appFolder.listChildren(mGoogleApiClient)
+                .setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+                    @Override
+                    public void onResult(@NonNull DriveApi.MetadataBufferResult result) {
+                        if (!result.getStatus().isSuccess()) {
+                            Toast toast = Toast.makeText(getApplicationContext(),
+                                    R.string.restore_failed, Toast.LENGTH_SHORT);
+                            toast.show();
+                            return;
+                        }
+
+                        final MetadataBuffer content = result.getMetadataBuffer();
+
+                        DriveResultsAdapter resultsAdapter = new DriveResultsAdapter(Preferences.this);
+                        resultsAdapter.clear();
+                        resultsAdapter.append(content);
+
+                        new AlertDialog.Builder(Preferences.this)
+                                .setTitle("Выберите резервную копию")
+                                .setAdapter(resultsAdapter, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        DriveFile file =  content.get(which).getDriveId().asDriveFile();
+                                        file.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
+                                                .setResultCallback(openingFile);
+                                    }
+                                })
+                                .show();
+
+                    }
+                });
     }
+
+
+
+    final ResultCallback<DriveApi.DriveContentsResult> openingFile = new ResultCallback<DriveApi.DriveContentsResult>() {
+        @Override
+        public void onResult(@NonNull DriveApi.DriveContentsResult result) {
+            if (!result.getStatus().isSuccess()) {
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        R.string.restore_failed, Toast.LENGTH_SHORT);
+                toast.show();
+                return;
+            }
+            DriveContents contents = result.getDriveContents();
+            try {
+                ObjectInputStream objectInputStream = new ObjectInputStream(contents.getInputStream());
+                final Map<String, List> map = (Map) objectInputStream.readObject();
+                objectInputStream.close();
+
+                List<Product> currentProducts = productDAO.getAll();
+                if (!currentProducts.isEmpty()) {
+                    new AlertDialog.Builder(Preferences.this)
+                            .setTitle(R.string.warning)
+                            .setMessage(R.string.do_you_want_to_overwite_existing)
+                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    saveRestored(map, false);
+                                }
+
+                            })
+                            .setNeutralButton(R.string.combine, new DialogInterface.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    saveRestored(map, true);
+                                }
+
+                            })
+                            .setNegativeButton(R.string.no, null)
+                            .show();
+                }
+                else {
+                    saveRestored(map, false);
+                }
+            }
+            catch (Exception e) {
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        R.string.restore_failed, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        }
+    };
 
 
 
@@ -528,73 +603,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         if (requestCode == Resources.RC_DRIVE_API && resultCode == RESULT_OK) {
             mGoogleApiClient.connect();
         }
-
-
-
-        // Выбор файла в Google Drive
-        if (requestCode == Resources.RC_INTENT_SENDER && resultCode == RESULT_OK) {
-            DriveId driveId = data.getParcelableExtra(
-                    OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID); //this extra contains the drive id of the selected file
-            Log.i(TAG, "Selected folder's ID: " + driveId.encodeToString());
-            Log.i(TAG, "Selected folder's Resource ID: " + driveId.getResourceId());
-
-
-            DriveFile file = driveId.asDriveFile();
-            file.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
-                    .setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
-                        @Override
-                        public void onResult(@NonNull DriveApi.DriveContentsResult result) {
-                            if (!result.getStatus().isSuccess()) {
-                                Toast toast = Toast.makeText(getApplicationContext(),
-                                        R.string.restore_failed, Toast.LENGTH_SHORT);
-                                toast.show();
-                                return;
-                            }
-                            DriveContents contents = result.getDriveContents();
-                            try {
-                                ObjectInputStream objectInputStream = new ObjectInputStream(contents.getInputStream());
-                                final Map<String, List> map = (Map) objectInputStream.readObject();
-                                objectInputStream.close();
-
-                                List<Product> currentProducts = productDAO.getAll();
-                                if (!currentProducts.isEmpty()) {
-                                    new AlertDialog.Builder(Preferences.this)
-                                            .setTitle(R.string.warning)
-                                            .setMessage(R.string.do_you_want_to_overwite_existing)
-                                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
-                                            {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    saveRestored(map, false);
-                                                }
-
-                                            })
-                                            .setNeutralButton(R.string.combine, new DialogInterface.OnClickListener()
-                                            {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    saveRestored(map, true);
-                                                }
-
-                                            })
-                                            .setNegativeButton(R.string.no, null)
-                                            .show();
-                                }
-                                else {
-                                    saveRestored(map, false);
-                                }
-                            }
-                            catch (Exception e) {
-                                Toast toast = Toast.makeText(getApplicationContext(),
-                                        R.string.restore_failed + e.getMessage(), Toast.LENGTH_SHORT);
-                                toast.show();
-                            }
-                        }
-                    });
-
-        }
     }
-
 
 
 

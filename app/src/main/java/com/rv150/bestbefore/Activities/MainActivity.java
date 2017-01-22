@@ -808,6 +808,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // Вызов окна с предложением оценить приложение
                     DialogFragment dialog = new RateAppDialog();
+                    dialog.setCancelable(false);
                     dialog.show(getFragmentManager(), "RateApp");
                 }
                 else {
