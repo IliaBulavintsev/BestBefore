@@ -123,7 +123,11 @@ public class Add extends AppCompatActivity {
         boolean lastCheckedIsOkayBefore = sPrefs.getBoolean(Resources.LAST_RADIO_WAS_OKAY_BEFORE, true);
         boolean preferenceEnabled = sPrefs.getBoolean("remember_radiobuttons", true);
         Bundle extras = getIntent().getExtras();
-        if (preferenceEnabled && !lastCheckedIsOkayBefore && extras == null) {
+
+        if (extras != null) {
+            mProduct = extras.getParcelable(Product.class.getName());
+        }
+        if (preferenceEnabled && !lastCheckedIsOkayBefore && mProduct == null) { // Создание продукта
             radioOkayBefore.setChecked(false);
             radioDateProduced.setChecked(true);
             onRadioDateManClick(null);
@@ -194,7 +198,7 @@ public class Add extends AppCompatActivity {
         });
 
         showDateProduced = sPrefs.getBoolean("use_date_produced", true);
-        if (!showDateProduced) {
+        if (!showDateProduced && !radioDateProduced.isChecked()) {
             dateProducedTV.setVisibility(View.GONE);
             dateProducedET.setVisibility(View.GONE);
             dateProducedIV.setVisibility(View.GONE);

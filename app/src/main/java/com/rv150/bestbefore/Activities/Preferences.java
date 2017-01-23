@@ -380,10 +380,10 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             return;
         }
 
-        DateFormat ndf = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss", Locale.US);
+        DateFormat ndf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.UK);
 
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setTitle("Копия " + ndf.format(new Date()))
+                .setTitle("Копия " + ndf.format(Calendar.getInstance().getTime()))
                 .setMimeType("text/plain")
                 .setStarred(true).build();
         Drive.DriveApi.getAppFolder(mGoogleApiClient)
