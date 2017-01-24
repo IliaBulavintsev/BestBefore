@@ -957,7 +957,7 @@ public class Add extends AppCompatActivity {
             }
 
             this.doubleBackToExitPressedOnce = true;
-            Toast.makeText(this, R.string.press_twice_to_exit, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.press_twice_to_close, Toast.LENGTH_SHORT).show();
 
             new Handler().postDelayed(new Runnable() {
                 @Override
