@@ -124,10 +124,12 @@ public class Add extends AppCompatActivity {
         boolean preferenceEnabled = sPrefs.getBoolean("remember_radiobuttons", true);
         Bundle extras = getIntent().getExtras();
 
-        if (extras != null) {
-            mProduct = extras.getParcelable(Product.class.getName());
+        String status = extras.getString(Resources.STATUS);
+        if (status == null) {
+            status = Resources.STATUS_ADD;
         }
-        if (preferenceEnabled && !lastCheckedIsOkayBefore && mProduct == null) { // Создание продукта
+
+        if (preferenceEnabled && !lastCheckedIsOkayBefore && status.equals(Resources.STATUS_ADD)) { // Создание продукта
             radioOkayBefore.setChecked(false);
             radioDateProduced.setChecked(true);
             onRadioDateManClick(null);

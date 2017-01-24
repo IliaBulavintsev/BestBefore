@@ -714,6 +714,7 @@ public class MainActivity extends AppCompatActivity {
     public void onFabClick(View view) {
         Intent intent = new Intent(MainActivity.this, Add.class);
         intent.putExtra(Resources.GROUP_ID, groupChoosen);
+        intent.putExtra(Resources.STATUS, Resources.STATUS_ADD);
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
 
@@ -1019,6 +1020,7 @@ public class MainActivity extends AppCompatActivity {
     private void runAddActivity(int clickedPosition) {
         final Product item = wrapperList.get(clickedPosition);
         Intent intent = new Intent(this, Add.class);
+        intent.putExtra(Resources.STATUS, Resources.STATUS_EDIT);
         intent.putExtra(Product.class.getName(), (Parcelable) item);
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
     }
