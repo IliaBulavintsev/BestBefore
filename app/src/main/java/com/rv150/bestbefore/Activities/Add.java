@@ -234,10 +234,10 @@ public class Add extends AppCompatActivity {
 
 
 
-        boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW, true);
+        boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW_25_ADD, true);
         if (whatsNew) {
             new AlertDialog.Builder(this).setTitle(R.string.help)
-                    .setTitle(R.string.whats_new_title)
+                    .setTitle(R.string.help)
                     .setMessage(R.string.whats_new_25)
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
@@ -245,7 +245,7 @@ public class Add extends AppCompatActivity {
                         }
                     }).show();
             SharedPreferences.Editor editor = sPrefs.edit();
-            editor.putBoolean(Resources.WHATS_NEW, false);
+            editor.putBoolean(Resources.WHATS_NEW_25_ADD, false);
             editor.apply();
         }
 
@@ -425,7 +425,7 @@ public class Add extends AppCompatActivity {
         });
 
 
-        if (extras != null) {
+
             mProduct = extras.getParcelable(Product.class.getName());
             if (mProduct != null) {          // Изменение продукта
                 isChanging = true;
@@ -449,9 +449,7 @@ public class Add extends AppCompatActivity {
                     groupName = group.getName();
                 }
             }
-        } else {
-            mProduct = new Product();
-        }
+
 
         if (groupName != null) {
             int pos = groupNames.indexOf(groupName);

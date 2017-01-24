@@ -17,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -94,6 +95,8 @@ public class MainActivity extends AppCompatActivity {
     private long groupChoosen = Resources.ID_MAIN_GROUP;
     private long deletedFromThisGroup;
 
+    private boolean doubleBackToExitPressedOnce = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,9 +171,23 @@ public class MainActivity extends AppCompatActivity {
             editor.apply();
         }
         else {
-            editor.remove(Resources.CONGRATULATION);
-            editor.apply();
+            boolean warning = sPrefs.getBoolean(Resources.PREF_SHOW_SYNC_WARNING, true);
+            if (warning) {
+                new AlertDialog.Builder(this)
+                        .setCancelable(false)
+                        .setTitle(R.string.warning)
+                        .setMessage(R.string.sync_warning)
+                        .setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        }).show();
+            }
         }
+
+        editor.remove(Resources.CONGRATULATION);
+        editor.putBoolean(Resources.PREF_SHOW_SYNC_WARNING, false);
+        editor.apply();
 
 
 
@@ -793,7 +810,7 @@ public class MainActivity extends AppCompatActivity {
                 int installYear = sPrefs.getInt(Resources.PREF_INSTALL_YEAR, 2016);
                 int hoursNeeded = sPrefs.getInt(Resources.PREF_HOURS_NEEDED, 72);
                 Calendar installedAt = new GregorianCalendar(installYear, installMonth, installDay);
-                Calendar now = new GregorianCalendar();
+                Calendar now = Calendar.getInstance();
                 final int MILLI_TO_HOUR = 1000 * 60 * 60;
                 int hours = (int) ((now.getTimeInMillis() - installedAt.getTimeInMillis()) / MILLI_TO_HOUR);
 
@@ -813,12 +830,29 @@ public class MainActivity extends AppCompatActivity {
                     dialog.show(getFragmentManager(), "RateApp");
                 }
                 else {
-                    finish();
+                    checkDoubleClick();
                 }
         }
         else {
-            finish();
+            checkDoubleClick();
         }
+    }
+
+    private void checkDoubleClick() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, R.string.press_twice_to_exit, Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 1000);
     }
 
     public void finishAct() {
