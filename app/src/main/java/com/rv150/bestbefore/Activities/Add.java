@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
@@ -94,6 +95,8 @@ public class Add extends AppCompatActivity {
     private boolean flagForOkayBefore = true;
     private int previousOkayBeforeLength = 0;
     private boolean isOkayBeforeFirstTimeOpened = true;
+
+    private boolean doubleBackToExitPressedOnce = false;
 
 
     @Override
@@ -944,6 +947,24 @@ public class Add extends AppCompatActivity {
             }
             return null;
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                super.onBackPressed();
+                return;
+            }
+
+            this.doubleBackToExitPressedOnce = true;
+            Toast.makeText(this, R.string.press_twice_to_exit, Toast.LENGTH_SHORT).show();
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    doubleBackToExitPressedOnce = false;
+                }
+            }, 2000);
     }
 }
 
