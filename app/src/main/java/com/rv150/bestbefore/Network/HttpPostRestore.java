@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
@@ -198,7 +199,7 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
 
 
 
-        List<Product> currentProducts = productDAO.getAll();
+        List<Product> currentProducts = productDAO.getAllNotRemoved();
         if (!currentProducts.isEmpty()) {
             new AlertDialog.Builder(context)
                     .setTitle(R.string.warning)
@@ -228,7 +229,13 @@ public class HttpPostRestore extends AsyncTask<String, String, String> {
 
         for (Group group: groups) {
             long oldId = group.getId();
-            long newId = groupDAO.insertGroup(group);
+            long newId = -1;
+            try  {
+                 newId = groupDAO.insertGroup(group);
+            }
+            catch (DuplicateEntryException e) {
+                Log.e("TAG", "mmm...");
+            }
             oldIdToNew.put(oldId, newId);
         }
 

@@ -205,6 +205,9 @@
             android:key="backup" />
         <Preference
             android:title="@string/restore"
+            android:key="restore" />
+        <Preference
+            android:title="@string/restore_deprecated"
             android:key="restore_deprecated" />
     </PreferenceScreen>
 

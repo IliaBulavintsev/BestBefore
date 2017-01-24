@@ -6,6 +6,10 @@ import android.os.Parcelable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
@@ -13,7 +17,7 @@ import java.util.GregorianCalendar;
 /**
  * Created by rv150 on 06.01.2016.
  */
-public class Product implements Parcelable {
+public class Product implements Parcelable, Serializable {
     private String mTitle;
     private Calendar mProduced;
     private Calendar mDate;
@@ -25,6 +29,8 @@ public class Product implements Parcelable {
     private int mRemoved;
     private long mRemovedAt;
     private int measure;
+
+    private static final long SerialVersionUID = 4862926644813433707L;
 
     public Product() {
         mDate = Calendar.getInstance();
@@ -72,6 +78,39 @@ public class Product implements Parcelable {
         this.mGroupId = groupId;
         mProduced = Calendar.getInstance();
         mProduced.setTimeInMillis(0);
+    }
+
+
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.writeUTF(mTitle);
+        oos.writeLong(mDate.getTimeInMillis());
+        oos.writeLong(mCreatedAt.getTimeInMillis());
+        oos.writeInt(mQuantity);
+        oos.writeLong(mGroupId);
+        oos.writeLong(mId);
+        oos.writeInt(mViewed);
+        oos.writeInt(mRemoved);
+        oos.writeLong(mRemovedAt);
+        oos.writeLong(mProduced.getTimeInMillis());
+        oos.writeInt(measure);
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException {
+        mTitle = in.readUTF();
+        mDate = Calendar.getInstance();
+        mDate.setTimeInMillis(in.readLong());
+        mCreatedAt = Calendar.getInstance();
+        mCreatedAt.setTimeInMillis(in.readLong());
+        mQuantity = in.readInt();
+        mGroupId = in.readLong();
+        mId = in.readLong();
+        mViewed = in.readInt();
+        mRemoved = in.readInt();
+        mRemovedAt = in.readLong();
+        mProduced = Calendar.getInstance();
+        mProduced.setTimeInMillis(in.readLong());
+        measure = in.readInt();
     }
 
 

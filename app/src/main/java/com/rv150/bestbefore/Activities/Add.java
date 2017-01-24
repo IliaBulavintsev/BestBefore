@@ -8,6 +8,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -29,6 +31,7 @@ import android.widget.Toast;
 
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
@@ -39,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Created by rv150 on 07.01.2016.
@@ -77,8 +79,6 @@ public class Add extends AppCompatActivity {
     private Calendar dateProduced;
     private Calendar okayBefore;
 
-    private DBHelper dbHelper;
-
     private GroupDAO groupDAO;
     private ProductDAO productDAO;
     private final List<String> groupNames = new ArrayList<>();
@@ -95,6 +95,8 @@ public class Add extends AppCompatActivity {
     private boolean flagForOkayBefore = true;
     private int previousOkayBeforeLength = 0;
     private boolean isOkayBeforeFirstTimeOpened = true;
+
+    private boolean doubleBackToExitPressedOnce = false;
 
 
     @Override
@@ -123,7 +125,14 @@ public class Add extends AppCompatActivity {
         radioDateProduced = (RadioButton)findViewById(R.id.radioButtonDateProduced);
         boolean lastCheckedIsOkayBefore = sPrefs.getBoolean(Resources.LAST_RADIO_WAS_OKAY_BEFORE, true);
         boolean preferenceEnabled = sPrefs.getBoolean("remember_radiobuttons", true);
-        if (preferenceEnabled && !lastCheckedIsOkayBefore) {
+        Bundle extras = getIntent().getExtras();
+
+        String status = extras.getString(Resources.STATUS);
+        if (status == null) {
+            status = Resources.STATUS_ADD;
+        }
+
+        if (preferenceEnabled && !lastCheckedIsOkayBefore && status.equals(Resources.STATUS_ADD)) { // Создание продукта
             radioOkayBefore.setChecked(false);
             radioDateProduced.setChecked(true);
             onRadioDateManClick(null);
@@ -154,7 +163,7 @@ public class Add extends AppCompatActivity {
 
         groupDAO = new GroupDAO(getApplicationContext());
         productDAO = new ProductDAO(getApplicationContext());
-        dbHelper = new DBHelper(getApplicationContext());
+        DBHelper dbHelper = new DBHelper(getApplicationContext());
 
         okayBefore = Calendar.getInstance();
         dateProduced = Calendar.getInstance();
@@ -194,7 +203,7 @@ public class Add extends AppCompatActivity {
         });
 
         showDateProduced = sPrefs.getBoolean("use_date_produced", true);
-        if (!showDateProduced) {
+        if (!showDateProduced && !radioDateProduced.isChecked()) {
             dateProducedTV.setVisibility(View.GONE);
             dateProducedET.setVisibility(View.GONE);
             dateProducedIV.setVisibility(View.GONE);
@@ -228,10 +237,10 @@ public class Add extends AppCompatActivity {
 
 
 
-        boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW, true);
+        boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW_25_ADD, true);
         if (whatsNew) {
             new AlertDialog.Builder(this).setTitle(R.string.help)
-                    .setTitle(R.string.whats_new_title)
+                    .setTitle(R.string.help)
                     .setMessage(R.string.whats_new_25)
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
@@ -239,7 +248,7 @@ public class Add extends AppCompatActivity {
                         }
                     }).show();
             SharedPreferences.Editor editor = sPrefs.edit();
-            editor.putBoolean(Resources.WHATS_NEW, false);
+            editor.putBoolean(Resources.WHATS_NEW_25_ADD, false);
             editor.apply();
         }
 
@@ -418,8 +427,8 @@ public class Add extends AppCompatActivity {
             }
         });
 
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
+
+
             mProduct = extras.getParcelable(Product.class.getName());
             if (mProduct != null) {          // Изменение продукта
                 isChanging = true;
@@ -443,9 +452,7 @@ public class Add extends AppCompatActivity {
                     groupName = group.getName();
                 }
             }
-        } else {
-            mProduct = new Product();
-        }
+
 
         if (groupName != null) {
             int pos = groupNames.indexOf(groupName);
@@ -602,12 +609,14 @@ public class Add extends AppCompatActivity {
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
             if (firstDialogOpened) {    // Установка даты изготовления
+                isDateProducedFirstTimeOpened = false;
                 dateProduced.set(Calendar.YEAR, year);
                 dateProduced.set(Calendar.MONTH, monthOfYear);
                 dateProduced.set(Calendar.DAY_OF_MONTH, dayOfMonth);
                 setDateText(dateProduced, dateProducedET);
             }
             else {  // Установка "годен до"
+                isOkayBeforeFirstTimeOpened = false;
                 okayBefore.set(Calendar.YEAR, year);
                 okayBefore.set(Calendar.MONTH, monthOfYear);
                 okayBefore.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -807,7 +816,7 @@ public class Add extends AppCompatActivity {
         }
         editor.apply();
 
-        intent.putExtra(Product.class.getName(), mProduct);
+        intent.putExtra(Product.class.getName(), (Parcelable) mProduct);
         finish();
     }
 
@@ -876,7 +885,7 @@ public class Add extends AppCompatActivity {
         try {
             groupDAO.insertGroup(newGroup);
         }
-        catch (RuntimeException e) {
+        catch (DuplicateEntryException e) {
             Toast toast = Toast.makeText(getApplicationContext(),
                     R.string.group_with_this_name_already_exists, Toast.LENGTH_SHORT);
             toast.show();
@@ -938,6 +947,24 @@ public class Add extends AppCompatActivity {
             }
             return null;
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                super.onBackPressed();
+                return;
+            }
+
+            this.doubleBackToExitPressedOnce = true;
+            Toast.makeText(this, R.string.press_twice_to_close, Toast.LENGTH_SHORT).show();
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    doubleBackToExitPressedOnce = false;
+                }
+            }, 2000);
     }
 }
 

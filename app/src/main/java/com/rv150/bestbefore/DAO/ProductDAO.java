@@ -29,6 +29,19 @@ public class ProductDAO {
 
     public List<Product> getAll() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String query = "SELECT * FROM " + DBHelper.Product.TABLE_NAME;
+        Cursor cursor = db.rawQuery(query, null);
+        List<Product> products = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            products.add(mapProduct(cursor));
+        }
+        cursor.close();
+        return products;
+    }
+
+
+    public List<Product> getAllNotRemoved() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
         String query = "SELECT * FROM " + DBHelper.Product.TABLE_NAME +
         " WHERE " + DBHelper.Product.COLUMN_NAME_REMOVED + " = ?";
         Cursor cursor = db.rawQuery(query, new String[] {String.valueOf(0)});
@@ -89,7 +102,7 @@ public class ProductDAO {
 
     public List<Product> getFreshFromGroup (long groupId) {
         if (groupId == Resources.ID_MAIN_GROUP) {
-            return getAll();              // Для основной группы вернуть все продукты
+            return getAllNotRemoved();              // Для основной группы вернуть все продукты
         }
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Calendar now = new GregorianCalendar();
