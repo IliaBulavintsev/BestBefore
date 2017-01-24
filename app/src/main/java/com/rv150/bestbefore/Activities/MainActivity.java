@@ -852,7 +852,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 doubleBackToExitPressedOnce=false;
             }
-        }, 1000);
+        }, 2000);
     }
 
     public void finishAct() {
