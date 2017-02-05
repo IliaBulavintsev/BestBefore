@@ -680,7 +680,10 @@ public class Add extends AppCompatActivity {
         }
 
         // Чтение из полей ввода
-        boolean isOk = parseInputDate(dateProducedET.getText().toString(), dateProduced);
+        boolean isOk = true;
+        if (dateProducedET.isShown()) {
+            isOk = parseInputDate(dateProducedET.getText().toString(), dateProduced);
+        }
         if (!radioDateProduced.isChecked()) {
             isOk = isOk & parseInputDate(okayBeforeOrDaysET.getText().toString(), okayBefore);
         }
