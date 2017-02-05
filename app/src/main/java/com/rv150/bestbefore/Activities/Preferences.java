@@ -6,16 +6,21 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Parcelable;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,12 +60,17 @@ import com.rv150.bestbefore.Services.DBHelper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -254,7 +264,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             }
         });
 
-        Preference syncButton = findPreference("sync");
+        final Preference syncButton = findPreference("sync");
         syncButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 signIn();
@@ -262,6 +272,15 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             }
         });
 
+
+        final Preference moveToPro = findPreference("move_data_to_pro");
+        moveToPro.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                moveDataToPro();
+                return true;
+            }
+        });
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -426,7 +445,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
                         new AlertDialog.Builder(Preferences.this)
-                                .setTitle("Выберите резервную копию")
+                                .setTitle(R.string.choose_backup)
                                 .setAdapter(resultsAdapter, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
@@ -741,8 +760,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     }
 
 
-
-
     private class ClearUserDictionaryTask extends AsyncTask<String, String, String> {
 
         Context context;
@@ -757,5 +774,53 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             db.delete(DBHelper.AutoCompletedProducts.TABLE_NAME, null, null);
             return null;
         }
+    }
+
+    private void moveDataToPro() {
+        try {
+            android.content.pm.PackageManager mPm = getPackageManager();
+            PackageInfo info = mPm.getPackageInfo("com.rv150.bestbeforepro", 0);
+            if (info == null) {
+                throw new PackageManager.NameNotFoundException();
+            }
+        }
+        catch (PackageManager.NameNotFoundException e) {
+            Toast.makeText(getApplicationContext(),
+                    R.string.pro_version_is_not_installed, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ArrayList<Product> products = (ArrayList<Product>) productDAO.getAll();
+        if (products.isEmpty()) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.no_data, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+        ArrayList<Group> groups = (ArrayList<Group>) groupDAO.getAll();
+        Map<String, List> map = new HashMap<>();
+        map.put("products", products);
+        map.put("groups", groups);
+
+        final byte[] bytes;
+        try {
+            ByteArrayOutputStream bo = new ByteArrayOutputStream();
+            ObjectOutputStream so = new ObjectOutputStream(bo);
+            so.writeObject(map);
+            so.close();
+            bytes = bo.toByteArray();
+        } catch (Exception e) {
+            Log.e(TAG, "Serialization failed");
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.putExtra("bytes", bytes);
+        intent.setClassName("com.rv150.bestbeforepro", "com.rv150.bestbeforepro.Activities.MainActivity");
+        startActivity(intent);
     }
 }

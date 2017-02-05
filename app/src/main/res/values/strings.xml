@@ -139,5 +139,12 @@
     <string name="_interface">Интерфейс</string>
     <string name="other">Другое</string>
     <string name="data">Данные</string>
-    <string name="adding_product_window">Окно \"Добавление продукта\"</string>
+    <string name="adding_products_parameters">Параметры добавления продуктов</string>
+    <string name="file_operations">Файловые операции (PRO)</string>
+    <string name="import_from_file">Импорт из файла</string>
+    <string name="export_to_file">Экспорт в файл</string>
+    <string name="move_data_to_pro">Перенос данных в PRO-версию</string>
+    <string name="choose_backup">Выберите резервную копию</string>
+    <string name="no_data">Нет данных</string>
+    <string name="pro_version_is_not_installed">PRO-версия не установлена!</string>
 </resources>

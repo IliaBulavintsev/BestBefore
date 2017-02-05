@@ -141,7 +141,7 @@
         android:key="interface_category">
         <PreferenceScreen
             android:key="interface_settings"
-            android:title="@string/adding_product_window">
+            android:title="@string/adding_products_parameters">
             <CheckBoxPreference
                 android:key="use_quantity"
                 android:title="@string/quantity_attribute"
@@ -212,6 +212,24 @@
                 android:title="@string/restore_deprecated"
                 android:key="restore_deprecated" />
         </PreferenceScreen>
+
+        <PreferenceScreen
+            android:key="files_menu"
+            android:title="@string/file_operations"
+            android:persistent="false"
+            android:enabled="false">
+            <Preference
+                android:title="@string/import_from_file"
+                android:key="import" />
+            <Preference
+                android:title="@string/export_to_file"
+                android:key="export" />
+
+        </PreferenceScreen>
+
+        <Preference
+            android:key="move_data_to_pro"
+            android:title="@string/move_data_to_pro" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -221,6 +239,4 @@
             android:key="clear_dictionary"
             android:title="@string/clear_user_dictionary" />
     </PreferenceCategory>
-
-
 </PreferenceScreen>
