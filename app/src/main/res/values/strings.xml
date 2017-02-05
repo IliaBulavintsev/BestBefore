@@ -136,4 +136,8 @@
     <string name="got_it">Принято</string>
     <string name="press_twice_to_exit">Нажмите еще раз для выхода</string>
     <string name="press_twice_to_close">Нажмите еще раз, чтобы закрыть</string>
+    <string name="_interface">Интерфейс</string>
+    <string name="other">Другое</string>
+    <string name="data">Данные</string>
+    <string name="adding_product_window">Окно \"Добавление продукта\"</string>
 </resources>
