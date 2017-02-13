@@ -3,9 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
+    <PreferenceCategory
+        android:title="@string/notice"
+        android:key="notice">
         <PreferenceScreen
             android:key="open_notifications"
-            android:title="@string/notifications">
+            android:title="@string/manage_notifications">
             <PreferenceCategory
                 android:title="Первое напоминание"
                 android:key="first_group">
@@ -132,8 +135,8 @@
                     android:dependency="five_days"
                     android:title="Время напоминания"/>
             </PreferenceCategory>
-
         </PreferenceScreen>
+    </PreferenceCategory>
 
 
     <PreferenceCategory
@@ -186,6 +189,12 @@
             android:title="Предупреждение"
             android:summary="Показывать при запуске окно с недавно просроченными продуктами"
             android:defaultValue="true" />
+
+        <CheckBoxPreference
+            android:key="use_photo"
+            android:title="@string/use_photo_pro"
+            android:defaultValue="false"
+            android:enabled="false"/>
     </PreferenceCategory>
 
 

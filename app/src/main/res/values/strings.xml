@@ -24,7 +24,8 @@
     <string name="settings">Настройки</string>
     <string name="rate_app">Оценить приложение</string>
     <string name="help">Справка</string>
-    <string name="notifications">Напоминания</string>
+    <string name="notice">Уведомления</string>
+    <string name="manage_notifications">Управление напоминаниями</string>
     <string name="whats_new_title">Что нового?</string>
     <string name="sort">Сортировка</string>
     <string name="last_overdue">Последние просроченные</string>
@@ -147,4 +148,5 @@
     <string name="choose_backup">Выберите резервную копию</string>
     <string name="no_data">Нет данных</string>
     <string name="pro_version_is_not_installed">PRO-версия не установлена!</string>
+    <string name="use_photo_pro">Использовать фотографии (PRO)</string>
 </resources>
