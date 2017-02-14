@@ -94,9 +94,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     private Preference auth;
     private boolean fileOperation;
 
-    private String mFileId;
-
-    // private GoogleApiClient mGoogleDriveClient;
 
     private SharedPreferences sPrefs;
     private ProductDAO productDAO;
@@ -328,11 +325,16 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void restore (){
-        fileOperation = false;
-        Drive.DriveApi.requestSync(mGoogleApiClient);
-        // create new contents resource
-        Drive.DriveApi.newDriveContents(mGoogleApiClient)
-                .setResultCallback(driveContentsCallback);
+        Drive.DriveApi.requestSync(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(@NonNull Status status) {
+                        fileOperation = false;
+                        Drive.DriveApi.newDriveContents(mGoogleApiClient)
+                                .setResultCallback(driveContentsCallback);
+                    }
+                }
+        );
     }
 
     final ResultCallback<DriveApi.DriveContentsResult> driveContentsCallback =
@@ -507,7 +509,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             }
             catch (Exception e) {
                 Toast toast = Toast.makeText(getApplicationContext(),
-                        R.string.restore_failed, Toast.LENGTH_SHORT);
+                        e.getMessage(), Toast.LENGTH_SHORT);
                 toast.show();
             }
         }

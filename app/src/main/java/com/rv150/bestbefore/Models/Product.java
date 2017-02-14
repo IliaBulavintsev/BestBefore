@@ -18,7 +18,7 @@ import java.util.GregorianCalendar;
  * Created by rv150 on 06.01.2016.
  */
 public class Product implements Parcelable, Serializable {
-    private static final long serialVersionUID = 122127292197257481L;
+    private static final long serialVersionUID = -305914420954100092L;
     private String mTitle;
     private Calendar mProduced;
     private Calendar mDate;

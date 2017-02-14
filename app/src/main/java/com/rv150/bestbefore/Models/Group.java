@@ -13,7 +13,6 @@ import java.io.Serializable;
  */
 
 public class Group implements Parcelable, Serializable {
-    private static final long serialVersionUID = -3037601213001315694L;
     private String mName;
     private long mId;
 
