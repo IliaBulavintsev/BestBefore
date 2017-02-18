@@ -74,13 +74,10 @@ import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.FileService;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, RecyclerAdapter.ZoomAnimation {
@@ -200,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
 
 
-    public void zoom(final View thumbView, final Bitmap bitmap) {
+    public void zoom(final View thumbView, long photo) {
         // If there's an animation in progress, cancel it
         // immediately and proceed with this one.
         if (mCurrentAnimator != null) {
@@ -213,9 +210,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
-        imageView.setMinimumHeight(dm.widthPixels);
+        imageView.setMinimumHeight(dm.widthPixels / 3 * 4);
         imageView.setMinimumWidth(dm.widthPixels);
 
+        final Bitmap bitmap = FileService.getBitmapFromFileId(getApplicationContext(), photo);
         imageView.post(new Runnable() {
             @Override
             public void run() {

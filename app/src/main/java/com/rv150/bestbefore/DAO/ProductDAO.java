@@ -2,10 +2,8 @@ package com.rv150.bestbefore.DAO;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.preference.PreferenceManager;
 
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.Resources;
@@ -48,22 +46,6 @@ public class ProductDAO {
         cursor.close();
         return products;
     }
-
-    public byte[] getPhoto(long id) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String query = "SELECT " + DBHelper.Product.COLUMN_NAME_PHOTO +
-                " FROM " + DBHelper.Product.TABLE_NAME +
-                " WHERE " + DBHelper.Product._ID + " = ?";
-        Cursor cursor = db.rawQuery(query, new String[] {String.valueOf(id)});
-        byte[] photo = null;
-        if (cursor.moveToNext() &&
-                !cursor.isNull(cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_PHOTO))) {
-            photo = cursor.getBlob(cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_PHOTO));
-        }
-        cursor.close();
-        return photo;
-    }
-
 
     public List<Product> getAllNotRemoved() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -193,10 +175,8 @@ public class ProductDAO {
         long removedAt = cursor.getLong(
                 cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_REMOVED_AT));
 
-        byte[] photo = null;
-        if (!cursor.isNull(cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_PHOTO))) {
-            photo = cursor.getBlob(cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_PHOTO));
-        }
+        long photo = cursor.getLong(
+                cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_PHOTO));
 
 
         Calendar date = Calendar.getInstance();
@@ -297,13 +277,7 @@ public class ProductDAO {
         values.put(DBHelper.Product.COLUMN_NAME_REMOVED, product.getRemoved());
         values.put(DBHelper.Product.COLUMN_NAME_REMOVED_AT, product.getRemovedAt());
         values.put(DBHelper.Product.COLUMN_NAME_PRODUCED, product.getProduced().getTimeInMillis());
-        byte[] photo = product.getPhoto();
-        if (photo != null) {
-            values.put(DBHelper.Product.COLUMN_NAME_PHOTO, photo);
-        }
-        else {
-            values.putNull(DBHelper.Product.COLUMN_NAME_PHOTO);
-        }
+        values.put(DBHelper.Product.COLUMN_NAME_PHOTO, product.getPhoto());
         db.update(DBHelper.Product.TABLE_NAME, values,
                 DBHelper.Product._ID + " = ?", new String[] {String.valueOf(product.getId())});
 

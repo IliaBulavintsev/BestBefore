@@ -41,12 +41,13 @@ import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.CameraService;
 import com.rv150.bestbefore.Services.DBHelper;
+import com.rv150.bestbefore.Services.FileService;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -466,18 +467,20 @@ public class AddActivity extends AppCompatActivity {
             }
             int measure = mProduct.getMeasure();
             spinnerQuantity.setSelection(measure);
-            byte[] photoBytes = productDAO.getPhoto(mProduct.getId());
-            if (photoBytes != null) {
+            long photo = mProduct.getPhoto();
+
+            if (photo != 0) {
                 isPhotoUsed = true;
-                mProduct.setPhoto(photoBytes);
-                final Bitmap bmp = BitmapFactory.decodeByteArray(photoBytes, 0, photoBytes.length);
-                imageView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, imageView.getWidth(),
-                                imageView.getHeight(), false));
-                    }
-                });
+                final Bitmap bitmap = FileService.getBitmapFromFileId(getApplicationContext(), photo);
+                if (bitmap != null) {
+                    imageView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, imageView.getWidth(),
+                                    imageView.getHeight(), false));
+                        }
+                    });
+                }
             }
         } else {
             mProduct = new Product();
@@ -942,30 +945,37 @@ public class AddActivity extends AppCompatActivity {
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
-                Uri imageUri = result.getUri();
-                imageView.setImageURI(imageUri);
-                mProduct.setPhoto(uriToBytes(imageUri));
-                isPhotoUsed = true;
+                try {
+                    Uri imageUri = result.getUri();
+                    imageView.setImageURI(imageUri);
+                    mProduct.setPhoto(uriToFile(imageUri));
+                    isPhotoUsed = true;
+                }
+                catch (IOException e) {
+                    Log.e(TAG, "Error saving photo: " + e.getMessage());
+                    Toast.makeText(getApplicationContext(), R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
+                }
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Toast.makeText(getApplicationContext(), R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private byte[] uriToBytes(Uri uri) {
-        try {
-            InputStream imageStream = getContentResolver().openInputStream(
-                    uri);
-            Bitmap bmp = BitmapFactory.decodeStream(imageStream);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bmp.compress(Bitmap.CompressFormat.JPEG, 10, stream);
-            byte[] byteArray = stream.toByteArray();
-            stream.close();
-            return byteArray;
-        } catch (Exception e) {
-            Log.e(TAG, "Error converting uri to bytes!");
-            return null;
+    private long uriToFile(Uri uri) throws IOException {
+        InputStream imageStream = getContentResolver().openInputStream(uri);
+        Bitmap bmp = BitmapFactory.decodeStream(imageStream);
+        long fileName = System.currentTimeMillis();
+
+        File file = new File(getFilesDir() + "/" + fileName  + ".jpeg");
+        boolean result = file.createNewFile();
+        if (!result) {
+            throw new IOException("Error creating file");
         }
+        FileOutputStream outputStream = new FileOutputStream(file);
+        bmp.compress(Bitmap.CompressFormat.JPEG, 30, outputStream);
+        outputStream.flush();
+        outputStream.close();
+        return fileName;
     }
 }
 

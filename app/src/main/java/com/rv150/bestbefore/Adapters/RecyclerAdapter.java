@@ -2,8 +2,6 @@ package com.rv150.bestbefore.Adapters;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,7 +16,9 @@ import android.widget.TextView;
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
+import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -42,7 +42,7 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
     }
 
     public interface ZoomAnimation {
-        void zoom(final View thumbView, Bitmap bitmap);
+        void zoom(final View thumbView, long photo);
     }
 
 
@@ -217,21 +217,16 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
         boolean photoEnabled = sPrefs.getBoolean("use_photo", true);
         if (photoEnabled) {
             imageView.setVisibility(View.VISIBLE);
-            final byte[] bytes = item.getPhoto();
+            final long photo = item.getPhoto();
+            if (photo != 0) {
+                final String fileName = mContext.getFilesDir() + "/" + photo + ".jpeg";
+                File file = new File(fileName);
+                Picasso.with(mContext).load(file).resize(120, 160).into(imageView);
 
-            if (bytes != null) {
-                final Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                imageView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, imageView.getWidth(),
-                                imageView.getHeight(), false));
-                    }
-                });
                 imageView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        mZoomAnimation.zoom(imageView, bmp);
+                        mZoomAnimation.zoom(imageView, photo);
                     }
                 });
             }
@@ -247,8 +242,6 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
         else {
             imageView.setVisibility(View.GONE);
         }
-
-
     }
 
 

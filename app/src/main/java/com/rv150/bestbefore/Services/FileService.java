@@ -4,10 +4,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
-
 
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
@@ -188,5 +189,12 @@ public class FileService {
             Toast.makeText(context,
                     R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public static Bitmap getBitmapFromFileId (Context context, long fileId) {
+        String fileName = context.getFilesDir() + "/" + fileId + ".jpeg";
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        return BitmapFactory.decodeFile(fileName, options);
     }
 }

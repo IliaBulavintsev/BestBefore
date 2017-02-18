@@ -71,7 +71,7 @@
     <string name="data_not_found">Данные не найдены</string>
     <string name="help_add">Число справа означает количество оставшихся полных дней до конца срока. Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
     <string name="help_add_with_last_day">Число справа означает количество оставшихся полных дней до конца срока (восклицательный знак означает, что сегодня последний день). Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
-    <string name="warning">Внимание</string>
+    <string name="warning">Внимание!</string>
     <string name="do_you_want_to_overwite_existing">Вы хотите перезаписать существующие данные данными с сервера?</string>
     <string name="yes">Да</string>
     <string name="ok">OK</string>
@@ -158,8 +158,9 @@
     <string name="use_photo">Использовать фотографии</string>
     <string name="quantity_short">Кол-во</string>
     <string name="success">Успешно!</string>
-    <string name="sure_you_want_remove_all_backups">Вы действительно хотите удалить ВСЕ резервные копии на сервере?</string>
+    <string name="sure_you_want_remove_all_backups">Вы действительно хотите удалить ВСЕ резервные копии на сервере? Действие необратимо!</string>
     <string name="remove_all_copies">Удалить все резервные копии</string>
     <string name="expanded_image">Увеличенное изображение</string>
     <string name="export_success" formatted="false">Файл %s был сохранен в %s</string>
+    <string name="no_apps_found_try_to_install_explorer">Не найдено приложений для выбора файла. Попробуйте установить сторонний файловый проводник из Google Play</string>
 </resources>

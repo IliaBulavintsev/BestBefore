@@ -2,19 +2,17 @@ package com.rv150.bestbefore.Activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Parcelable;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -22,7 +20,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,12 +42,13 @@ import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.DriveId;
+import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
 import com.rv150.bestbefore.Adapters.DriveResultsAdapter;
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
-import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
@@ -62,20 +60,12 @@ import com.rv150.bestbefore.Services.FileService;
 import net.rdrei.android.dirchooser.DirectoryChooserActivity;
 import net.rdrei.android.dirchooser.DirectoryChooserConfig;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -98,7 +88,12 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     private GoogleApiClient client;
     private GoogleApiClient mGoogleApiClient;
     private Preference auth;
-    private boolean fileOperation;
+
+    private static final int GOOGLE_BACKUP = 0;
+    private static final int GOOGLE_RESTORE = 1;
+    private static final int GOOGLE_CLEAR = 2;
+
+    private int googleOperation;
 
 
     private SharedPreferences sPrefs;
@@ -247,6 +242,14 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         });
 
 
+        final Preference syncButton = findPreference("sync");
+        syncButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                signIn();
+                return true;
+            }
+        });
+
         Preference backup = findPreference("backup");
         backup.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
@@ -264,10 +267,21 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         });
 
 
-        final Preference syncButton = findPreference("sync");
-        syncButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+        final Preference clearAll = findPreference("google_clear_all");
+        clearAll.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
             public boolean onPreferenceClick(Preference preference) {
-                signIn();
+                new AlertDialog.Builder(Preferences.this)
+                        .setTitle(R.string.warning)
+                        .setMessage(R.string.sure_you_want_remove_all_backups)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startErasingCloud();
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
                 return true;
             }
         });
@@ -288,7 +302,15 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 Intent intent = new Intent()
                         .setType("text/plain")
                         .setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(intent, Resources.RC_CHOOSE_FILE);
+                try {
+                    startActivityForResult(intent, Resources.RC_CHOOSE_FILE);
+                }
+                catch (ActivityNotFoundException ex) {
+                    new AlertDialog.Builder(Preferences.this)
+                            .setMessage(R.string.no_apps_found_try_to_install_explorer)
+                            .setPositiveButton(R.string.ok, null)
+                            .show();
+                }
                 return true;
             }
         });
@@ -359,7 +381,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void backup() {
-        fileOperation = true;
+        googleOperation = GOOGLE_BACKUP;
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                 .setResultCallback(driveContentsCallback);
     }
@@ -370,7 +392,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(@NonNull Status status) {
-                        fileOperation = false;
+                        googleOperation = GOOGLE_RESTORE;
                         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                                 .setResultCallback(driveContentsCallback);
                     }
@@ -378,18 +400,41 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         );
     }
 
+    private void startErasingCloud() {
+        Drive.DriveApi.requestSync(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(@NonNull Status status) {
+                        if (status.isSuccess()) {
+                            googleOperation = GOOGLE_CLEAR;
+                            Drive.DriveApi.newDriveContents(mGoogleApiClient)
+                                    .setResultCallback(driveContentsCallback);
+                        }
+                        else {
+                            Toast.makeText(Preferences.this,
+                                   "Ошибка синхронизации", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
     final ResultCallback<DriveApi.DriveContentsResult> driveContentsCallback =
             new ResultCallback<DriveApi.DriveContentsResult>() {
         @Override
         public void onResult(DriveApi.DriveContentsResult result) {
             if (result.getStatus().isSuccess()) {
-
-                if (fileOperation) {
-                    CreateFileOnGoogleDrive(result);
-
-                } else {
-                    OpenFileFromGoogleDrive();
-
+                switch (googleOperation) {
+                    case GOOGLE_BACKUP:
+                        CreateFileOnGoogleDrive(result);
+                        break;
+                    case GOOGLE_RESTORE:
+                        OpenFileFromGoogleDrive();
+                        break;
+                    case GOOGLE_CLEAR:
+                        clearAppFolder();
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -547,16 +592,68 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     saveMapToBD(getApplicationContext(), map, false, getString(R.string.restore_success));
                 }
             }
-            catch (Exception e) {
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        R.string.restore_failed, Toast.LENGTH_SHORT);
-                toast.show();
+            catch (Exception ex) {
+                Toast.makeText(getApplicationContext(), R
+                        .string.restore_failed, Toast.LENGTH_LONG).show();
             }
         }
     };
 
 
 
+
+    private void clearAppFolder() {
+        DriveFolder appFolder = Drive.DriveApi.getAppFolder(mGoogleApiClient);
+        appFolder.listChildren(mGoogleApiClient).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+            @Override
+            public void onResult(@NonNull DriveApi.MetadataBufferResult result) {
+                if (!result.getStatus().isSuccess()) {
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
+                    toast.show();
+                    return;
+                }
+
+                MetadataBuffer mdb = null;
+                try {
+                    mdb = result.getMetadataBuffer();
+                    if (mdb != null ) {
+                        int size = mdb.getCount();
+                        for (int i = 0; i < size; ++i) {
+                            Metadata md = mdb.get(i);
+                            if (md == null || !md.isDataValid()) {
+                                continue;
+                            }
+                            DriveId driveId =  md.getDriveId();
+                            if (i == size - 1) {
+                                driveId.asDriveFile().delete(mGoogleApiClient).setResultCallback(
+                                        new ResultCallback<Status>() {
+                                            @Override
+                                            public void onResult(@NonNull Status status) {
+                                                if (status.isSuccess()) {
+                                                    Toast.makeText(Preferences.this,
+                                                            R.string.success, Toast.LENGTH_SHORT).show();
+                                                }
+                                                else {
+                                                    Toast.makeText(Preferences.this,
+                                                            R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        }
+                                );
+                            }
+                            else {
+                                driveId.asDriveFile().delete(mGoogleApiClient);
+                            }
+                        }
+                    }
+                } finally {
+                    if (mdb != null)
+                        mdb.release();
+                }
+            }
+        });
+    }
 
 
 
@@ -751,7 +848,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
     private class ClearUserDictionaryTask extends AsyncTask<String, String, String> {
 
-        Context context;
+        private Context context;
         ClearUserDictionaryTask(Context context) {
             this.context = context;
         }
@@ -762,6 +859,12 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             db.delete(DBHelper.AutoCompletedProducts.TABLE_NAME, null, null);
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show();
         }
     }
 }

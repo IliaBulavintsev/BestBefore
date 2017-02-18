@@ -65,7 +65,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     Product.COLUMN_NAME_REMOVED + " INTEGER DEFAULT 0," +
                     Product.COLUMN_NAME_REMOVED_AT + " INTEGER DEFAULT 0," +
                     Product.COLUMN_NAME_MEASURE + " INTEGER DEFAULT 0," +
-                    Product.COLUMN_NAME_PHOTO + " BLOB DEFAULT NULL," +
+                    Product.COLUMN_NAME_PHOTO + " INTEGER DEFAULT 0," +
                     "FOREIGN KEY (" + Product.COLUMN_NAME_GROUP_ID + ") REFERENCES " +
                     Group.TABLE_NAME + "(" + Group._ID + ") ON DELETE CASCADE)";
 
@@ -108,8 +108,9 @@ public class DBHelper extends SQLiteOpenHelper {
                         " ADD COLUMN " + Product.COLUMN_NAME_MEASURE + " INTEGER DEFAULT 0");
             case 6: {
                 db.beginTransaction();
+                String tempTable = "temp_table";
                 try {
-                    db.execSQL("ALTER TABLE " + Product.TABLE_NAME + " RENAME TO temp_table");
+                    db.execSQL("ALTER TABLE " + Product.TABLE_NAME + " RENAME TO " + tempTable);
                     db.execSQL(SQL_CREATE_PRODUCT_TABLE);
                     db.execSQL("INSERT INTO " + Product.TABLE_NAME + " (" +
                             Product.COLUMN_NAME_NAME + ", " +
@@ -131,8 +132,8 @@ public class DBHelper extends SQLiteOpenHelper {
                                     Product.COLUMN_NAME_VIEWED + ", " +
                                     Product.COLUMN_NAME_REMOVED + ", " +
                                     Product.COLUMN_NAME_REMOVED_AT + ", " +
-                                    Product.COLUMN_NAME_MEASURE + " FROM temp_table");
-                    db.execSQL("DROP TABLE temp_table");
+                                    Product.COLUMN_NAME_MEASURE + " FROM " + tempTable);
+                    db.execSQL("DROP TABLE " + tempTable);
                     db.setTransactionSuccessful();
                 } finally {
                     db.endTransaction();

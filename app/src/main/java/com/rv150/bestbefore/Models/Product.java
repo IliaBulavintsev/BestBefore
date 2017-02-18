@@ -3,9 +3,6 @@ package com.rv150.bestbefore.Models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -30,7 +27,7 @@ public class Product implements Parcelable, Serializable {
     private int mRemoved;
     private long mRemovedAt;
     private int measure;
-    private byte[] photo;
+    private long photo;     // Имя файла с фотографией + .jpeg
 
 
 
@@ -107,7 +104,7 @@ public class Product implements Parcelable, Serializable {
         oos.writeLong(mRemovedAt);
         oos.writeLong(mProduced.getTimeInMillis());
         oos.writeInt(measure);
-        oos.writeObject(photo);
+        oos.writeLong(photo);
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -126,10 +123,10 @@ public class Product implements Parcelable, Serializable {
         mProduced.setTimeInMillis(in.readLong());
         measure = in.readInt();
         try {
-            photo = (byte[]) in.readObject();
+            photo = in.readLong();
         }
         catch (IOException e) {
-            photo = null;
+            photo = 0;
         }
     }
 
@@ -154,6 +151,7 @@ public class Product implements Parcelable, Serializable {
         parcel.writeLong(mRemovedAt);
         parcel.writeLong(mProduced.getTimeInMillis());
         parcel.writeInt(measure);
+        parcel.writeLong(photo);
     }
 
     public static final Parcelable.Creator<Product> CREATOR
@@ -182,6 +180,7 @@ public class Product implements Parcelable, Serializable {
         mProduced = Calendar.getInstance();
         mProduced.setTimeInMillis(in.readLong());
         measure = in.readInt();
+        photo = in.readLong();
     }
 
 
@@ -277,11 +276,11 @@ public class Product implements Parcelable, Serializable {
         this.measure = measure;
     }
 
-    public byte[] getPhoto() {
+    public long getPhoto() {
         return photo;
     }
 
-    public void setPhoto(byte[] photo) {
+    public void setPhoto(long photo) {
         this.photo = photo;
     }
 
