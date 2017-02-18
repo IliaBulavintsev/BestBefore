@@ -185,18 +185,16 @@
             android:defaultValue="true" />
 
         <CheckBoxPreference
+            android:key="use_photo"
+            android:title="@string/use_photo"
+            android:defaultValue="true" />
+
+        <CheckBoxPreference
             android:key="needShowOverdue"
             android:title="Предупреждение"
             android:summary="Показывать при запуске окно с недавно просроченными продуктами"
             android:defaultValue="true" />
-
-        <CheckBoxPreference
-            android:key="use_photo"
-            android:title="@string/use_photo_pro"
-            android:defaultValue="false"
-            android:enabled="false"/>
     </PreferenceCategory>
-
 
 
 
@@ -217,29 +215,27 @@
             <Preference
                 android:title="@string/restore"
                 android:key="restore" />
+
             <Preference
-                android:title="@string/restore_deprecated"
-                android:key="restore_deprecated" />
+                android:title="@string/remove_all_copies"
+                android:key="google_clear_all" />
         </PreferenceScreen>
+
 
         <PreferenceScreen
             android:key="files_menu"
             android:title="@string/file_operations"
-            android:persistent="false"
-            android:enabled="false">
+            android:persistent="false">
             <Preference
                 android:title="@string/import_from_file"
                 android:key="import" />
             <Preference
                 android:title="@string/export_to_file"
                 android:key="export" />
-
         </PreferenceScreen>
-
-        <Preference
-            android:key="move_data_to_pro"
-            android:title="@string/move_data_to_pro" />
     </PreferenceCategory>
+
+
 
     <PreferenceCategory
         android:title="@string/other"

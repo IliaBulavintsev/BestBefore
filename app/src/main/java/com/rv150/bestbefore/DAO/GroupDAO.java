@@ -20,8 +20,17 @@ import java.util.List;
 public class GroupDAO {
     private DBHelper dbHelper;
 
-    public GroupDAO(Context context) {
-        dbHelper = new DBHelper(context);
+    private static GroupDAO instance;
+
+    private GroupDAO(Context context) {
+        dbHelper = DBHelper.getInstance(context);
+    }
+
+    public static GroupDAO getInstance(Context context) {
+        if (instance == null) {
+            instance = new GroupDAO(context);
+        }
+        return instance;
     }
 
     public List<Group> getAll() {

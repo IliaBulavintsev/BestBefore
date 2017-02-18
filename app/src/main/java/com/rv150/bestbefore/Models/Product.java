@@ -30,10 +30,12 @@ public class Product implements Parcelable, Serializable {
     private int mRemoved;
     private long mRemovedAt;
     private int measure;
+    private byte[] photo;
 
 
 
     public Product() {
+        mTitle = "";
         mDate = Calendar.getInstance();
         mCreatedAt = Calendar.getInstance();
         mProduced = Calendar.getInstance();
@@ -42,7 +44,12 @@ public class Product implements Parcelable, Serializable {
 
 
     public Product(String title, Calendar date, Calendar createdAt, int quantity, long groupId) {
-        this.mTitle = title;
+        if (title != null) {
+            this.mTitle = title;
+        }
+        else {
+            mTitle = "";
+        }
         this.mDate = date;
         this.mCreatedAt = createdAt;
         this.mQuantity = quantity;
@@ -56,7 +63,12 @@ public class Product implements Parcelable, Serializable {
     }
 
     public Product(String title, String date, String createdAt, int quantity, long groupId) {
-        this.mTitle = title;
+        if (title != null) {
+            this.mTitle = title;
+        }
+        else {
+            mTitle = "";
+        }
         String[] array = date.split("\\.");
         int myDay = Integer.parseInt(array[0]);
         int myMonth = Integer.parseInt(array[1]);
@@ -95,9 +107,10 @@ public class Product implements Parcelable, Serializable {
         oos.writeLong(mRemovedAt);
         oos.writeLong(mProduced.getTimeInMillis());
         oos.writeInt(measure);
+        oos.writeObject(photo);
     }
 
-    private void readObject(ObjectInputStream in) throws IOException {
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         mTitle = in.readUTF();
         mDate = Calendar.getInstance();
         mDate.setTimeInMillis(in.readLong());
@@ -112,6 +125,12 @@ public class Product implements Parcelable, Serializable {
         mProduced = Calendar.getInstance();
         mProduced.setTimeInMillis(in.readLong());
         measure = in.readInt();
+        try {
+            photo = (byte[]) in.readObject();
+        }
+        catch (IOException e) {
+            photo = null;
+        }
     }
 
 
@@ -183,8 +202,13 @@ public class Product implements Parcelable, Serializable {
         return mTitle;
     }
 
-    public void setTitle(String mTitle) {
-        this.mTitle = mTitle;
+    public void setTitle(String title) {
+        if (title == null) {
+            mTitle = "";
+        }
+        else {
+            mTitle = title;
+        }
     }
 
     public Calendar getProduced() {
@@ -203,20 +227,6 @@ public class Product implements Parcelable, Serializable {
 
     public void setDate(Calendar mDate) {
         this.mDate = mDate;
-    }
-
-    public JSONObject getJSON() throws JSONException {
-        JSONObject result = new JSONObject();
-        result.put("name", getTitle());
-        result.put("date", getDate().getTimeInMillis());
-        result.put("createdAt", getCreatedAt().getTimeInMillis());
-        result.put("quantity", getQuantity());
-        result.put("groupId", mGroupId);
-        result.put("viewed", getViewed());
-        result.put("removed", mRemoved);
-        result.put("removedAt", mRemovedAt);
-        result.put("measure", measure);
-        return result;
     }
 
     public int getQuantity() {
@@ -265,6 +275,14 @@ public class Product implements Parcelable, Serializable {
 
     public void setMeasure(int measure) {
         this.measure = measure;
+    }
+
+    public byte[] getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(byte[] photo) {
+        this.photo = photo;
     }
 
     public static Comparator<Product> getFreshToSpoiledComparator() {

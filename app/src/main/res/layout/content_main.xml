@@ -12,7 +12,8 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.rv150.bestbefore.Activities.MainActivity"
     tools:showIn="@layout/activity_main"
-    android:background="@color/md_light_background">
+    android:background="@color/md_light_background"
+    android:id="@+id/container">
 
     <TextView
         android:layout_width="wrap_content"
@@ -30,5 +31,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/md_light_background"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/expanded_image"
+        android:contentDescription="@string/expanded_image"/>
 
 </RelativeLayout>

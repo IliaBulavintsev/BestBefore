@@ -5,66 +5,68 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingTop="10dp"
-    android:paddingBottom="10dp"
+    android:paddingBottom="5dp"
     android:divider="@drawable/vertical_divider"
-    android:dividerPadding="12dip"
-    android:showDividers="middle"
-    >
+    android:dividerPadding="10dp"
+    android:showDividers="middle">
 
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="7">
-
-    <TextView
-        android:id="@+id/item_name"
-        android:textSize="18sp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        />
-
-
-    <RelativeLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
+        android:layout_weight="7"
         android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/item_image"
+            android:layout_width="45dp"
+            android:layout_height="60dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/no_image"
+            android:contentDescription="@string/product_image"/>
 
-        <TextView
-            android:id="@+id/item_date_created"
-            android:textSize="14sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-            />
-
-
-        <TextView
-            android:id="@+id/item_best_before"
-            android:textSize="14sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/item_date_created"
-            android:layout_toEndOf="@id/item_date_created"
-            />
+            <TextView
+                android:id="@+id/item_name"
+                android:textSize="18sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp" />
 
 
-        <TextView
-            android:id="@+id/item_quantity"
-            android:textSize="14sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginRight="25dp"
-            android:layout_marginEnd="25dp"
-            />
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp">
 
-        </RelativeLayout>
+                <TextView
+                    android:id="@+id/item_date"
+                    android:textSize="14sp"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    />
+
+
+                <TextView
+                    android:id="@+id/item_quantity"
+                    android:textSize="14sp"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="0"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="10dp"
+                    />
+
+            </LinearLayout>
+        </LinearLayout>
+
     </LinearLayout>
-
 
 
     <TextView
@@ -74,9 +76,6 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:textAlignment="center"
-        android:layout_gravity="center"
-        />
-
-
+        android:layout_gravity="center" />
 
 </LinearLayout>

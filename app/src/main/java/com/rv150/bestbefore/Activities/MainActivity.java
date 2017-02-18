@@ -1,17 +1,25 @@
 package com.rv150.bestbefore.Activities;
 
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.DialogFragment;
 import android.app.NotificationManager;
+import android.app.SearchManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -28,13 +36,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,6 +57,7 @@ import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.rv150.bestbefore.Adapters.RecyclerAdapter;
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.DeleteOverdue;
@@ -57,23 +70,20 @@ import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
-import com.rv150.bestbefore.RecyclerAdapter;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
-import com.rv150.bestbefore.Services.StatCollector;
+import com.rv150.bestbefore.Services.FileService;
 
-import java.util.ArrayList;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
 
 
-
-// открытый drawer при сворачивании - дублирование
-
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, RecyclerAdapter.ZoomAnimation {
     private List<Product> wrapperList;
     private SharedPreferences sPrefs;
     private int position = -1;
@@ -88,14 +98,15 @@ public class MainActivity extends AppCompatActivity {
     private ProductDAO productDAO;
     private GroupDAO groupDAO;
 
-    private boolean firstLaunch;
-
     private Drawer drawer;
     private int drawerPosition;
     private long groupChoosen = Resources.ID_MAIN_GROUP;
     private long deletedFromThisGroup;
 
     private boolean doubleBackToExitPressedOnce = false;
+
+    private int mShortAnimationDuration;
+    private Animator mCurrentAnimator;
 
 
     @Override
@@ -119,27 +130,18 @@ public class MainActivity extends AppCompatActivity {
 
 
         // DB helper
-        dbHelper = new DBHelper(getApplicationContext());
-        productDAO = new ProductDAO(getApplicationContext());
-        groupDAO = new GroupDAO(getApplicationContext());
+        dbHelper = DBHelper.getInstance(getApplicationContext());
+        productDAO = ProductDAO.getInstance(getApplicationContext());
+        groupDAO = GroupDAO.getInstance(getApplicationContext());
 
         rvProducts = (RecyclerView) findViewById(R.id.rvProducts);
         setUpRecyclerView();
 
 
 
-        firstLaunch = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
+        boolean firstLaunch = sPrefs.getBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, true);
 
         SharedPreferences.Editor editor = sPrefs.edit();
-        boolean needMigrate = sPrefs.getBoolean(Resources.NEED_MIGRATE, true);
-        if (needMigrate) {
-            if (!firstLaunch) {
-                migrateToDB();
-            }
-            editor.putBoolean(Resources.NEED_MIGRATE, false);
-            editor.apply();
-        }
-
 
         wrapperList = productDAO.getFresh();
 
@@ -151,10 +153,10 @@ public class MainActivity extends AppCompatActivity {
                     .setTitle(R.string.welcomeTitle)
                     .setMessage(whatsNewText)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            }).show();
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
             editor.putBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, false);
 
             Calendar installedAt = Calendar.getInstance();
@@ -185,18 +187,171 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        editor.remove(Resources.NEED_MIGRATE);
         editor.remove(Resources.CONGRATULATION);
         editor.putBoolean(Resources.PREF_SHOW_SYNC_WARNING, false);
         editor.apply();
 
+        mShortAnimationDuration = getResources().getInteger(
+                android.R.integer.config_shortAnimTime);
+    }
 
 
-        if (firstLaunch) {
-            StatCollector.shareStatistic(this, "First launch ");
+
+
+
+    public void zoom(final View thumbView, final Bitmap bitmap) {
+        // If there's an animation in progress, cancel it
+        // immediately and proceed with this one.
+        if (mCurrentAnimator != null) {
+            mCurrentAnimator.cancel();
         }
-        else {
-            StatCollector.shareStatistic(this, "EMPTY :( ");
+
+        // Load the high-resolution "zoomed-in" image.
+        final ImageView imageView = (ImageView) findViewById(
+                R.id.expanded_image);
+
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        imageView.setMinimumHeight(dm.widthPixels);
+        imageView.setMinimumWidth(dm.widthPixels);
+
+        imageView.post(new Runnable() {
+            @Override
+            public void run() {
+                imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, imageView.getWidth(),
+                        imageView.getHeight(), false));
+            }
+        });
+
+
+
+        // Calculate the starting and ending bounds for the zoomed-in image.
+        // This step involves lots of math. Yay, math.
+        final Rect startBounds = new Rect();
+        final Rect finalBounds = new Rect();
+        final Point globalOffset = new Point();
+
+        // The start bounds are the global visible rectangle of the thumbnail,
+        // and the final bounds are the global visible rectangle of the container
+        // view. Also set the container view's offset as the origin for the
+        // bounds, since that's the origin for the positioning animation
+        // properties (X, Y).
+        thumbView.getGlobalVisibleRect(startBounds);
+        findViewById(R.id.container)
+                .getGlobalVisibleRect(finalBounds, globalOffset);
+        startBounds.offset(-globalOffset.x, -globalOffset.y);
+        finalBounds.offset(-globalOffset.x, -globalOffset.y);
+
+        // Adjust the start bounds to be the same aspect ratio as the final
+        // bounds using the "center crop" technique. This prevents undesirable
+        // stretching during the animation. Also calculate the start scaling
+        // factor (the end scaling factor is always 1.0).
+        float startScale;
+        if ((float) finalBounds.width() / finalBounds.height()
+                > (float) startBounds.width() / startBounds.height()) {
+            // Extend start bounds horizontally
+            startScale = (float) startBounds.height() / finalBounds.height();
+            float startWidth = startScale * finalBounds.width();
+            float deltaWidth = (startWidth - startBounds.width()) / 2;
+            startBounds.left -= deltaWidth;
+            startBounds.right += deltaWidth;
+        } else {
+            // Extend start bounds vertically
+            startScale = (float) startBounds.width() / finalBounds.width();
+            float startHeight = startScale * finalBounds.height();
+            float deltaHeight = (startHeight - startBounds.height()) / 2;
+            startBounds.top -= deltaHeight;
+            startBounds.bottom += deltaHeight;
         }
+
+        // Hide the thumbnail and show the zoomed-in view. When the animation
+        // begins, it will position the zoomed-in view in the place of the
+        // thumbnail.
+        thumbView.setAlpha(0f);
+        imageView.setVisibility(View.VISIBLE);
+
+        // Set the pivot point for SCALE_X and SCALE_Y transformations
+        // to the top-left corner of the zoomed-in view (the default
+        // is the center of the view).
+        imageView.setPivotX(0f);
+        imageView.setPivotY(0f);
+
+        // Construct and run the parallel animation of the four translation and
+        // scale properties (X, Y, SCALE_X, and SCALE_Y).
+        AnimatorSet set = new AnimatorSet();
+        set
+                .play(ObjectAnimator.ofFloat(imageView, View.X,
+                        startBounds.left, finalBounds.left))
+                .with(ObjectAnimator.ofFloat(imageView, View.Y,
+                        startBounds.top, finalBounds.top))
+                .with(ObjectAnimator.ofFloat(imageView, View.SCALE_X,
+                        startScale, 1f)).with(ObjectAnimator.ofFloat(imageView,
+                View.SCALE_Y, startScale, 1f));
+        set.setDuration(mShortAnimationDuration);
+        set.setInterpolator(new DecelerateInterpolator());
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mCurrentAnimator = null;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                mCurrentAnimator = null;
+            }
+        });
+        set.start();
+        mCurrentAnimator = set;
+
+        // Upon clicking the zoomed-in image, it should zoom back down
+        // to the original bounds and show the thumbnail instead of
+        // the expanded image.
+        final float startScaleFinal = startScale;
+
+
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mCurrentAnimator != null) {
+                    mCurrentAnimator.cancel();
+                }
+
+                // Animate the four positioning/sizing properties in parallel,
+                // back to their original values.
+                AnimatorSet set = new AnimatorSet();
+                set.play(ObjectAnimator
+                        .ofFloat(imageView, View.X, startBounds.left))
+                        .with(ObjectAnimator
+                                .ofFloat(imageView,
+                                        View.Y,startBounds.top))
+                        .with(ObjectAnimator
+                                .ofFloat(imageView,
+                                        View.SCALE_X, startScaleFinal))
+                        .with(ObjectAnimator
+                                .ofFloat(imageView,
+                                        View.SCALE_Y, startScaleFinal));
+                set.setDuration(mShortAnimationDuration);
+                set.setInterpolator(new DecelerateInterpolator());
+                set.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        thumbView.setAlpha(1f);
+                        imageView.setVisibility(View.GONE);
+                        mCurrentAnimator = null;
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+                        thumbView.setAlpha(1f);
+                        imageView.setVisibility(View.GONE);
+                        mCurrentAnimator = null;
+                    }
+                });
+                set.start();
+                mCurrentAnimator = set;
+            }
+        });
     }
 
 
@@ -232,20 +387,8 @@ public class MainActivity extends AppCompatActivity {
 
         sortMainList();
 
-        if (firstLaunch) {
-            // добавим пустой продукт как образец
-            String name = getString(R.string.example_product);
-            int quantity = 5;
-            Calendar date = new GregorianCalendar();
-            date.add(Calendar.DAY_OF_MONTH, 2);
-            Product product = new Product(name, date, Calendar.getInstance(), quantity, -1);
-            productDAO.insertProduct(product);
-            wrapperList = productDAO.getAllNotRemoved();
-            firstLaunch = false;
-        }
 
-
-        adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
+        adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
         rvProducts.swapAdapter(adapter, false);
 
         // Надпись "Список пуст!"
@@ -456,7 +599,7 @@ public class MainActivity extends AppCompatActivity {
             fab.show();
         }
         sortMainList();
-        adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
+        adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
         rvProducts.swapAdapter(adapter, false);
         if (wrapperList.isEmpty()) {
             isEmpty.setVisibility(View.VISIBLE);
@@ -465,11 +608,6 @@ public class MainActivity extends AppCompatActivity {
             isEmpty.setVisibility(View.INVISIBLE);
         }
     }
-
-
-
-
-
 
 
 
@@ -553,7 +691,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         wrapperList.clear();
-        adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
+        adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
         rvProducts.swapAdapter(adapter, false);
         isEmpty.setVisibility(View.VISIBLE);
         Toast toast = Toast.makeText(getApplicationContext(),
@@ -589,11 +727,10 @@ public class MainActivity extends AppCompatActivity {
         if (wrapperList.isEmpty()) {
             isEmpty.setVisibility(View.VISIBLE);
         }
-        adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
+        adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
         rvProducts.swapAdapter(adapter, false);
 
-        if (groupChoosen == Resources.ID_FOR_TRASH ||
-                deletedProduct.getTitle().equals(getString(R.string.example_product))) {
+        if (groupChoosen == Resources.ID_FOR_TRASH) {
             productDAO.removeProductFromTrash(deletedProduct.getId());
         }
         else
@@ -617,37 +754,73 @@ public class MainActivity extends AppCompatActivity {
             isEmpty.setVisibility(View.INVISIBLE);
         }
         position = -1;
-        adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
+        adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
         rvProducts.swapAdapter(adapter, false);
         deletedProduct = null;
     }
 
 
+
+
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+
+        SearchManager searchManager = (SearchManager) MainActivity.this.getSystemService(Context.SEARCH_SERVICE);
+
+        SearchView searchView = null;
+        if (searchItem != null) {
+            searchView = (SearchView) searchItem.getActionView();
+        }
+        if (searchView != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(MainActivity.this.getComponentName()));
+            searchView.setOnQueryTextListener(this);
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
+    public boolean onQueryTextChange(String newText) {
+        adapter.getFilter().filter(newText);
+        return true;
+    }
+
+
+
+
+
+
+
+
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {    // idx 0 - это поиск!!!
 
         if (groupChoosen == Resources.ID_FOR_TRASH) {
-            menu.getItem(0).setVisible(false);
-            menu.getItem(1).setVisible(true);
-            menu.getItem(2).setVisible(false);
-            menu.getItem(3).setVisible(false);
-        } else if (groupChoosen == Resources.ID_MAIN_GROUP || groupChoosen == Resources.ID_FOR_OVERDUED) {
-            menu.getItem(0).setVisible(true);
-            menu.getItem(1).setVisible(true);
+            menu.getItem(1).setVisible(false);
             menu.getItem(2).setVisible(true);
             menu.getItem(3).setVisible(false);
-        }
-        else {
-            menu.getItem(0).setVisible(true);
+            menu.getItem(4).setVisible(false);
+        } else if (groupChoosen == Resources.ID_MAIN_GROUP || groupChoosen == Resources.ID_FOR_OVERDUED) {
             menu.getItem(1).setVisible(true);
             menu.getItem(2).setVisible(true);
             menu.getItem(3).setVisible(true);
+            menu.getItem(4).setVisible(false);
+        }
+        else {
+            menu.getItem(1).setVisible(true);
+            menu.getItem(2).setVisible(true);
+            menu.getItem(3).setVisible(true);
+            menu.getItem(4).setVisible(true);
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -678,7 +851,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                             editor.apply();
                             sortMainList();
-                            adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
+                            adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), MainActivity.this);
                             rvProducts.swapAdapter(adapter, false);
                         }
                     })
@@ -729,7 +902,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void onFabClick(View view) {
-        Intent intent = new Intent(MainActivity.this, Add.class);
+        Intent intent = new Intent(MainActivity.this, AddActivity.class);
         intent.putExtra(Resources.GROUP_ID, groupChoosen);
         intent.putExtra(Resources.STATUS, Resources.STATUS_ADD);
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
@@ -764,10 +937,10 @@ public class MainActivity extends AppCompatActivity {
                     new AlertDialog.Builder(this).setTitle(R.string.help)
                             .setMessage(msg)
                             .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).show();
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            }).show();
                     SharedPreferences.Editor editor = sPrefs.edit();
                     editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
                     editor.apply();
@@ -790,7 +963,7 @@ public class MainActivity extends AppCompatActivity {
             toast.show();
         }
         if (requestCode == Resources.RC_SETTINGS) {
-            adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
+            adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
             rvProducts.swapAdapter(adapter, false);
         }
     }
@@ -805,33 +978,33 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         boolean needRate = sPrefs.getBoolean(Resources.PREF_NEED_RATE, true);
         if (needRate) {
-                int installDay = sPrefs.getInt(Resources.PREF_INSTALL_DAY, 11);
-                int installMonth = sPrefs.getInt(Resources.PREF_INSTALL_MONTH, 8);
-                int installYear = sPrefs.getInt(Resources.PREF_INSTALL_YEAR, 2016);
-                int hoursNeeded = sPrefs.getInt(Resources.PREF_HOURS_NEEDED, 72);
-                Calendar installedAt = new GregorianCalendar(installYear, installMonth, installDay);
-                Calendar now = Calendar.getInstance();
-                final int MILLI_TO_HOUR = 1000 * 60 * 60;
-                int hours = (int) ((now.getTimeInMillis() - installedAt.getTimeInMillis()) / MILLI_TO_HOUR);
+            int installDay = sPrefs.getInt(Resources.PREF_INSTALL_DAY, 11);
+            int installMonth = sPrefs.getInt(Resources.PREF_INSTALL_MONTH, 8);
+            int installYear = sPrefs.getInt(Resources.PREF_INSTALL_YEAR, 2016);
+            int hoursNeeded = sPrefs.getInt(Resources.PREF_HOURS_NEEDED, 72);
+            Calendar installedAt = new GregorianCalendar(installYear, installMonth, installDay);
+            Calendar now = Calendar.getInstance();
+            final int MILLI_TO_HOUR = 1000 * 60 * 60;
+            int hours = (int) ((now.getTimeInMillis() - installedAt.getTimeInMillis()) / MILLI_TO_HOUR);
 
-                // кол-во часов с момента установки должно превысить это значение
-                if (hours >= hoursNeeded) {
-                    SharedPreferences.Editor editor = sPrefs.edit();
-                    editor.putBoolean(Resources.PREF_NEED_RATE, false);
-                    editor.remove(Resources.PREF_INSTALL_YEAR);
-                    editor.remove(Resources.PREF_INSTALL_MONTH);
-                    editor.remove(Resources.PREF_INSTALL_DAY);
-                    editor.remove(Resources.PREF_HOURS_NEEDED);
-                    editor.apply();
+            // кол-во часов с момента установки должно превысить это значение
+            if (hours >= hoursNeeded) {
+                SharedPreferences.Editor editor = sPrefs.edit();
+                editor.putBoolean(Resources.PREF_NEED_RATE, false);
+                editor.remove(Resources.PREF_INSTALL_YEAR);
+                editor.remove(Resources.PREF_INSTALL_MONTH);
+                editor.remove(Resources.PREF_INSTALL_DAY);
+                editor.remove(Resources.PREF_HOURS_NEEDED);
+                editor.apply();
 
-                    // Вызов окна с предложением оценить приложение
-                    DialogFragment dialog = new RateAppDialog();
-                    dialog.setCancelable(false);
-                    dialog.show(getFragmentManager(), "RateApp");
-                }
-                else {
-                    checkDoubleClick();
-                }
+                // Вызов окна с предложением оценить приложение
+                DialogFragment dialog = new RateAppDialog();
+                dialog.setCancelable(false);
+                dialog.show(getFragmentManager(), "RateApp");
+            }
+            else {
+                checkDoubleClick();
+            }
         }
         else {
             checkDoubleClick();
@@ -863,6 +1036,10 @@ public class MainActivity extends AppCompatActivity {
     private void setUpRecyclerView() {
 
         rvProducts.setLayoutManager(new LinearLayoutManager(this));
+        rvProducts.setHasFixedSize(true);
+        rvProducts.setItemViewCacheSize(20);
+        rvProducts.setDrawingCacheEnabled(true);
+        rvProducts.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvProducts.getContext(),
                 DividerItemDecoration.VERTICAL);
@@ -913,7 +1090,7 @@ public class MainActivity extends AppCompatActivity {
                                     productDAO.updateProduct(product);
                                 }
                                 wrapperList.remove(pos);
-                                adapter = new RecyclerAdapter(wrapperList, getApplicationContext());
+                                adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), MainActivity.this);
                                 rvProducts.swapAdapter(adapter, false);
                                 if (wrapperList.isEmpty()) {
                                     isEmpty.setVisibility(View.VISIBLE);
@@ -940,84 +1117,84 @@ public class MainActivity extends AppCompatActivity {
         ItemTouchHelper.SimpleCallback simpleItemTouchCallback =
                 new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
-            // we want to cache these and not allocate anything repeatedly in the onChildDraw method
-            Drawable background;
-            Drawable xMark;
-            int xMarkMargin;
-            boolean initiated;
+                    // we want to cache these and not allocate anything repeatedly in the onChildDraw method
+                    Drawable background;
+                    Drawable xMark;
+                    int xMarkMargin;
+                    boolean initiated;
 
-            private void init() {
-                background = new ColorDrawable(Color.RED);
-                xMark = ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_clear_24dp);
-                xMark.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        R.color.md_light_background), PorterDuff.Mode.SRC_ATOP);
-                xMarkMargin = (int) MainActivity.this.getResources().getDimension(R.dimen.ic_clear_margin);
-                initiated = true;
-            }
+                    private void init() {
+                        background = new ColorDrawable(Color.RED);
+                        xMark = ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_clear_24dp);
+                        xMark.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                                R.color.md_light_background), PorterDuff.Mode.SRC_ATOP);
+                        xMarkMargin = (int) MainActivity.this.getResources().getDimension(R.dimen.ic_clear_margin);
+                        initiated = true;
+                    }
 
-            // not important, we don't want drag & drop
-            @Override
-            public boolean onMove(RecyclerView recyclerView,
-                                  RecyclerView.ViewHolder viewHolder,
-                                  RecyclerView.ViewHolder target) {
-                return false;
-            }
+                    // not important, we don't want drag & drop
+                    @Override
+                    public boolean onMove(RecyclerView recyclerView,
+                                          RecyclerView.ViewHolder viewHolder,
+                                          RecyclerView.ViewHolder target) {
+                        return false;
+                    }
 
-            @Override
-            public int getSwipeDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                return super.getSwipeDirs(recyclerView, viewHolder);
-            }
+                    @Override
+                    public int getSwipeDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                        return super.getSwipeDirs(recyclerView, viewHolder);
+                    }
 
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                position = viewHolder.getAdapterPosition();
-                deleteItem();
-                View parentLayout = findViewById(R.id.rvProducts);
-                Snackbar snackbar = Snackbar
-                        .make(parentLayout, R.string.product_has_been_deleted, Snackbar.LENGTH_LONG)
-                        .setAction(R.string.undo, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                undoRemove();
-                            }
-                        });
+                    @Override
+                    public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
+                        position = viewHolder.getAdapterPosition();
+                        deleteItem();
+                        View parentLayout = findViewById(R.id.rvProducts);
+                        Snackbar snackbar = Snackbar
+                                .make(parentLayout, R.string.product_has_been_deleted, Snackbar.LENGTH_LONG)
+                                .setAction(R.string.undo, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        undoRemove();
+                                    }
+                                });
 
-                snackbar.show();
-            }
+                        snackbar.show();
+                    }
 
-            @Override
-            public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-                View itemView = viewHolder.itemView;
+                    @Override
+                    public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                        View itemView = viewHolder.itemView;
 
-                // not sure why, but this method get's called for viewholder that are already swiped away
-                if (viewHolder.getAdapterPosition() == -1) {
-                    // not interested in those
-                    return;
-                }
+                        // not sure why, but this method get's called for viewholder that are already swiped away
+                        if (viewHolder.getAdapterPosition() == -1) {
+                            // not interested in those
+                            return;
+                        }
 
-                if (!initiated) {
-                    init();
-                }
+                        if (!initiated) {
+                            init();
+                        }
 
-                // draw red background
-                background.setBounds(itemView.getRight() + (int) dX, itemView.getTop(), itemView.getRight(), itemView.getBottom());
-                background.draw(c);
+                        // draw red background
+                        background.setBounds(itemView.getRight() + (int) dX, itemView.getTop(), itemView.getRight(), itemView.getBottom());
+                        background.draw(c);
 
-                // draw x mark
-                int itemHeight = itemView.getBottom() - itemView.getTop();
-                int intrinsicWidth = xMark.getIntrinsicWidth();
-                int intrinsicHeight = xMark.getIntrinsicWidth();
+                        // draw x mark
+                        int itemHeight = itemView.getBottom() - itemView.getTop();
+                        int intrinsicWidth = xMark.getIntrinsicWidth();
+                        int intrinsicHeight = xMark.getIntrinsicWidth();
 
-                int xMarkLeft = itemView.getRight() - xMarkMargin - intrinsicWidth;
-                int xMarkRight = itemView.getRight() - xMarkMargin;
-                int xMarkTop = itemView.getTop() + (itemHeight - intrinsicHeight)/2;
-                int xMarkBottom = xMarkTop + intrinsicHeight;
-                xMark.setBounds(xMarkLeft, xMarkTop, xMarkRight, xMarkBottom);
-                xMark.draw(c);
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-            }
+                        int xMarkLeft = itemView.getRight() - xMarkMargin - intrinsicWidth;
+                        int xMarkRight = itemView.getRight() - xMarkMargin;
+                        int xMarkTop = itemView.getTop() + (itemHeight - intrinsicHeight)/2;
+                        int xMarkBottom = xMarkTop + intrinsicHeight;
+                        xMark.setBounds(xMarkLeft, xMarkTop, xMarkRight, xMarkBottom);
+                        xMark.draw(c);
+                        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+                    }
 
-        };
+                };
         ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
         mItemTouchHelper.attachToRecyclerView(rvProducts);
     }
@@ -1053,7 +1230,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void runAddActivity(int clickedPosition) {
         final Product item = wrapperList.get(clickedPosition);
-        Intent intent = new Intent(this, Add.class);
+        Intent intent = new Intent(this, AddActivity.class);
         intent.putExtra(Resources.STATUS, Resources.STATUS_EDIT);
         intent.putExtra(Product.class.getName(), (Parcelable) item);
         startActivityForResult(intent, Resources.RC_ADD_ACTIVITY);
@@ -1074,7 +1251,7 @@ public class MainActivity extends AppCompatActivity {
             ContentValues values = new ContentValues();
             for (Product item: insertedData) {
                 final String name = item.getTitle();
-                if (!name.equals(getString(R.string.example_product))) {
+                if (name != null && !name.isEmpty()) {
                     values.put(DBHelper.AutoCompletedProducts.COLUMN_NAME_NAME, name);
                     db.insert(DBHelper.AutoCompletedProducts.TABLE_NAME, null, values);
                 }
@@ -1124,25 +1301,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    private void migrateToDB() {
-        List<Product> fresh = ProductDAO.getFreshProducts(this);
-        List<Product> overdue = ProductDAO.getOverdueProducts(this);
-        for (Product product: overdue) {
-            product.setViewed(1);
-        }
-        List<Product> all = new ArrayList<>();
-        all.addAll(fresh);
-        all.addAll(overdue);
-        for (Product product: all) {
-            Calendar date = product.getDate();
-            date.set(Calendar.HOUR_OF_DAY, 23);
-            date.set(Calendar.MINUTE, 59);
-        }
-        if (!all.isEmpty()) {
-            productDAO.insertProducts(all);
-        }
-    }
 
 
     private void showRenameGroupDialog() {
@@ -1230,3 +1388,4 @@ public class MainActivity extends AppCompatActivity {
         toast.show();
     }
 }
+
