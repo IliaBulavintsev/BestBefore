@@ -963,19 +963,8 @@ public class AddActivity extends AppCompatActivity {
 
     private long uriToFile(Uri uri) throws IOException {
         InputStream imageStream = getContentResolver().openInputStream(uri);
-        Bitmap bmp = BitmapFactory.decodeStream(imageStream);
-        long fileName = System.currentTimeMillis();
-
-        File file = new File(getFilesDir() + "/" + fileName  + ".jpeg");
-        boolean result = file.createNewFile();
-        if (!result) {
-            throw new IOException("Error creating file");
-        }
-        FileOutputStream outputStream = new FileOutputStream(file);
-        bmp.compress(Bitmap.CompressFormat.JPEG, 30, outputStream);
-        outputStream.flush();
-        outputStream.close();
-        return fileName;
+        Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
+        return FileService.saveBitmapToFile(getApplicationContext(), bitmap);
     }
 }
 

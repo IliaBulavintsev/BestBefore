@@ -10,6 +10,7 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -51,6 +52,7 @@ import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
+import com.rv150.bestbefore.Models.SerializableBitmap;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Resources;
@@ -320,6 +322,13 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         exportPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                List<Product> products = productDAO.getAll();
+                if (products.isEmpty()) {
+                    Toast.makeText(getApplicationContext(),
+                            R.string.nothing_to_export, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
                 final Intent chooserIntent = new Intent(Preferences.this, DirectoryChooserActivity.class);
                 final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
                         .newDirectoryName("New folder")
@@ -453,10 +462,19 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             return;
         }
         List<Group> groups = groupDAO.getAll();
-        Map<String, List> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("products", products);
         if (!groups.isEmpty()) {
             map.put("groups", groups);
+        }
+
+        for (Product product: products) {
+            long fileId = product.getPhoto();
+            if (fileId != 0) {
+                Bitmap bitmap = FileService.getBitmapFromFileId(this, fileId);
+                SerializableBitmap serializableBitmap = new SerializableBitmap(bitmap);
+                map.put(String.valueOf(fileId), serializableBitmap);
+            }
         }
 
         final OutputStream outputStream = driveContents.getOutputStream();
@@ -561,7 +579,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             DriveContents contents = result.getDriveContents();
             try {
                 ObjectInputStream objectInputStream = new ObjectInputStream(contents.getInputStream());
-                final Map<String, List> map = (Map) objectInputStream.readObject();
+                final Map<String, Object> map = (Map) objectInputStream.readObject();
                 objectInputStream.close();
 
                 List<Product> currentProducts = productDAO.getAll();

@@ -15,6 +15,7 @@ import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
 import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
+import com.rv150.bestbefore.Models.SerializableBitmap;
 import com.rv150.bestbefore.R;
 
 import java.io.File;
@@ -52,7 +53,7 @@ public class FileService {
         try {
             InputStream inputStream = new FileInputStream(file);
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-            final Map<String, List> map = (Map) objectInputStream.readObject();
+            final Map<String, Object> map = (Map) objectInputStream.readObject();
             objectInputStream.close();
 
             ProductDAO productDAO = ProductDAO.getInstance(context);
@@ -94,7 +95,7 @@ public class FileService {
 
 
 
-    public static void saveMapToBD(Context context, Map<String, List> map, boolean union, String successMsg) {
+    public static void saveMapToBD(Context context, Map<String, Object> map, boolean union, String successMsg) {
         try {
 
             ProductDAO productDAO = ProductDAO.getInstance(context);
@@ -129,6 +130,13 @@ public class FileService {
                     long newGroupId = oldIdToNew.get(oldGroupId);
                     product.setGroupId(newGroupId);
                 }
+
+                long fileId = product.getPhoto();
+                if (fileId != 0) {
+                    SerializableBitmap serializableBitmap = (SerializableBitmap) map.get(String.valueOf(fileId));
+                    Bitmap bitmap = serializableBitmap.getBitmap();
+                    saveBitmapToFile(context, bitmap, fileId);
+                }
                 productDAO.insertProduct(product);
             }
 
@@ -154,15 +162,22 @@ public class FileService {
 
         List<Product> products = productDAO.getAll();
         if (products.isEmpty()) {
-            Toast.makeText(context,
-                    R.string.nothing_to_export, Toast.LENGTH_SHORT).show();
             return;
         }
         List<Group> groups = groupDAO.getAll();
-        Map<String, List> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("products", products);
         if (!groups.isEmpty()) {
             map.put("groups", groups);
+        }
+
+        for (Product product: products) {
+            long fileId = product.getPhoto();
+            if (fileId != 0) {
+                Bitmap bitmap = getBitmapFromFileId(context, fileId);
+                SerializableBitmap serializableBitmap = new SerializableBitmap(bitmap);
+                map.put(String.valueOf(fileId), serializableBitmap);
+            }
         }
 
         try {
@@ -191,10 +206,33 @@ public class FileService {
         }
     }
 
+    // Return Bitmap, read from file with name ${fileId}.jpeg
     public static Bitmap getBitmapFromFileId (Context context, long fileId) {
         String fileName = context.getFilesDir() + "/" + fileId + ".jpeg";
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         return BitmapFactory.decodeFile(fileName, options);
+    }
+
+
+    // Save compressed image to file and return file ID
+    public static long saveBitmapToFile(Context context, Bitmap bitmap) throws IOException {
+        return saveBitmapToFile(context, bitmap, System.currentTimeMillis());
+    }
+
+    public static long saveBitmapToFile(Context context, Bitmap bitmap, long fileId) throws IOException {
+        File file = new File(context.getFilesDir() + "/" + fileId  + ".jpeg");
+        if (file.exists()) {
+            return fileId;
+        }
+        boolean result = file.createNewFile();
+        if (!result) {
+            throw new IOException("Error creating file");
+        }
+        FileOutputStream outputStream = new FileOutputStream(file);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, outputStream);
+        outputStream.flush();
+        outputStream.close();
+        return fileId;
     }
 }
