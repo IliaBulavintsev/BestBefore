@@ -1017,7 +1017,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     private void checkDoubleClick() {
-        if (doubleBackToExitPressedOnce) {
+        boolean noDoubleClickNeeded = !sPrefs.getBoolean("double_click_to_exit", true);
+        if (noDoubleClickNeeded || doubleBackToExitPressedOnce) {
             super.onBackPressed();
             return;
         }

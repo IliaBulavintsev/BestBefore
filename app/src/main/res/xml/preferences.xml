@@ -259,6 +259,11 @@
     <PreferenceCategory
         android:title="@string/other"
         android:key="other_category">
+        <CheckBoxPreference
+            android:key="double_click_to_exit"
+            android:title="@string/confirm_exit"
+            android:summary="@string/close_app_by_double_click"
+            android:defaultValue="true" />
         <Preference
             android:key="clear_dictionary"
             android:title="@string/clear_user_dictionary" />
