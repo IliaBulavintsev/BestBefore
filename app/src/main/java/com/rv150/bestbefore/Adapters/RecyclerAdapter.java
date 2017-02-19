@@ -226,7 +226,7 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
                 imageView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        mZoomAnimation.zoom(imageView, photo);
+                            mZoomAnimation.zoom(imageView, photo);
                     }
                 });
             }

@@ -910,7 +910,6 @@ public class AddActivity extends AppCompatActivity {
 
 
     public void openCamera(View view) {
-        //CameraService.verifyStoragePermissions(this);
         Intent intent = CameraService.getPickImageIntent(getApplicationContext());
         startActivityForResult(intent, Resources.RC_CAMERA);
     }
