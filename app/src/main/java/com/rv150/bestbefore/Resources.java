@@ -9,7 +9,6 @@ public final class Resources {
     public static final String PREF_HOURS_NEEDED = "hours_needed_for_rate";
     public static final String PREF_SHOW_WELCOME_SCREEN = "showWelcomeScreen";
     public static final String PREF_SHOW_HELP_AFTER_FIRST_ADD = "showHelpForNewDesign";
-    public static final String PREF_SHOW_HELP_IN_ADD_ACTIVITY = "show_help_in_add_activity";
     public static final String PREF_SHOW_SYNC_WARNING = "show_sync_warning";
     public static final String PREF_INSTALL_DAY = "install_day";
     public static final String PREF_INSTALL_MONTH = "install_month";
@@ -54,7 +53,6 @@ public final class Resources {
     public static final int RC_DIRECTORY_PICKER = 6;
     public static final int RESULT_ADD = 1;
     public static final int RESULT_MODIFY = 2;
-    public static final String SERVER_URL = "http://212.109.192.197:8080/";
     public static final String CONGRATULATION = "happy_new_2017_year";
     public static final String WHATS_NEW_25_ADD = "whats_new_25";
     public static final long ID_MAIN_GROUP = 99990;

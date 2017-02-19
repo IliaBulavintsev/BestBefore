@@ -333,4 +333,66 @@ public class ProductDAO {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         db.delete(DBHelper.Product.TABLE_NAME, null, null);
     }
+
+    public int getFreshCount() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Calendar now = Calendar.getInstance();
+        String query = "SELECT " + DBHelper.Product._ID + " FROM " + DBHelper.Product.TABLE_NAME +
+                " WHERE " + DBHelper.Product.COLUMN_NAME_DATE + " > ? AND " +
+                DBHelper.Product.COLUMN_NAME_REMOVED + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[] {String.valueOf(now.getTimeInMillis()), String.valueOf(0)});
+        int count = cursor.getCount();
+        cursor.close();
+        return count;
+    }
+
+    public int getOverduedCount() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Calendar now = Calendar.getInstance();
+        String query = "SELECT " + DBHelper.Product._ID + " FROM " + DBHelper.Product.TABLE_NAME +
+                " WHERE " + DBHelper.Product.COLUMN_NAME_DATE + " < ? AND " +
+                DBHelper.Product.COLUMN_NAME_REMOVED + " = ?";
+        Cursor cursor = db.rawQuery(query,  new String[]{
+                String.valueOf(now.getTimeInMillis()), String.valueOf(0)});
+        int count = cursor.getCount();
+        cursor.close();
+        return count;
+    }
+
+
+
+    public int getRemovedCount() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String query = "SELECT " + DBHelper.Product._ID + " FROM " + DBHelper.Product.TABLE_NAME +
+                " WHERE " + DBHelper.Product.COLUMN_NAME_REMOVED + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[] {String.valueOf(1)});
+        int count = cursor.getCount();
+        cursor.close();
+        return count;
+    }
+
+
+
+    // Возвращает кол-во свежих продуктов в данной группе
+    public int getCountForGroup (long groupId) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Calendar now = Calendar.getInstance();
+
+        String query = "SELECT " + DBHelper.Product._ID + " FROM " + DBHelper.Product.TABLE_NAME +
+                " WHERE " +
+                DBHelper.Product.COLUMN_NAME_GROUP_ID + " = ? AND " +
+                DBHelper.Product.COLUMN_NAME_DATE + " > ? AND " +
+                DBHelper.Product.COLUMN_NAME_REMOVED + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{
+                String.valueOf(groupId),
+                String.valueOf(now.getTimeInMillis()),
+                String.valueOf(0)
+        });
+
+        int count = cursor.getCount();
+        cursor.close();
+        return count;
+    }
+
 }

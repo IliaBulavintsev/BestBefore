@@ -435,23 +435,25 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private void setUpDrawer(Toolbar toolbar) {
         drawerPosition = 2;
         final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
+        int mainGroupCount = productDAO.getFreshCount();
+
         PrimaryDrawerItem allProducts = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_MAIN_GROUP)
-                .withName(mainGroupName)
+                .withName(mainGroupName + " (" + mainGroupCount + ')')
                 .withIcon(GoogleMaterial.Icon.gmd_view_list);
 
-
-
-
+        int overduedCount = productDAO.getOverduedCount();
         final String overdueGroupName = sPrefs.getString(Resources.OVERDUED_GROUP_NAME, getString(R.string.overdue_products));
         PrimaryDrawerItem overdued = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_OVERDUED)
-                .withName(overdueGroupName)
+                .withName(overdueGroupName + " (" + overduedCount + ')')
                 .withIcon(GoogleMaterial.Icon.gmd_history);
 
+        final String trashName = getString(R.string.trash);
+        int trashCount = productDAO.getRemovedCount();
         PrimaryDrawerItem trash = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_TRASH)
-                .withName(R.string.trash)
+                .withName(trashName + " (" + trashCount + ')')
                 .withIcon(GoogleMaterial.Icon.gmd_delete);
 
 
@@ -523,8 +525,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         List<Group> userGroups = groupDAO.getAll();
         for (Group group: userGroups) {
+            int productsInGroup = productDAO.getCountForGroup(group.getId());
             PrimaryDrawerItem newItem = new PrimaryDrawerItem()
-                    .withName(group.getName())
+                    .withName(group.getName() + " (" + productsInGroup + ')')
                     .withIdentifier(group.getId())
                     .withIcon(GoogleMaterial.Icon.gmd_view_list);
             drawer.addItemAtPosition(newItem, drawerPosition++);
@@ -660,7 +663,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             return;
         }
         PrimaryDrawerItem newItem = new PrimaryDrawerItem()
-                .withName(name)
+                .withName(name + "(0)")
                 .withIdentifier(id)
                 .withIcon(GoogleMaterial.Icon.gmd_view_list);
         drawer.addItemAtPosition(newItem, drawerPosition);
@@ -736,6 +739,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             productDAO.deleteProduct(deletedProduct.getId());
         }
         deletedFromThisGroup = groupChoosen;
+        // Пробуем пересоздать drawer для обновления счетчиков
+        setUpDrawer(toolbar);
     }
 
     private void undoRemove() {
@@ -755,6 +760,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
         rvProducts.swapAdapter(adapter, false);
         deletedProduct = null;
+        // Пробуем пересоздать drawer для обновления счетчиков
+        setUpDrawer(toolbar);
     }
 
 
@@ -1100,6 +1107,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                         R.string.product_has_been_restored, Toast.LENGTH_SHORT);
                                 toast.show();
 
+                                // Обновляем счетчики
+                                setUpDrawer(toolbar);
                             }
                         })
                         .setNegativeButton(R.string.no, null)
