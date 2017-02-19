@@ -164,5 +164,11 @@
     <string name="no_apps_found_try_to_install_explorer">Не найдено приложений для выбора файла. Попробуйте установить сторонний файловый проводник из Google Play</string>
     <string name="please_wait">Пожалуйста, подождите&#8230;</string>
     <string name="import_process">Подождите, идет импорт данных&#8230;</string>
-    <string name="out_of_memory_send_feedback">Недостаточно памяти для продолжения, обратитесь к разработчику приложения</string>
+    <string name="out_of_memory_try_to_close_apps">Недостаточно памяти для продолжения, попробуйте закрыть другие приложения</string>
+    <string name="file_name">Имя файла</string>
+    <string name="default_file_name">Products</string>
+    <string name="used_file_name_without_extension">Используемое имя файла без учета расширения</string>
+    <string name="add_datetime_to_filename">Добавлять к имени файла дату и время</string>
+    <string name="_import">Импорт</string>
+    <string name="_export">Экспорт</string>
 </resources>

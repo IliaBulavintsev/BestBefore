@@ -5,10 +5,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -60,7 +62,7 @@ public class FileService {
                  map = (Map) objectInputStream.readObject();
             }
             catch (OutOfMemoryError ex) {
-                Toast.makeText(context, R.string.out_of_memory_send_feedback, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, R.string.out_of_memory_try_to_close_apps, Toast.LENGTH_LONG).show();
                 return;
             }
             finally {
@@ -218,9 +220,11 @@ public class FileService {
         private boolean isSuccess = false;
         private String path;
         private String fileName;
+        private SharedPreferences sPrefs;
 
         public DoExport(Context context) {
             this.mContext = context;
+            sPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         }
 
         @Override
@@ -259,9 +263,18 @@ public class FileService {
             }
 
             try {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-                String dateTime = sdf.format(Calendar.getInstance().getTime());
-                fileName = "Products " + dateTime + ".txt";
+                String defaultFileName = mContext.getString(R.string.default_file_name);
+                fileName = sPrefs.getString("file_name", defaultFileName);
+
+                boolean useDateTime = sPrefs.getBoolean("add_datetime", true);
+                if (useDateTime) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+                    String dateTime = sdf.format(Calendar.getInstance().getTime());
+                    fileName += ' ' + dateTime;
+                }
+
+                fileName += ".txt";
+
                 final File file = new File(path + "/" + fileName);
                 if (!file.exists()) {
                     boolean result = file.createNewFile();
