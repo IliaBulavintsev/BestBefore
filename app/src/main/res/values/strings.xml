@@ -67,7 +67,6 @@
     <string name="error_has_occured_try_to_relogin">Произошла ошибка, попробуйте авторизоваться заново</string>
     <string name="backup_failed">Ошибка при создании бекапа</string>
     <string name="error_timeout">Превышено время ожидания ответа</string>
-    <string name="restore_failed">Ошибка при восстановлении данных</string>
     <string name="data_not_found">Данные не найдены</string>
     <string name="help_add">Число справа означает количество оставшихся полных дней до конца срока. Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
     <string name="help_add_with_last_day">Число справа означает количество оставшихся полных дней до конца срока (восклицательный знак означает, что сегодня последний день). Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
@@ -163,4 +162,7 @@
     <string name="expanded_image">Увеличенное изображение</string>
     <string name="export_success" formatted="false">Файл %s был сохранен в %s</string>
     <string name="no_apps_found_try_to_install_explorer">Не найдено приложений для выбора файла. Попробуйте установить сторонний файловый проводник из Google Play</string>
+    <string name="please_wait">Пожалуйста, подождите&#8230;</string>
+    <string name="import_process">Подождите, идет импорт данных&#8230;</string>
+    <string name="out_of_memory_send_feedback">Недостаточно памяти для продолжения, обратитесь к разработчику приложения</string>
 </resources>

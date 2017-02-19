@@ -290,8 +290,11 @@ public class Product implements Parcelable, Serializable {
                 if (one.getDate().before(two.getDate())) {
                     return 1;
                 }
-                else {
+                else if (one.getDate().after(two.getDate())) {
                     return -1;
+                }
+                else {
+                    return 0;
                 }
             }
         };
@@ -303,8 +306,11 @@ public class Product implements Parcelable, Serializable {
                 if (one.getDate().before(two.getDate())) {
                     return -1;
                 }
-                else {
+                else if (one.getDate().after(two.getDate())) {
                     return 1;
+                }
+                else {
+                    return 0;
                 }
             }
         };
@@ -316,8 +322,11 @@ public class Product implements Parcelable, Serializable {
                 if (one.getCreatedAt().before(two.getCreatedAt())) {
                     return 1;
                 }
-                else {
+                else if (one.getCreatedAt().after(two.getCreatedAt())) {
                     return -1;
+                }
+                else {
+                    return 0;
                 }
             }
         };

@@ -1,12 +1,14 @@
 package com.rv150.bestbefore.Services;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -53,8 +55,22 @@ public class FileService {
         try {
             InputStream inputStream = new FileInputStream(file);
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-            final Map<String, Object> map = (Map) objectInputStream.readObject();
-            objectInputStream.close();
+            final Map<String, Object> map;
+            try {
+                 map = (Map) objectInputStream.readObject();
+            }
+            catch (OutOfMemoryError ex) {
+                Toast.makeText(context, R.string.out_of_memory_send_feedback, Toast.LENGTH_LONG).show();
+                return;
+            }
+            finally {
+                try {
+                    objectInputStream.close();
+                }
+                catch (IOException ex) {
+                    Log.e(TAG, "Error closing stream");
+                }
+            }
 
             ProductDAO productDAO = ProductDAO.getInstance(context);
 
@@ -67,7 +83,7 @@ public class FileService {
                         {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                saveMapToBD(context, map, false, context.getString(R.string.import_success));
+                                new SavingMapToDB(context, map, false).execute(context.getString(R.string.import_success));
                             }
 
                         })
@@ -75,7 +91,7 @@ public class FileService {
                         {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                saveMapToBD(context, map, true, context.getString(R.string.import_success));
+                                new SavingMapToDB(context, map, true).execute(context.getString(R.string.import_success));
                             }
 
                         })
@@ -83,128 +99,204 @@ public class FileService {
                         .show();
             }
             else {
-                saveMapToBD(context, map, false, context.getString(R.string.import_success));
+                new SavingMapToDB(context, map, false).execute(context.getString(R.string.import_success));
             }
         }
         catch (Exception e) {
             Toast toast = Toast.makeText(context,
-                    R.string.restore_failed, Toast.LENGTH_SHORT);
+                    R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
             toast.show();
         }
     }
 
 
 
-    public static void saveMapToBD(Context context, Map<String, Object> map, boolean union, String successMsg) {
-        try {
 
-            ProductDAO productDAO = ProductDAO.getInstance(context);
-            GroupDAO groupDAO = GroupDAO.getInstance(context);
 
-            List<Product> products = (List) map.get("products");
-            List<Group> groups = (List) map.get("groups");
+    public static class SavingMapToDB extends AsyncTask<String, Void, Void> {
+        private Map<String, Object> map;
+        private ProgressDialog dialog;
+        private Context mContext;
+        private String mSuccessMsg;
 
-            Map<Long, Long> oldIdToNew = new HashMap<>(); // Старые ID к новым для правильных внешних ключей
+        private final boolean mUnion;
+        private boolean isSuccess = false;
 
-            if (!union) {
-                productDAO.deleteAll();
-                groupDAO.deleteAll();
-            }
+        public SavingMapToDB(Context context, Map<String, Object> map, boolean union) {
+            this.map = map;
+            this.mContext = context;
+            this.mUnion = union;
+            dialog = new ProgressDialog(context);
+        }
 
-            if (groups != null) {
-                for (Group group : groups) {
-                    long oldId = group.getId();
-                    long newId;
-                    try {
-                        newId = groupDAO.insertGroup(group);
-                    } catch (DuplicateEntryException e) {
-                        newId = groupDAO.get(group.getName()).getId();
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog.setMessage(mContext.getString(R.string.import_process));
+            dialog.setCancelable(false);
+            dialog.setInverseBackgroundForced(false);
+            dialog.show();
+        }
+
+
+
+        @Override
+        protected Void doInBackground(String... params) {
+            try {
+                mSuccessMsg = params[0];
+                ProductDAO productDAO = ProductDAO.getInstance(mContext);
+                GroupDAO groupDAO = GroupDAO.getInstance(mContext);
+
+                List<Product> products = (List) map.get("products");
+                List<Group> groups = (List) map.get("groups");
+
+                Map<Long, Long> oldIdToNew = new HashMap<>(); // Старые ID к новым для правильных внешних ключей
+
+                if (!mUnion) {
+                    productDAO.deleteAll();
+                    groupDAO.deleteAll();
+                }
+
+                if (groups != null) {
+                    for (Group group : groups) {
+                        long oldId = group.getId();
+                        long newId;
+                        try {
+                            newId = groupDAO.insertGroup(group);
+                        } catch (DuplicateEntryException e) {
+                            newId = groupDAO.get(group.getName()).getId();
+                        }
+                        oldIdToNew.put(oldId, newId);
                     }
-                    oldIdToNew.put(oldId, newId);
                 }
+
+                for (Product product : products) {
+                    long oldGroupId = product.getGroupId();
+                    if (oldGroupId != -1) {
+                        long newGroupId = oldIdToNew.get(oldGroupId);
+                        product.setGroupId(newGroupId);
+                    }
+
+                    long fileId = product.getPhoto();
+                    if (fileId != 0) {
+                        SerializableBitmap serializableBitmap = (SerializableBitmap) map.get(String.valueOf(fileId));
+                        Bitmap bitmap = serializableBitmap.getBitmap();
+                        saveBitmapToFile(mContext, bitmap, fileId);
+                    }
+                    productDAO.insertProduct(product);
+                }
+                isSuccess = true;
+            }
+            catch (Exception e) {
+                Log.e(TAG, "Error saving in DB: " + e.getMessage());
+                isSuccess = false;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            dialog.hide();
+            if (isSuccess) {
+                Toast.makeText(mContext,
+                        mSuccessMsg, Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(mContext, R.string.internal_error_has_occured,
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+
+
+    public static class DoExport extends AsyncTask<String, Void, Void> {
+
+        private Context mContext;
+        private boolean isSuccess = false;
+        private String path;
+        private String fileName;
+
+        public DoExport(Context context) {
+            this.mContext = context;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Toast.makeText(mContext, R.string.please_wait, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            path = params[0];
+            ProductDAO productDAO = ProductDAO.getInstance(mContext);
+            GroupDAO groupDAO = GroupDAO.getInstance(mContext);
+
+            List<Product> products = productDAO.getAll();
+            if (products.isEmpty()) {
+                return null;
+            }
+            List<Group> groups = groupDAO.getAll();
+            Map<String, Object> map = new HashMap<>();
+            map.put("products", products);
+            if (!groups.isEmpty()) {
+                map.put("groups", groups);
             }
 
-            for (Product product : products) {
-                long oldGroupId = product.getGroupId();
-                if (oldGroupId != -1) {
-                    long newGroupId = oldIdToNew.get(oldGroupId);
-                    product.setGroupId(newGroupId);
-                }
+            int size = products.size();
 
+            for (int i = 0; i < size; ++i) {
+                Product product = products.get(i);
                 long fileId = product.getPhoto();
                 if (fileId != 0) {
-                    SerializableBitmap serializableBitmap = (SerializableBitmap) map.get(String.valueOf(fileId));
-                    Bitmap bitmap = serializableBitmap.getBitmap();
-                    saveBitmapToFile(context, bitmap, fileId);
+                    Bitmap bitmap = getBitmapFromFileId(mContext, fileId);
+                    SerializableBitmap serializableBitmap = new SerializableBitmap(bitmap);
+                    map.put(String.valueOf(fileId), serializableBitmap);
                 }
-                productDAO.insertProduct(product);
             }
 
-            Toast toast = Toast.makeText(context,
-                    successMsg, Toast.LENGTH_SHORT);
-            toast.show();
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+                String dateTime = sdf.format(Calendar.getInstance().getTime());
+                fileName = "Products " + dateTime + ".txt";
+                final File file = new File(path + "/" + fileName);
+                if (!file.exists()) {
+                    boolean result = file.createNewFile();
+                    if (!result) {
+                        throw new IOException("Error creating file");
+                    }
+                }
+                OutputStream outputStream = new FileOutputStream(file);
+                ObjectOutputStream objectStream = new ObjectOutputStream(outputStream);
+                objectStream.writeObject(map);
+                objectStream.flush();
+                objectStream.close();
+                isSuccess = true;
+            }
+            catch (Exception e) {
+                Log.e(TAG, "Error exporting to file");
+                isSuccess = false;
+            }
+            return null;
         }
-        catch (Exception e) {
-            Toast toast = Toast.makeText(context,
-                    R.string.restore_failed, Toast.LENGTH_SHORT);
-            toast.show();
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if (isSuccess) {
+                Toast.makeText(mContext, String.format(mContext.getString(R.string.export_success),
+                        fileName, path), Toast.LENGTH_LONG).show();
+            }
+            else {
+                Toast.makeText(mContext, R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
 
-
-
-
-    public static void handleDirectoryChoice(String path, Context context) {
-
-        ProductDAO productDAO = ProductDAO.getInstance(context);
-        GroupDAO groupDAO = GroupDAO.getInstance(context);
-
-        List<Product> products = productDAO.getAll();
-        if (products.isEmpty()) {
-            return;
-        }
-        List<Group> groups = groupDAO.getAll();
-        Map<String, Object> map = new HashMap<>();
-        map.put("products", products);
-        if (!groups.isEmpty()) {
-            map.put("groups", groups);
-        }
-
-        for (Product product: products) {
-            long fileId = product.getPhoto();
-            if (fileId != 0) {
-                Bitmap bitmap = getBitmapFromFileId(context, fileId);
-                SerializableBitmap serializableBitmap = new SerializableBitmap(bitmap);
-                map.put(String.valueOf(fileId), serializableBitmap);
-            }
-        }
-
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-            String dateTime = sdf.format(Calendar.getInstance().getTime());
-            String fileName = "Products " + dateTime + ".txt";
-            final File file = new File(path + "/" + fileName);
-            if (!file.exists()) {
-                boolean result = file.createNewFile();
-                if (!result) {
-                    throw new IOException("Error creating file");
-                }
-            }
-            OutputStream outputStream = new FileOutputStream(file);
-            ObjectOutputStream objectStream = new ObjectOutputStream(outputStream);
-            objectStream.writeObject(map);
-            objectStream.flush();
-            objectStream.close();
-            Toast.makeText(context, String.format(context.getString(R.string.export_success),
-                    fileName, path), Toast.LENGTH_LONG).show();
-        }
-        catch (Exception e) {
-            Log.e(TAG, "Error exporting to file");
-            Toast.makeText(context,
-                    R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
-        }
-    }
 
     // Return Bitmap, read from file with name ${fileId}.jpeg
     public static Bitmap getBitmapFromFileId (Context context, long fileId) {

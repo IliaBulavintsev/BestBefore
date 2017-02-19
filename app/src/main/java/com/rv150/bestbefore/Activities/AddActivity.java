@@ -946,12 +946,22 @@ public class AddActivity extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 try {
-                    Uri imageUri = result.getUri();
-                    imageView.setImageURI(imageUri);
-                    mProduct.setPhoto(uriToFile(imageUri));
+                    final Uri imageUri = result.getUri();
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                mProduct.setPhoto(uriToFile(imageUri));
+                            }
+                            catch (IOException ex) {
+                                mProduct.setPhoto(0);
+                            }
+                        }
+                    }.run();
                     isPhotoUsed = true;
+                    imageView.setImageURI(imageUri);
                 }
-                catch (IOException e) {
+                catch (Exception e) {
                     Log.e(TAG, "Error saving photo: " + e.getMessage());
                     Toast.makeText(getApplicationContext(), R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
                 }

@@ -25,6 +25,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.appindexing.Action;
@@ -76,7 +78,6 @@ import java.util.Map;
 
 import static com.google.android.gms.drive.Drive.SCOPE_APPFOLDER;
 import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER;
-import static com.rv150.bestbefore.Services.FileService.saveMapToBD;
 
 /**
  * Created by Rudnev on 01.07.2016.
@@ -537,7 +538,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     public void onResult(@NonNull DriveApi.MetadataBufferResult result) {
                         if (!result.getStatus().isSuccess()) {
                             Toast toast = Toast.makeText(getApplicationContext(),
-                                    R.string.restore_failed, Toast.LENGTH_SHORT);
+                                    R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
                             toast.show();
                             return;
                         }
@@ -572,7 +573,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         public void onResult(@NonNull DriveApi.DriveContentsResult result) {
             if (!result.getStatus().isSuccess()) {
                 Toast toast = Toast.makeText(getApplicationContext(),
-                        R.string.restore_failed, Toast.LENGTH_SHORT);
+                        R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
                 toast.show();
                 return;
             }
@@ -591,7 +592,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                             {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    saveMapToBD(getApplicationContext(), map, false, getString(R.string.restore_success));
+                                    new FileService.SavingMapToDB(Preferences.this,
+                                            map, false).execute(getString(R.string.restore_success));
                                 }
 
                             })
@@ -599,7 +601,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                             {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    saveMapToBD(getApplicationContext(), map, true, getString(R.string.restore_success));
+                                    new FileService.SavingMapToDB(Preferences.this,
+                                            map, true).execute(getString(R.string.restore_success));
                                 }
 
                             })
@@ -607,12 +610,13 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                             .show();
                 }
                 else {
-                    saveMapToBD(getApplicationContext(), map, false, getString(R.string.restore_success));
+                    new FileService.SavingMapToDB(Preferences.this,
+                            map, false).execute(getString(R.string.restore_success));
                 }
             }
             catch (Exception ex) {
                 Toast.makeText(getApplicationContext(), R
-                        .string.restore_failed, Toast.LENGTH_LONG).show();
+                        .string.internal_error_has_occured, Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -721,7 +725,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
         if (requestCode == RC_DIRECTORY_PICKER) {
             if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
-                FileService.handleDirectoryChoice(data.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR), getApplicationContext());
+                String path = data.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
+                new FileService.DoExport(getApplicationContext()).execute(path);
             }
         }
     }
