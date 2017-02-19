@@ -41,7 +41,6 @@ public final class Resources {
     public static final String FRESH_TO_SPOILED = "FRESH_TO_SPOILED";
     public static final String BY_NAME = "BY_NAME";
     public static final String SHOW_OVERDUE_DIALOG = "needShowOverdue";
-    public static final String QUANTITY = "quantity";
     public static final String GROUP_ID = "groupName";
     public static final String STATUS = "status";
     public static final String STATUS_ADD = "status_add";
@@ -50,6 +49,9 @@ public final class Resources {
     public static final int RC_SIGN_IN = 1;
     public static final int RC_DRIVE_API = 2;
     public static final int RC_SETTINGS = 3;
+    public static final int RC_CHOOSE_FILE = 4;
+    public static final int RC_CAMERA = 5;
+    public static final int RC_DIRECTORY_PICKER = 6;
     public static final int RESULT_ADD = 1;
     public static final int RESULT_MODIFY = 2;
     public static final String SERVER_URL = "http://212.109.192.197:8080/";
@@ -65,4 +67,110 @@ public final class Resources {
     public static final String OVERDUED_GROUP_NAME = "overduedGroupName";
     public static final String NEED_MIGRATE = "needMigrate";
     public static final String LAST_RADIO_WAS_OKAY_BEFORE = "lastRadioWasOkayBefore";
+
+    public enum Measures {
+        PIECE("шт"),
+        KG("кг"),
+        G("г"),
+        L("л"),
+        ML("мл");
+        private String text;
+        Measures(String text) {
+            this.text = text;
+        }
+        public String getText() {
+            return this.text;
+        }
+
+        public static Measures fromString(String text) {
+            if (text != null) {
+                for (Measures b : Measures.values()) {
+                    if (text.equalsIgnoreCase(b.text)) {
+                        return b;
+                    }
+                }
+            }
+            return null;
+        }
+    }
+
+    public static final String[] popularProducts = {
+        "баранина",
+                "бекон",
+                "брокколи",
+                "брынза",
+                "буженина",
+                "ветчина",
+                "говядина",
+                "икра",
+                "икра красная",
+                "икра кабачковая",
+                "йогурт",
+                "кетчуп",
+                "кефир",
+                "капуста",
+                "капуста квашеная",
+                "капуста цветная",
+                "колбаса",
+                "колбаса вареная",
+                "колбаса сырокопченая",
+                "колбаса варено-копченая",
+                "колбаса докторская",
+                "колбаса сервелат",
+                "креветки",
+                "крылышки",
+                "кукуруза",
+                "курица",
+                "лосось",
+                "макароны",
+                "майонез",
+                "маслины",
+                "масло",
+                "масло сливочное",
+                "масло подсолнечное",
+                "масло оливковое",
+                "молоко",
+                "мороженое",
+                "мясо",
+                "окунь",
+                "окорок",
+                "оливки",
+                "осетр",
+                "паштет",
+                "пельмени",
+                "печенье",
+                "печень",
+                "пицца",
+                "рис",
+                "рыба",
+                "ряженка",
+                "свинина",
+                "селедка",
+                "сливки",
+                "сметана",
+                "сок",
+                "сок яблочный",
+                "сок вишневый",
+                "сок мультифруктовый",
+                "сок апельсиновый",
+                "сок виноградный",
+                "сок томатный",
+                "сок ананасовый",
+                "сосиски",
+                "судак",
+                "скумбрия",
+                "сыр",
+                "сыр плавленый",
+                "сырок глазированный",
+                "творог",
+                "творог обезжиренный",
+                "творог полужирный",
+                "творог жирный",
+                "томатная паста",
+                "телятина",
+                "фарш",
+                "хрен",
+                "шампиньоны",
+                "яйцо куриное",
+                "яйцо перепелиное" };
 }

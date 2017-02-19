@@ -24,7 +24,8 @@
     <string name="settings">Настройки</string>
     <string name="rate_app">Оценить приложение</string>
     <string name="help">Справка</string>
-    <string name="notifications">Напоминания</string>
+    <string name="notice">Уведомления</string>
+    <string name="manage_notifications">Управление напоминаниями</string>
     <string name="whats_new_title">Что нового?</string>
     <string name="sort">Сортировка</string>
     <string name="last_overdue">Последние просроченные</string>
@@ -66,11 +67,10 @@
     <string name="error_has_occured_try_to_relogin">Произошла ошибка, попробуйте авторизоваться заново</string>
     <string name="backup_failed">Ошибка при создании бекапа</string>
     <string name="error_timeout">Превышено время ожидания ответа</string>
-    <string name="restore_failed">Ошибка при восстановлении данных</string>
     <string name="data_not_found">Данные не найдены</string>
     <string name="help_add">Число справа означает количество оставшихся полных дней до конца срока. Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
     <string name="help_add_with_last_day">Число справа означает количество оставшихся полных дней до конца срока (восклицательный знак означает, что сегодня последний день). Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
-    <string name="warning">Внимание</string>
+    <string name="warning">Внимание!</string>
     <string name="do_you_want_to_overwite_existing">Вы хотите перезаписать существующие данные данными с сервера?</string>
     <string name="yes">Да</string>
     <string name="ok">OK</string>
@@ -136,4 +136,33 @@
     <string name="got_it">Принято</string>
     <string name="press_twice_to_exit">Нажмите еще раз для выхода</string>
     <string name="press_twice_to_close">Нажмите еще раз, чтобы закрыть</string>
+    <string name="search">Поиск</string>
+    <string name="find">Найти</string>
+    <string name="file_operations">Файловые операции</string>
+    <string name="do_you_want_to_overwrite_existing_from_server">Вы хотите перезаписать существующие данные данными с сервера?</string>
+    <string name="do_you_want_to_overwrite_existing_from_file">Вы хотите перезаписать существующие данные данными из файла?</string>
+    <string name="import_from_file">Импорт из файла</string>
+    <string name="export_to_file">Экспорт в файл</string>
+    <string name="nothing_to_export">Нет данных для экспорта</string>
+    <string name="file_open_error">Ошибка открытия файла</string>
+    <string name="choose_backup">Выберите резервную копию</string>
+    <string name="import_success">Импорт завершен</string>
+    <string name="data">Данные</string>
+    <string name="_interface">Интерфейс</string>
+    <string name="adding_products_parameters">Параметры добавления продуктов</string>
+    <string name="other">Другое</string>
+    <string name="done_thanks_for_buying">Готово! Спасибо за покупку!</string>
+    <string name="pick_image_intent_text">Выберите опцию</string>
+    <string name="product_image">Фото продукта</string>
+    <string name="use_photo">Использовать фотографии</string>
+    <string name="quantity_short">Кол-во</string>
+    <string name="success">Успешно!</string>
+    <string name="sure_you_want_remove_all_backups">Вы действительно хотите удалить ВСЕ резервные копии на сервере? Действие необратимо!</string>
+    <string name="remove_all_copies">Удалить все резервные копии</string>
+    <string name="expanded_image">Увеличенное изображение</string>
+    <string name="export_success" formatted="false">Файл %s был сохранен в %s</string>
+    <string name="no_apps_found_try_to_install_explorer">Не найдено приложений для выбора файла. Попробуйте установить сторонний файловый проводник из Google Play</string>
+    <string name="please_wait">Пожалуйста, подождите&#8230;</string>
+    <string name="import_process">Подождите, идет импорт данных&#8230;</string>
+    <string name="out_of_memory_send_feedback">Недостаточно памяти для продолжения, обратитесь к разработчику приложения</string>
 </resources>

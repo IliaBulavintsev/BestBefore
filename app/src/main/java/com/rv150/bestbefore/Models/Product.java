@@ -3,9 +3,6 @@ package com.rv150.bestbefore.Models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -18,6 +15,7 @@ import java.util.GregorianCalendar;
  * Created by rv150 on 06.01.2016.
  */
 public class Product implements Parcelable, Serializable {
+    private static final long serialVersionUID = -305914420954100092L;
     private String mTitle;
     private Calendar mProduced;
     private Calendar mDate;
@@ -29,10 +27,12 @@ public class Product implements Parcelable, Serializable {
     private int mRemoved;
     private long mRemovedAt;
     private int measure;
+    private long photo;     // Имя файла с фотографией + .jpeg
 
-    private static final long SerialVersionUID = 4862926644813433707L;
+
 
     public Product() {
+        mTitle = "";
         mDate = Calendar.getInstance();
         mCreatedAt = Calendar.getInstance();
         mProduced = Calendar.getInstance();
@@ -41,7 +41,12 @@ public class Product implements Parcelable, Serializable {
 
 
     public Product(String title, Calendar date, Calendar createdAt, int quantity, long groupId) {
-        this.mTitle = title;
+        if (title != null) {
+            this.mTitle = title;
+        }
+        else {
+            mTitle = "";
+        }
         this.mDate = date;
         this.mCreatedAt = createdAt;
         this.mQuantity = quantity;
@@ -55,7 +60,12 @@ public class Product implements Parcelable, Serializable {
     }
 
     public Product(String title, String date, String createdAt, int quantity, long groupId) {
-        this.mTitle = title;
+        if (title != null) {
+            this.mTitle = title;
+        }
+        else {
+            mTitle = "";
+        }
         String[] array = date.split("\\.");
         int myDay = Integer.parseInt(array[0]);
         int myMonth = Integer.parseInt(array[1]);
@@ -94,9 +104,10 @@ public class Product implements Parcelable, Serializable {
         oos.writeLong(mRemovedAt);
         oos.writeLong(mProduced.getTimeInMillis());
         oos.writeInt(measure);
+        oos.writeLong(photo);
     }
 
-    private void readObject(ObjectInputStream in) throws IOException {
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         mTitle = in.readUTF();
         mDate = Calendar.getInstance();
         mDate.setTimeInMillis(in.readLong());
@@ -111,6 +122,12 @@ public class Product implements Parcelable, Serializable {
         mProduced = Calendar.getInstance();
         mProduced.setTimeInMillis(in.readLong());
         measure = in.readInt();
+        try {
+            photo = in.readLong();
+        }
+        catch (IOException e) {
+            photo = 0;
+        }
     }
 
 
@@ -134,6 +151,7 @@ public class Product implements Parcelable, Serializable {
         parcel.writeLong(mRemovedAt);
         parcel.writeLong(mProduced.getTimeInMillis());
         parcel.writeInt(measure);
+        parcel.writeLong(photo);
     }
 
     public static final Parcelable.Creator<Product> CREATOR
@@ -162,6 +180,7 @@ public class Product implements Parcelable, Serializable {
         mProduced = Calendar.getInstance();
         mProduced.setTimeInMillis(in.readLong());
         measure = in.readInt();
+        photo = in.readLong();
     }
 
 
@@ -182,8 +201,13 @@ public class Product implements Parcelable, Serializable {
         return mTitle;
     }
 
-    public void setTitle(String mTitle) {
-        this.mTitle = mTitle;
+    public void setTitle(String title) {
+        if (title == null) {
+            mTitle = "";
+        }
+        else {
+            mTitle = title;
+        }
     }
 
     public Calendar getProduced() {
@@ -202,20 +226,6 @@ public class Product implements Parcelable, Serializable {
 
     public void setDate(Calendar mDate) {
         this.mDate = mDate;
-    }
-
-    public JSONObject getJSON() throws JSONException {
-        JSONObject result = new JSONObject();
-        result.put("name", getTitle());
-        result.put("date", getDate().getTimeInMillis());
-        result.put("createdAt", getCreatedAt().getTimeInMillis());
-        result.put("quantity", getQuantity());
-        result.put("groupId", mGroupId);
-        result.put("viewed", getViewed());
-        result.put("removed", mRemoved);
-        result.put("removedAt", mRemovedAt);
-        result.put("measure", measure);
-        return result;
     }
 
     public int getQuantity() {
@@ -266,14 +276,25 @@ public class Product implements Parcelable, Serializable {
         this.measure = measure;
     }
 
+    public long getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(long photo) {
+        this.photo = photo;
+    }
+
     public static Comparator<Product> getFreshToSpoiledComparator() {
         return new Comparator<Product>() {
             public int compare(Product one, Product two) {
                 if (one.getDate().before(two.getDate())) {
                     return 1;
                 }
-                else {
+                else if (one.getDate().after(two.getDate())) {
                     return -1;
+                }
+                else {
+                    return 0;
                 }
             }
         };
@@ -285,8 +306,11 @@ public class Product implements Parcelable, Serializable {
                 if (one.getDate().before(two.getDate())) {
                     return -1;
                 }
-                else {
+                else if (one.getDate().after(two.getDate())) {
                     return 1;
+                }
+                else {
+                    return 0;
                 }
             }
         };
@@ -298,8 +322,11 @@ public class Product implements Parcelable, Serializable {
                 if (one.getCreatedAt().before(two.getCreatedAt())) {
                     return 1;
                 }
-                else {
+                else if (one.getCreatedAt().after(two.getCreatedAt())) {
                     return -1;
+                }
+                else {
+                    return 0;
                 }
             }
         };

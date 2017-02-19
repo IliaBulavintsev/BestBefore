@@ -10,6 +10,8 @@ import android.provider.BaseColumns;
  */
 
 public class DBHelper extends SQLiteOpenHelper {
+
+    private static DBHelper instance;
     
     public static class AutoCompletedProducts implements BaseColumns {
         public static final String TABLE_NAME = "user_products";
@@ -33,10 +35,11 @@ public class DBHelper extends SQLiteOpenHelper {
         public static final String COLUMN_NAME_REMOVED = "removed";
         public static final String COLUMN_NAME_REMOVED_AT = "removed_at";
         public static final String COLUMN_NAME_MEASURE = "measure";
+        public static final String COLUMN_NAME_PHOTO = "photo";
     }
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
     private static final String DATABASE_NAME = "BestBefore.db";
 
     private static final String SQL_CREATE_AUTOCOMPLETED_TABLE  =
@@ -52,7 +55,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String SQL_CREATE_PRODUCT_TABLE  =
             "CREATE TABLE " + Product.TABLE_NAME + " (" +
                     Product._ID + " INTEGER PRIMARY KEY," +
-                    Product.COLUMN_NAME_NAME + " VARCHAR(100) NOT NULL, " +
+                    Product.COLUMN_NAME_NAME + " VARCHAR(100) DEFAULT NULL, " +
                     Product.COLUMN_NAME_PRODUCED + " INTEGER DEFAULT 0," +
                     Product.COLUMN_NAME_DATE + " INTEGER NOT NULL," +
                     Product.COLUMN_NAME_CREATED_AT + " INTEGER NOT NULL," +
@@ -62,11 +65,19 @@ public class DBHelper extends SQLiteOpenHelper {
                     Product.COLUMN_NAME_REMOVED + " INTEGER DEFAULT 0," +
                     Product.COLUMN_NAME_REMOVED_AT + " INTEGER DEFAULT 0," +
                     Product.COLUMN_NAME_MEASURE + " INTEGER DEFAULT 0," +
+                    Product.COLUMN_NAME_PHOTO + " INTEGER DEFAULT 0," +
                     "FOREIGN KEY (" + Product.COLUMN_NAME_GROUP_ID + ") REFERENCES " +
                     Group.TABLE_NAME + "(" + Group._ID + ") ON DELETE CASCADE)";
 
-    public DBHelper(Context context) {
+    private DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    public static DBHelper getInstance(Context context) {
+        if (instance == null) {
+            instance = new DBHelper(context);
+        }
+        return instance;
     }
 
     @Override
@@ -95,7 +106,39 @@ public class DBHelper extends SQLiteOpenHelper {
             case 5:
                 db.execSQL("ALTER TABLE " + Product.TABLE_NAME +
                         " ADD COLUMN " + Product.COLUMN_NAME_MEASURE + " INTEGER DEFAULT 0");
-                break;
+            case 6: {
+                db.beginTransaction();
+                String tempTable = "temp_table";
+                try {
+                    db.execSQL("ALTER TABLE " + Product.TABLE_NAME + " RENAME TO " + tempTable);
+                    db.execSQL(SQL_CREATE_PRODUCT_TABLE);
+                    db.execSQL("INSERT INTO " + Product.TABLE_NAME + " (" +
+                            Product.COLUMN_NAME_NAME + ", " +
+                            Product.COLUMN_NAME_PRODUCED + ", " +
+                            Product.COLUMN_NAME_DATE + ", " +
+                            Product.COLUMN_NAME_CREATED_AT + ", " +
+                            Product.COLUMN_NAME_QUANTITY + ", " +
+                            Product.COLUMN_NAME_GROUP_ID + ", " +
+                            Product.COLUMN_NAME_VIEWED + ", " +
+                            Product.COLUMN_NAME_REMOVED + ", " +
+                            Product.COLUMN_NAME_REMOVED_AT + ", " +
+                            Product.COLUMN_NAME_MEASURE + ") SELECT " +
+                                    Product.COLUMN_NAME_NAME + ", " +
+                                    Product.COLUMN_NAME_PRODUCED + ", " +
+                                    Product.COLUMN_NAME_DATE + ", " +
+                                    Product.COLUMN_NAME_CREATED_AT + ", " +
+                                    Product.COLUMN_NAME_QUANTITY + ", " +
+                                    Product.COLUMN_NAME_GROUP_ID + ", " +
+                                    Product.COLUMN_NAME_VIEWED + ", " +
+                                    Product.COLUMN_NAME_REMOVED + ", " +
+                                    Product.COLUMN_NAME_REMOVED_AT + ", " +
+                                    Product.COLUMN_NAME_MEASURE + " FROM " + tempTable);
+                    db.execSQL("DROP TABLE " + tempTable);
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+            }
             default:
                 break;
         }

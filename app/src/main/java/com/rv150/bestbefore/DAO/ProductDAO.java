@@ -2,10 +2,8 @@ package com.rv150.bestbefore.DAO;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.preference.PreferenceManager;
 
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.Resources;
@@ -23,9 +21,19 @@ import java.util.List;
 public class ProductDAO {
     private DBHelper dbHelper;
 
-    public ProductDAO(Context context) {
-        dbHelper = new DBHelper(context);
+    private static ProductDAO instance;
+
+    private ProductDAO(Context context) {
+        dbHelper = DBHelper.getInstance(context);
     }
+
+    public static ProductDAO getInstance(Context context) {
+        if (instance == null) {
+            instance = new ProductDAO(context);
+        }
+        return instance;
+    }
+
 
     public List<Product> getAll() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -39,11 +47,10 @@ public class ProductDAO {
         return products;
     }
 
-
     public List<Product> getAllNotRemoved() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String query = "SELECT * FROM " + DBHelper.Product.TABLE_NAME +
-        " WHERE " + DBHelper.Product.COLUMN_NAME_REMOVED + " = ?";
+                " WHERE " + DBHelper.Product.COLUMN_NAME_REMOVED + " = ?";
         Cursor cursor = db.rawQuery(query, new String[] {String.valueOf(0)});
         List<Product> products = new ArrayList<>();
 
@@ -125,8 +132,14 @@ public class ProductDAO {
 
 
     private Product mapProduct(final Cursor cursor) {
-        String name = cursor.getString(
-                cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_NAME));
+
+        String name = null;
+        if (!cursor.isNull(cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_NAME))) {
+            name = cursor.getString(
+                    cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_NAME));
+        }
+
+
         long dateInMillis = cursor.getLong(
                 cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_DATE));
 
@@ -162,6 +175,9 @@ public class ProductDAO {
         long removedAt = cursor.getLong(
                 cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_REMOVED_AT));
 
+        long photo = cursor.getLong(
+                cursor.getColumnIndexOrThrow(DBHelper.Product.COLUMN_NAME_PHOTO));
+
 
         Calendar date = Calendar.getInstance();
         date.setTimeInMillis(dateInMillis);
@@ -179,38 +195,20 @@ public class ProductDAO {
         product.setRemovedAt(removedAt);
         product.setProduced(produced);
         product.setMeasure(measure);
+        product.setPhoto(photo);
         return product;
-    }
-
-    public void insertProducts (List<Product> products) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        for (Product product: products) {
-            values.put(DBHelper.Product.COLUMN_NAME_NAME, product.getTitle());
-            values.put(DBHelper.Product.COLUMN_NAME_DATE, product.getDate().getTimeInMillis());
-            values.put(DBHelper.Product.COLUMN_NAME_CREATED_AT, product.getCreatedAt().getTimeInMillis());
-            values.put(DBHelper.Product.COLUMN_NAME_QUANTITY, product.getQuantity());
-            values.put(DBHelper.Product.COLUMN_NAME_MEASURE, product.getMeasure());
-            long groupId = product.getGroupId();
-            if (groupId == -1) {
-                values.putNull(DBHelper.Product.COLUMN_NAME_GROUP_ID);
-            }
-            else {
-                values.put(DBHelper.Product.COLUMN_NAME_GROUP_ID, groupId);
-            }
-            values.put(DBHelper.Product.COLUMN_NAME_VIEWED, product.getViewed());
-            values.put(DBHelper.Product.COLUMN_NAME_REMOVED, product.getRemoved());
-            values.put(DBHelper.Product.COLUMN_NAME_REMOVED_AT, product.getRemovedAt());
-            values.put(DBHelper.Product.COLUMN_NAME_PRODUCED, product.getProduced().getTimeInMillis());
-            db.insert(DBHelper.Product.TABLE_NAME, null, values);
-        }
     }
 
 
     public long insertProduct (Product product) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(DBHelper.Product.COLUMN_NAME_NAME, product.getTitle());
+
+        String name = product.getTitle();
+        if (name != null && !name.isEmpty()) {
+            values.put(DBHelper.Product.COLUMN_NAME_NAME, name);
+        }
+
         values.put(DBHelper.Product.COLUMN_NAME_DATE, product.getDate().getTimeInMillis());
         values.put(DBHelper.Product.COLUMN_NAME_CREATED_AT, product.getCreatedAt().getTimeInMillis());
         values.put(DBHelper.Product.COLUMN_NAME_QUANTITY, product.getQuantity());
@@ -226,6 +224,7 @@ public class ProductDAO {
         values.put(DBHelper.Product.COLUMN_NAME_REMOVED, product.getRemoved());
         values.put(DBHelper.Product.COLUMN_NAME_REMOVED_AT, product.getRemovedAt());
         values.put(DBHelper.Product.COLUMN_NAME_PRODUCED, product.getProduced().getTimeInMillis());
+        values.put(DBHelper.Product.COLUMN_NAME_PHOTO, product.getPhoto());
         return db.insert(DBHelper.Product.TABLE_NAME, null, values);
     }
 
@@ -255,7 +254,15 @@ public class ProductDAO {
     public void updateProduct(Product product) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(DBHelper.Product.COLUMN_NAME_NAME, product.getTitle());
+
+        String name = product.getTitle();
+        if (name == null || name.isEmpty()) {
+            values.putNull(DBHelper.Product.COLUMN_NAME_NAME);
+        }
+        else {
+            values.put(DBHelper.Product.COLUMN_NAME_NAME, name);
+        }
+
         values.put(DBHelper.Product.COLUMN_NAME_DATE, product.getDate().getTimeInMillis());
         values.put(DBHelper.Product.COLUMN_NAME_QUANTITY, product.getQuantity());
         values.put(DBHelper.Product.COLUMN_NAME_MEASURE, product.getMeasure());
@@ -270,6 +277,7 @@ public class ProductDAO {
         values.put(DBHelper.Product.COLUMN_NAME_REMOVED, product.getRemoved());
         values.put(DBHelper.Product.COLUMN_NAME_REMOVED_AT, product.getRemovedAt());
         values.put(DBHelper.Product.COLUMN_NAME_PRODUCED, product.getProduced().getTimeInMillis());
+        values.put(DBHelper.Product.COLUMN_NAME_PHOTO, product.getPhoto());
         db.update(DBHelper.Product.TABLE_NAME, values,
                 DBHelper.Product._ID + " = ?", new String[] {String.valueOf(product.getId())});
 
@@ -284,8 +292,8 @@ public class ProductDAO {
         values.put(DBHelper.Product.COLUMN_NAME_REMOVED_AT, now.getTimeInMillis());
         db.update(DBHelper.Product.TABLE_NAME, values,
                 DBHelper.Product.COLUMN_NAME_GROUP_ID + " = ? AND " +
-                DBHelper.Product.COLUMN_NAME_DATE + " > ? AND " +
-                DBHelper.Product.COLUMN_NAME_REMOVED + " = ?",
+                        DBHelper.Product.COLUMN_NAME_DATE + " > ? AND " +
+                        DBHelper.Product.COLUMN_NAME_REMOVED + " = ?",
                 new String[] {String.valueOf(groupId),
                         String.valueOf(now.getTimeInMillis()), String.valueOf(0)});
     }
@@ -324,51 +332,5 @@ public class ProductDAO {
     public void deleteAll() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         db.delete(DBHelper.Product.TABLE_NAME, null, null);
-    }
-
-
-
-    public static List<Product> getFreshProducts(Context context) {
-        List<Product> list = new ArrayList<>();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        for (int i = 0; prefs.contains(String.valueOf(i)); ++i) {
-            if (prefs.getString(String.valueOf(i), "").equals("") || i >= 500) {
-                break;
-            }
-            final String title = prefs.getString(String.valueOf(i), "");
-            final String date = prefs.getString(String.valueOf(i + 500), "0.0.0");
-            final String createdAt = prefs.getString(String.valueOf(i + 1000), "0.0.0.0.0.0");
-            final int quantity = prefs.getInt(Resources.QUANTITY + String.valueOf(i), 1);
-            Product temp = new Product(title, date, createdAt, quantity, -1);
-            list.add(temp);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.remove(String.valueOf(i));
-            editor.remove(String.valueOf(i+500));
-            editor.remove(String.valueOf(i+1000));
-            editor.remove(Resources.QUANTITY + String.valueOf(i));
-            editor.apply();
-        }
-        return list;
-    }
-
-
-    public static List<Product> getOverdueProducts(Context context) {
-        List<Product> list = new ArrayList<>();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        for (int i = 0; prefs.contains("del" + String.valueOf(i)); ++i) {
-            if (prefs.getString("del" + String.valueOf(i), "").equals("") || i >= 1000) {
-                break;
-            }
-            final String title = prefs.getString("del" + String.valueOf(i), "");
-            final String date = prefs.getString("del" + String.valueOf(i + 1000), "0.0.0");
-            final int quantity = prefs.getInt("del" + Resources.QUANTITY + String.valueOf(i), 1);
-            list.add(new Product(title, date, quantity, -1));
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.remove(String.valueOf("del" + String.valueOf(i)));
-            editor.remove(String.valueOf("del" + String.valueOf(i + 1000)));
-            editor.remove("del" + Resources.QUANTITY + String.valueOf(i));
-            editor.apply();
-        }
-        return list;
     }
 }

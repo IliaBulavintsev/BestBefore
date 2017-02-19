@@ -2,9 +2,13 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+
+    <PreferenceCategory
+        android:title="@string/notice"
+        android:key="notice">
         <PreferenceScreen
             android:key="open_notifications"
-            android:title="@string/notifications">
+            android:title="@string/manage_notifications">
             <PreferenceCategory
                 android:title="Первое напоминание"
                 android:key="first_group">
@@ -131,86 +135,113 @@
                     android:dependency="five_days"
                     android:title="Время напоминания"/>
             </PreferenceCategory>
+        </PreferenceScreen>
+    </PreferenceCategory>
 
+
+    <PreferenceCategory
+        android:title="@string/_interface"
+        android:key="interface_category">
+        <PreferenceScreen
+            android:key="interface_settings"
+            android:title="@string/adding_products_parameters">
+            <CheckBoxPreference
+                android:key="use_quantity"
+                android:title="@string/quantity_attribute"
+                android:defaultValue="true" />
+            <CheckBoxPreference
+                android:key="use_date_produced"
+                android:title="@string/date_produced_attribute"
+                android:summary="@string/date_produced_attribute_summary"
+                android:defaultValue="true" />
+
+            <CheckBoxPreference
+                android:key="remember_radiobuttons"
+                android:title="@string/radiobuttons"
+                android:summary="@string/remember_radiobuttons_state"
+                android:defaultValue="true" />
+
+            <CheckBoxPreference
+                android:key="clear_date_field"
+                android:title="@string/date_input"
+                android:summary="@string/clear_date_in_first_tap"
+                android:defaultValue="true" />
         </PreferenceScreen>
 
 
-    <PreferenceScreen
-        android:key="interface_settings"
-        android:title="@string/interface_settings">
-        <CheckBoxPreference
-            android:key="use_quantity"
-            android:title="@string/quantity_attribute"
-            android:defaultValue="true" />
-        <CheckBoxPreference
-            android:key="use_date_produced"
-            android:title="@string/date_produced_attribute"
-            android:summary="@string/date_produced_attribute_summary"
-            android:defaultValue="true" />
-        <CheckBoxPreference
-        android:key="use_groups"
-        android:title="@string/groups"
-        android:summary="@string/ability_to_divide_into_groups"
-        android:defaultValue="true" />
+
+        <com.rv150.bestbefore.Preferences.ListPreferenceWithSummary
+            android:entries="@array/sortOptions"
+            android:entryValues="@array/sortValues"
+            android:key="how_to_sort"
+            android:title="@string/sort"
+            android:defaultValue="SPOILED_TO_FRESH">
+        </com.rv150.bestbefore.Preferences.ListPreferenceWithSummary>
 
         <CheckBoxPreference
-            android:key="remember_radiobuttons"
-            android:title="@string/radiobuttons"
-            android:summary="@string/remember_radiobuttons_state"
+            android:key="use_groups"
+            android:title="@string/groups"
+            android:summary="@string/ability_to_divide_into_groups"
             android:defaultValue="true" />
 
         <CheckBoxPreference
-            android:key="clear_date_field"
-            android:title="@string/date_input"
-            android:summary="@string/clear_date_in_first_tap"
+            android:key="use_photo"
+            android:title="@string/use_photo"
             android:defaultValue="true" />
 
-
-    </PreferenceScreen>
-
-
-
-    <com.rv150.bestbefore.Preferences.ListPreferenceWithSummary
-        android:entries="@array/sortOptions"
-        android:entryValues="@array/sortValues"
-        android:key="how_to_sort"
-        android:title="@string/sort"
-        android:defaultValue="SPOILED_TO_FRESH">
-    </com.rv150.bestbefore.Preferences.ListPreferenceWithSummary>
-
-    <CheckBoxPreference
-        android:key="needShowOverdue"
-        android:title="Предупреждение"
-        android:summary="Показывать при запуске окно с недавно просроченными продуктами"
-        android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="needShowOverdue"
+            android:title="Предупреждение"
+            android:summary="Показывать при запуске окно с недавно просроченными продуктами"
+            android:defaultValue="true" />
+    </PreferenceCategory>
 
 
 
+    <PreferenceCategory
+        android:title="@string/data"
+        android:key="data_category">
+        <PreferenceScreen
+            android:key="sync"
+            android:title="@string/sync_with_google"
+            android:persistent="false">
+            <Preference
+                android:title="@string/signin"
+                android:summary="@string/auth_via_google"
+                android:key="auth" />
+            <Preference
+                android:title="@string/make_backup"
+                android:key="backup" />
+            <Preference
+                android:title="@string/restore"
+                android:key="restore" />
 
-    <Preference
-        android:key="clear_dictionary"
-        android:title="@string/clear_user_dictionary" />
+            <Preference
+                android:title="@string/remove_all_copies"
+                android:key="google_clear_all" />
+        </PreferenceScreen>
 
 
-    <PreferenceScreen
-        android:key="sync"
-        android:title="@string/sync_with_google"
-        android:persistent="false">
+        <PreferenceScreen
+            android:key="files_menu"
+            android:title="@string/file_operations"
+            android:persistent="false">
+            <Preference
+                android:title="@string/import_from_file"
+                android:key="import" />
+            <Preference
+                android:title="@string/export_to_file"
+                android:key="export" />
+        </PreferenceScreen>
+    </PreferenceCategory>
+
+
+
+    <PreferenceCategory
+        android:title="@string/other"
+        android:key="other_category">
         <Preference
-            android:title="@string/signin"
-            android:summary="@string/auth_via_google"
-            android:key="auth" />
-        <Preference
-            android:title="@string/make_backup"
-            android:key="backup" />
-        <Preference
-            android:title="@string/restore"
-            android:key="restore" />
-        <Preference
-            android:title="@string/restore_deprecated"
-            android:key="restore_deprecated" />
-    </PreferenceScreen>
-
-
-
+            android:key="clear_dictionary"
+            android:title="@string/clear_user_dictionary" />
+    </PreferenceCategory>
 </PreferenceScreen>

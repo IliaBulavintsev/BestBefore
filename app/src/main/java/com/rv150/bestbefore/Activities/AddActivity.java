@@ -7,6 +7,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -36,18 +39,29 @@ import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
+import com.rv150.bestbefore.Services.CameraService;
 import com.rv150.bestbefore.Services.DBHelper;
+import com.rv150.bestbefore.Services.FileService;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+import static com.rv150.bestbefore.Resources.popularProducts;
+
 /**
  * Created by rv150 on 07.01.2016.
  */
-public class Add extends AppCompatActivity {
+public class AddActivity extends AppCompatActivity {
     private AutoCompleteTextView enterName;
+    private ImageView imageView;
     private TextView dateProducedTV;
     private EditText dateProducedET;
     private ImageView dateProducedIV;
@@ -87,7 +101,7 @@ public class Add extends AppCompatActivity {
 
     private Product mProduct;
 
-    public static final String TAG = "Add activity";
+    public static final String TAG = "AddActivity activity";
 
     private boolean flagForDateProduced = true;
     private int previousDateProducedLength = 0;
@@ -98,6 +112,9 @@ public class Add extends AppCompatActivity {
 
     private boolean doubleBackToExitPressedOnce = false;
 
+    private boolean isPhotoUsed = false;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +124,7 @@ public class Add extends AppCompatActivity {
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         enterName = (AutoCompleteTextView) findViewById(R.id.enterName);
+        imageView = (ImageView) findViewById(R.id.product_image);
         dateProducedTV = (TextView) findViewById(R.id.date_produced_TV);
         dateProducedET = (EditText) findViewById(R.id.date_produced_ET);
         dateProducedIV = (ImageView) findViewById(R.id.date_produced_IV);
@@ -150,10 +168,10 @@ public class Add extends AppCompatActivity {
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerStorageLife.setAdapter(spinnerAdapter);
 
-        int size = Measures.values().length;
+        int size = Resources.Measures.values().length;
         String[] measures = new String[size];
         for (int i = 0; i < size; ++i) {
-            measures[i] = Measures.values()[i].getText();
+            measures[i] = Resources.Measures.values()[i].getText();
         }
 
         ArrayAdapter<String> spinnerQuantityAdapter =
@@ -161,9 +179,9 @@ public class Add extends AppCompatActivity {
         spinnerQuantityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerQuantity.setAdapter(spinnerQuantityAdapter);
 
-        groupDAO = new GroupDAO(getApplicationContext());
-        productDAO = new ProductDAO(getApplicationContext());
-        DBHelper dbHelper = new DBHelper(getApplicationContext());
+        groupDAO = GroupDAO.getInstance(getApplicationContext());
+        productDAO = ProductDAO.getInstance(getApplicationContext());
+        DBHelper dbHelper = DBHelper.getInstance(getApplicationContext());
 
         okayBefore = Calendar.getInstance();
         dateProduced = Calendar.getInstance();
@@ -178,7 +196,7 @@ public class Add extends AppCompatActivity {
         }
         groupNames.add(getString(R.string.create_group_in_spinner));
 
-         spinnerGroupsAdapter =
+        spinnerGroupsAdapter =
                 new ArrayAdapter<>(this, R.layout.custom_xml_spinner_layout, groupNames);
         spinnerGroupsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerGroups.setAdapter(spinnerGroupsAdapter);
@@ -201,6 +219,11 @@ public class Add extends AppCompatActivity {
 
             }
         });
+
+        boolean usePhoto = sPrefs.getBoolean("use_photo", true);
+        if (!usePhoto) {
+            imageView.setVisibility(View.GONE);
+        }
 
         showDateProduced = sPrefs.getBoolean("use_date_produced", true);
         if (!showDateProduced && !radioDateProduced.isChecked()) {
@@ -429,29 +452,44 @@ public class Add extends AppCompatActivity {
 
 
 
-            mProduct = extras.getParcelable(Product.class.getName());
-            if (mProduct != null) {          // Изменение продукта
-                isChanging = true;
-                setTitle(R.string.changing_product);
-                enterName.setText(mProduct.getTitle());
-                okayBefore = mProduct.getDate();
-                dateProduced = mProduct.getProduced();
-                quantityET.setText(String.valueOf(mProduct.getQuantity()));
-                long groupId = mProduct.getGroupId();
-                if (groupId != -1) {
-                    Group group = groupDAO.get(groupId);
-                    groupName = group.getName();
-                }
-                int measure = mProduct.getMeasure();
-                spinnerQuantity.setSelection(measure);
-            } else {
-                mProduct = new Product();
-                long groupId = extras.getLong(Resources.GROUP_ID, Resources.ID_MAIN_GROUP);
-                if (groupId != Resources.ID_MAIN_GROUP) {
-                    Group group = groupDAO.get(groupId);
-                    groupName = group.getName();
+        mProduct = extras.getParcelable(Product.class.getName());
+        if (mProduct != null) {          // Изменение продукта
+            isChanging = true;
+            setTitle(R.string.changing_product);
+            enterName.setText(mProduct.getTitle());
+            okayBefore = mProduct.getDate();
+            dateProduced = mProduct.getProduced();
+            quantityET.setText(String.valueOf(mProduct.getQuantity()));
+            long groupId = mProduct.getGroupId();
+            if (groupId != -1) {
+                Group group = groupDAO.get(groupId);
+                groupName = group.getName();
+            }
+            int measure = mProduct.getMeasure();
+            spinnerQuantity.setSelection(measure);
+            long photo = mProduct.getPhoto();
+
+            if (photo != 0) {
+                isPhotoUsed = true;
+                final Bitmap bitmap = FileService.getBitmapFromFileId(getApplicationContext(), photo);
+                if (bitmap != null) {
+                    imageView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, imageView.getWidth(),
+                                    imageView.getHeight(), false));
+                        }
+                    });
                 }
             }
+        } else {
+            mProduct = new Product();
+            long groupId = extras.getLong(Resources.GROUP_ID, Resources.ID_MAIN_GROUP);
+            if (groupId != Resources.ID_MAIN_GROUP) {
+                Group group = groupDAO.get(groupId);
+                groupName = group.getName();
+            }
+        }
 
 
         if (groupName != null) {
@@ -465,86 +503,7 @@ public class Add extends AppCompatActivity {
             setDateText(okayBefore, okayBeforeOrDaysET); // Установка нужной даты в EditText
         }
 
-        String[] popularProducts = {
-                "баранина",
-                "бекон",
-                "брокколи",
-                "брынза",
-                "буженина",
-                "ветчина",
-                "говядина",
-                "икра",
-                "икра красная",
-                "икра кабачковая",
-                "йогурт",
-                "кетчуп",
-                "кефир",
-                "капуста",
-                "капуста квашеная",
-                "капуста цветная",
-                "колбаса",
-                "колбаса вареная",
-                "колбаса сырокопченая",
-                "колбаса варено-копченая",
-                "колбаса докторская",
-                "колбаса сервелат",
-                "креветки",
-                "крылышки",
-                "кукуруза",
-                "курица",
-                "лосось",
-                "макароны",
-                "майонез",
-                "маслины",
-                "масло",
-                "масло сливочное",
-                "масло подсолнечное",
-                "масло оливковое",
-                "молоко",
-                "мороженое",
-                "мясо",
-                "окунь",
-                "окорок",
-                "оливки",
-                "осетр",
-                "паштет",
-                "пельмени",
-                "печенье",
-                "печень",
-                "пицца",
-                "рис",
-                "рыба",
-                "ряженка",
-                "свинина",
-                "селедка",
-                "сливки",
-                "сметана",
-                "сок",
-                "сок яблочный",
-                "сок вишневый",
-                "сок мультифруктовый",
-                "сок апельсиновый",
-                "сок виноградный",
-                "сок томатный",
-                "сок ананасовый",
-                "сосиски",
-                "судак",
-                "скумбрия",
-                "сыр",
-                "сыр плавленый",
-                "сырок глазированный",
-                "творог",
-                "творог обезжиренный",
-                "творог полужирный",
-                "творог жирный",
-                "томатная паста",
-                "телятина",
-                "фарш",
-                "хрен",
-                "шампиньоны",
-                "яйцо куриное",
-                "яйцо перепелиное"
-        };
+
 
 
         String[] projection = {
@@ -664,15 +623,17 @@ public class Add extends AppCompatActivity {
 
 
 
-
-
     public void onSaveClick(View view) {
-        if ((enterName.getText().toString().equals("")) ||
-                (dateProducedET.getVisibility() != View.GONE &&
-                        dateProducedET.getText().toString().equals("")) ||
-                okayBeforeOrDaysET.getText().toString().equals("")
-                || (quantityET.getVisibility() != View.GONE &&
-                quantityET.getText().toString().equals(""))) {
+
+        boolean noName = enterName.getText().toString().equals("");
+        boolean noDateProduced = dateProducedET.getVisibility() != View.GONE &&
+                dateProducedET.getText().toString().equals("");
+
+        boolean noBestBefore = okayBeforeOrDaysET.getText().toString().equals("");
+        boolean noQuantity = quantityET.getVisibility() != View.GONE &&
+                quantityET.getText().toString().equals("");
+
+        if ((noName && !isPhotoUsed) || noDateProduced || noBestBefore || noQuantity) {
             Toast toast = Toast.makeText(getApplicationContext(),
                     R.string.please_fill_all_fields, Toast.LENGTH_SHORT);
             toast.show();
@@ -680,7 +641,10 @@ public class Add extends AppCompatActivity {
         }
 
         // Чтение из полей ввода
-        boolean isOk = parseInputDate(dateProducedET.getText().toString(), dateProduced);
+        boolean isOk = true;
+        if (dateProducedET.isShown()) {
+            isOk = parseInputDate(dateProducedET.getText().toString(), dateProduced);
+        }
         if (!radioDateProduced.isChecked()) {
             isOk = isOk & parseInputDate(okayBeforeOrDaysET.getText().toString(), okayBefore);
         }
@@ -764,7 +728,9 @@ public class Add extends AppCompatActivity {
 
 
         String name = enterName.getText().toString();
-        name = name.substring(0, 1).toUpperCase() + name.substring(1);
+        if (!noName) {
+            name = name.substring(0, 1).toUpperCase() + name.substring(1);
+        }
 
         groupName = spinnerGroups.getSelectedItem().toString();
         long groupId;
@@ -789,7 +755,7 @@ public class Add extends AppCompatActivity {
 
 
         String choosenMeasure = spinnerQuantity.getSelectedItem().toString();
-        int measureValue = Measures.fromString(choosenMeasure).ordinal();
+        int measureValue = Resources.Measures.fromString(choosenMeasure).ordinal();
         mProduct.setMeasure(measureValue);
 
         mProduct.setGroupId(groupId);
@@ -923,49 +889,93 @@ public class Add extends AppCompatActivity {
         }
     }
 
-    public enum Measures {
-        PIECE("шт"),
-        KG("кг"),
-        G("г"),
-        L("л"),
-        ML("мл");
-        private String text;
-        Measures(String text) {
-            this.text = text;
-        }
-        public String getText() {
-            return this.text;
-        }
-
-        public static Measures fromString(String text) {
-            if (text != null) {
-                for (Measures b : Measures.values()) {
-                    if (text.equalsIgnoreCase(b.text)) {
-                        return b;
-                    }
-                }
-            }
-            return null;
-        }
-    }
 
     @Override
     public void onBackPressed() {
-            if (doubleBackToExitPressedOnce) {
-                super.onBackPressed();
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, R.string.press_twice_to_close, Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce = false;
+            }
+        }, 2000);
+    }
+
+
+    public void openCamera(View view) {
+        Intent intent = CameraService.getPickImageIntent(getApplicationContext());
+        startActivityForResult(intent, Resources.RC_CAMERA);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Resources.RC_CAMERA && resultCode == RESULT_OK) {
+            File imageFile = CameraService.getTempFile(getApplicationContext());
+            if (imageFile == null) {
+                Toast.makeText(getApplicationContext(),
+                        R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            this.doubleBackToExitPressedOnce = true;
-            Toast.makeText(this, R.string.press_twice_to_close, Toast.LENGTH_SHORT).show();
+            boolean isCamera = (data == null ||
+                    data.getData() == null  ||
+                    data.getData().toString().contains(imageFile.toString()));
+            final Uri imageUri;
+            if (isCamera) {     /** CAMERA **/
+                imageUri = Uri.fromFile(imageFile);
+            } else {            /** ALBUM **/
+                imageUri = data.getData();
+            }
 
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    doubleBackToExitPressedOnce = false;
+            CropImage.activity(imageUri)
+                    .setAspectRatio(3, 4)
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .start(this);
+        }
+
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                try {
+                    final Uri imageUri = result.getUri();
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                mProduct.setPhoto(uriToFile(imageUri));
+                            }
+                            catch (IOException ex) {
+                                mProduct.setPhoto(0);
+                            }
+                        }
+                    }.run();
+                    isPhotoUsed = true;
+                    imageView.setImageURI(imageUri);
                 }
-            }, 2000);
+                catch (Exception e) {
+                    Log.e(TAG, "Error saving photo: " + e.getMessage());
+                    Toast.makeText(getApplicationContext(), R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
+                }
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Toast.makeText(getApplicationContext(), R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private long uriToFile(Uri uri) throws IOException {
+        InputStream imageStream = getContentResolver().openInputStream(uri);
+        Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
+        return FileService.saveBitmapToFile(getApplicationContext(), bitmap);
     }
 }
+
 
 

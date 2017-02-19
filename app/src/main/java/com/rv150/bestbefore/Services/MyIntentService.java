@@ -26,7 +26,7 @@ public class MyIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        ProductDAO productDAO = new ProductDAO(this);
+        ProductDAO productDAO = ProductDAO.getInstance(getApplicationContext());
         List<Product> wrapperList = productDAO.getFresh();
         SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 

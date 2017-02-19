@@ -1,4 +1,4 @@
-package com.rv150.bestbefore;
+package com.rv150.bestbefore.Adapters;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -8,43 +8,90 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.rv150.bestbefore.Activities.Add;
 import com.rv150.bestbefore.Models.Product;
+import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Resources;
+import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
  * Created by Rudnev on 25.10.2016.
  */
 
-public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
+public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewHolder> implements Filterable {
 
-    private List<Product> items;
+    private List<Product> filteredData, originData;
     private Context mContext;
-    public RecyclerAdapter(List<Product> items, Context context) {
-        this.items = items;
+
+    private ZoomAnimation mZoomAnimation;
+
+    public RecyclerAdapter(List<Product> items, Context context, ZoomAnimation zoomAnimation) {
+        this.filteredData = items;
+        this.originData = items;
         mContext = context;
+        mZoomAnimation = zoomAnimation;
+    }
+
+    public interface ZoomAnimation {
+        void zoom(final View thumbView, long photo);
     }
 
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                filteredData = (List) results.values;
+                notifyDataSetChanged();
+            }
+
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                constraint = constraint.toString().toLowerCase();
+                FilterResults result = new FilterResults();
+
+                if (constraint.toString().length() > 0) {
+                    List<Product> founded = new ArrayList<>();
+                    for (Product item : originData) {
+                        if (item.getTitle().toLowerCase().contains(constraint)) {
+                            founded.add(item);
+                        }
+                    }
+                    result.values = founded;
+                    result.count = founded.size();
+                } else {
+                    result.values = originData;
+                    result.count = originData.size();
+                }
+                return result;
+            }
+        };
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
         TextView nameTextView;
         TextView quantityTextView;
-        TextView bestBeforeTV;
-        TextView dateCreatedTV;
+        TextView itemDate;
         TextView daysLeftTextView;
+        ImageView photo;
 
         ViewHolder(View itemView) {
             super(itemView);
             nameTextView = (TextView) itemView.findViewById(R.id.item_name);
             quantityTextView = (TextView) itemView.findViewById(R.id.item_quantity);
-            bestBeforeTV = (TextView) itemView.findViewById(R.id.item_best_before);
-            dateCreatedTV = (TextView) itemView.findViewById(R.id.item_date_created);
+            itemDate = (TextView) itemView.findViewById(R.id.item_date);
             daysLeftTextView = (TextView) itemView.findViewById(R.id.item_days_left);
+            photo = (ImageView) itemView.findViewById(R.id.item_image);
         }
     }
 
@@ -61,41 +108,46 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
 
     @Override
     public void onBindViewHolder(RecyclerAdapter.ViewHolder viewHolder, int position) {
-        final Product item = items.get(position);
+        final Product item = filteredData.get(position);
 
-        TextView name = viewHolder.nameTextView;
-        name.setText(item.getTitle());
+        String name = item.getTitle();
+        TextView nameTV = viewHolder.nameTextView;
+
+        if (name != null) {
+            nameTV.setVisibility(View.VISIBLE);
+            nameTV.setText(name);
+        }
+        else {
+            nameTV.setVisibility(View.GONE);
+        }
 
         SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
 
 
-        TextView dateCreatedTV = viewHolder.dateCreatedTV;
+        String dateFirstPart;
         boolean useDateProduced = sPrefs.getBoolean("use_date_produced", true);
         boolean defaultDate = item.getProduced().getTimeInMillis() == 0;
         if (useDateProduced && !defaultDate) {
-            dateCreatedTV.setVisibility(View.VISIBLE);
             Calendar produced = item.getProduced();
             int year = produced.get(Calendar.YEAR);
             int month = produced.get(Calendar.MONTH);
             int day = produced.get(Calendar.DAY_OF_MONTH);
-            String dateCreated;
             if (month < 9) {
                 if (day < 10) {
-                    dateCreated = day + "." + "0" + (month + 1) + "." + year + "  -  ";
+                    dateFirstPart = day + "." + "0" + (month + 1) + "." + year + " - ";
                 } else {
-                    dateCreated = day + "." + "0" + (month + 1) + "." + year + "  -  ";
+                    dateFirstPart = day + "." + "0" + (month + 1) + "." + year + " - ";
                 }
             } else {
                 if (day < 10) {
-                    dateCreated = day + "." + (month + 1) + "." + year + "  -  ";
+                    dateFirstPart = day + "." + (month + 1) + "." + year + " - ";
                 } else {
-                    dateCreated = day + "." + (month + 1) + "." + year + "  -  ";
+                    dateFirstPart = day + "." + (month + 1) + "." + year + " - ";
                 }
             }
-            dateCreatedTV.setText(dateCreated);
         }
         else {
-            dateCreatedTV.setVisibility(View.GONE);
+            dateFirstPart = "Годен до: ";
         }
 
 
@@ -103,10 +155,8 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
         int year = date.get(Calendar.YEAR);
         int month = date.get(Calendar.MONTH);
         int day = date.get(Calendar.DAY_OF_MONTH);
-        String bestBeforeText = "";
-        if (!useDateProduced || defaultDate) {
-            bestBeforeText += "Годен до:  ";
-        }
+        String bestBeforeText = dateFirstPart;
+
 
         if (month < 9) {
             if (day < 10) {
@@ -125,7 +175,7 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
             }
         }
 
-        TextView bestBeforeTV = viewHolder.bestBeforeTV;
+        TextView bestBeforeTV = viewHolder.itemDate;
         bestBeforeTV.setText(bestBeforeText);
 
 
@@ -155,24 +205,58 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
         if (quantityEnabled) {
             viewHolder.quantityTextView.setVisibility(View.VISIBLE);
             int quantity = item.getQuantity();
-            String quantityStr = "Кол-во:  " + quantity + " " +
-                    Add.Measures.values()[item.getMeasure()].getText();
+            String quantityStr = quantity + " " +
+                    Resources.Measures.values()[item.getMeasure()].getText();
             viewHolder.quantityTextView.setText(quantityStr);
         }
         else {
             viewHolder.quantityTextView.setVisibility(View.GONE);
         }
 
+        final ImageView imageView = viewHolder.photo;
+        boolean photoEnabled = sPrefs.getBoolean("use_photo", true);
+        if (photoEnabled) {
+            imageView.setVisibility(View.VISIBLE);
+            final long photo = item.getPhoto();
+            if (photo != 0) {
+                final String fileName = mContext.getFilesDir() + "/" + photo + ".jpeg";
+                File file = new File(fileName);
+                Picasso.with(mContext).load(file).resize(120, 160).into(imageView);
+
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                            mZoomAnimation.zoom(imageView, photo);
+                    }
+                });
+            }
+            else {
+                imageView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.no_image));
+                    }
+                });
+            }
+        }
+        else {
+            imageView.setVisibility(View.GONE);
+        }
     }
+
+
+
+
+
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return filteredData.size();
     }
 
 
     private void setColor (TextView textView, Calendar date) {
-        Calendar currentDate = new GregorianCalendar();
+        Calendar currentDate = Calendar.getInstance();
         long difference = date.getTimeInMillis() - currentDate.getTimeInMillis();
         int days = (int) (difference / (24 * 60 * 60 * 1000));
         if (difference < 0) {

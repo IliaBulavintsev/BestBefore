@@ -13,20 +13,40 @@
         android:layout_marginRight="10dp"
         xmlns:android="http://schemas.android.com/apk/res/android">
 
-        <android.support.design.widget.TextInputLayout
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp">
-            <AutoCompleteTextView
-                android:id="@+id/enterName"
-                android:maxLength="100"
-                android:inputType="text"
-                android:layout_width="match_parent"
+            android:orientation="horizontal">
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:hint="@string/name"
-                android:imeOptions="actionNext"/>
-        </android.support.design.widget.TextInputLayout>
+                android:layout_weight="1"
+                android:layout_marginTop="10dp">
+                <AutoCompleteTextView
+                    android:id="@+id/enterName"
+                    android:maxLength="100"
+                    android:inputType="text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:hint="@string/name"
+                    android:imeOptions="actionNext" />
+            </android.support.design.widget.TextInputLayout>
+
+            <ImageView
+                android:id="@+id/product_image"
+                android:scaleType="fitXY"
+                android:layout_width="45dp"
+                android:layout_height="60dp"
+                android:src="@drawable/no_image"
+                android:layout_weight="0"
+                android:layout_gravity="end"
+                android:onClick="openCamera"
+                android:contentDescription="@string/product_image"/>
+
+        </LinearLayout>
 
 
 
