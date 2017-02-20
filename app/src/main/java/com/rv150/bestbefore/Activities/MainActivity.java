@@ -364,15 +364,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         notifManager.cancelAll();
 
 
-        // Update drawer with new groups
-        setUpDrawer(toolbar);
-
-
         boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
         if (needShowOverdue) {
             // Удаление просроченных и показ сообщения
             List<Product> temp = productDAO.getAllNotRemoved();        // берем все продукты из базы
-            List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp);
+            List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(getApplicationContext(), temp);
             DeleteOverdue.markViewed(productDAO, temp);
             if (!newOverdue.isEmpty()) {
                 CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);
@@ -382,6 +378,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 builder.show();
             }
         }
+
+        // Update drawer with new groups and other changes
+        setUpDrawer(toolbar);
 
         sortMainList();
 

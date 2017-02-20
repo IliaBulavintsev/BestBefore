@@ -173,4 +173,5 @@
     <string name="_export">Экспорт</string>
     <string name="confirm_exit">Подтверждать выход</string>
     <string name="close_app_by_double_click">Закрывать приложение по двойному нажатию кнопки "Назад"</string>
+    <string name="without_name">[без названия]</string>
 </resources>

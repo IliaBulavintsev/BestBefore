@@ -1,5 +1,6 @@
 package com.rv150.bestbefore;
 
+import android.content.Context;
 import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -21,7 +22,7 @@ import java.util.List;
  * Класс получает на вход список и переносит просроченные в отдельную коллекцию
  */
 public class DeleteOverdue {
-    public static List<String> getOverdueNamesAndRemoveFresh(List<Product> wrapperList) {
+    public static List<String> getOverdueNamesAndRemoveFresh(Context context, List<Product> wrapperList) {
         Collections.sort(wrapperList, Product.getFreshToSpoiledComparator());
         List<String> newOverdue = new ArrayList<>();
         for (Iterator<Product> iterator = wrapperList.iterator(); iterator.hasNext(); ) {
@@ -33,6 +34,9 @@ public class DeleteOverdue {
             if (difference > 0 && viewed == 0) {    // Уже просмотренным продуктам
                 int days = (int) (difference / (1000 * 60 * 60 * 24));    // присвоим viewed = 1
                 String title = currentItem.getTitle();
+                if (title == null || title.isEmpty()) {
+                    title = context.getString(R.string.without_name);
+                }
                 if (days == 0) {
                     title += " (сегодня)";
                 } else if (days == 1) {
