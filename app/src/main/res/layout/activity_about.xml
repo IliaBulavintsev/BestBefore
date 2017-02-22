@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#c0000000"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp">
+
+    <TextView
+        android:text="@string/project_url"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/dev_url"
+        android:textColor="@color/md_white_1000"
+        android:layout_marginBottom="16dp"
+        android:autoLink="web"
+        android:layout_above="@+id/button"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:text="@string/ok"
+        android:background="@drawable/transparent_btn_with_border"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:id="@+id/button"
+        android:textColor="@color/md_white_1000"
+        android:onClick="closeActivity"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="224dp" />
+
+    <TextView
+        android:text="@string/project_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/about_dev"
+        android:textColor="@color/md_white_1000"
+        android:layout_above="@+id/dev_url"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+</RelativeLayout>

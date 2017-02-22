@@ -207,7 +207,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestScopes(Drive.SCOPE_FILE)
                 .requestScopes(SCOPE_APPFOLDER)
-                .requestIdToken(getString(R.string.CLIENT_ID))
                 .requestEmail()
                 .build();
 

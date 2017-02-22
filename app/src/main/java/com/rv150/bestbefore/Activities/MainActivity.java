@@ -466,6 +466,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 .withName(R.string.feedback)
                 .withSelectable(false)
                 .withIcon(GoogleMaterial.Icon.gmd_email);
+        PrimaryDrawerItem about = new PrimaryDrawerItem()
+                .withIdentifier(Resources.ID_FOR_ABOUT)
+                .withName(R.string.about_project)
+                .withSelectable(false)
+                .withIcon(GoogleMaterial.Icon.gmd_info);
 
         boolean useGroups = sPrefs.getBoolean(Resources.PREF_USE_GROUPS, true);
         if (useGroups) {
@@ -485,7 +490,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                             trash,
                             new DividerDrawerItem(),
                             settings,
-                            feedback
+                            feedback,
+                            about
                     )
                     .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                         @Override
@@ -508,7 +514,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                             trash,
                             new DividerDrawerItem(),
                             settings,
-                            feedback
+                            feedback,
+                            about
                     )
                     .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                         @Override
@@ -566,6 +573,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             String [] addresses = {getString(R.string.developer_email)};
             String subject = getString(R.string.email_subject);
             composeEmail(addresses, subject);
+            return;
+        }
+        if (id == Resources.ID_FOR_ABOUT) {
+            Intent intent = new Intent(this, AboutActivity.class);
+            startActivity(intent);
             return;
         }
         // Смена группы

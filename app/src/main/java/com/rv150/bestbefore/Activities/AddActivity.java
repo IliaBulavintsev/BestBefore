@@ -286,7 +286,7 @@ public class AddActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals("")) {
+                if (s.toString().isEmpty()) {
                     previousDateProducedLength = 0;
                     return;
                 }
@@ -360,12 +360,12 @@ public class AddActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals("") || radioDateProduced.isChecked()) {
+                if (s.toString().isEmpty()|| radioDateProduced.isChecked()) {
                     previousOkayBeforeLength = 0;
                     return;
                 }
                 int len = s.length();
-                int selectionPos = okayBeforeOrDaysET.getSelectionStart() == 0? 0 : okayBeforeOrDaysET.getSelectionStart() - 1;
+                int selectionPos = okayBeforeOrDaysET.getSelectionStart() == 0 ? 0 : okayBeforeOrDaysET.getSelectionStart() - 1;
                 if (previousOkayBeforeLength > s.length() && flagForOkayBefore && s.toString().charAt(selectionPos) == '.') {
                     flagForOkayBefore = false;
                     String newValue = s.toString().substring(0, selectionPos) + s.toString().substring(selectionPos + 1, len);

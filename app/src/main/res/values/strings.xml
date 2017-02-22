@@ -52,7 +52,6 @@
     <string name="best_before_expires">Срок годности истекает!</string>
     <string name="last_day">Последний день!</string>
     <string name="overdue">Просрочен!</string>
-    <string name="CLIENT_ID">606388056260-2qa08pggc5i53q8r6akall6rs6irbnpv.apps.googleusercontent.com</string>
     <string name="sync">Синхронизация</string>
     <string name="signin">Войти</string>
     <string name="auth_via_google">Авторизоваться через Google аккаунт</string>
@@ -174,4 +173,7 @@
     <string name="confirm_exit">Подтверждать выход</string>
     <string name="close_app_by_double_click">Закрывать приложение по двойному нажатию кнопки "Назад"</string>
     <string name="without_name">[без названия]</string>
+    <string name="project_info">Данное приложение является open-source проектом и распространяется \"как есть\". Вы можете также принять участие в разработке приложения. Ссылка на исходный код:</string>
+    <string name="project_url">https://github.com/madsunrise/BestBefore.git</string>
+    <string name="about_project">О проекте</string>
 </resources>
