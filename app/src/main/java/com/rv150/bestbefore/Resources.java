@@ -62,7 +62,7 @@ public final class Resources {
     public static final long ID_FOR_ADD_GROUP = 99993;
     public static final long ID_FOR_OVERDUED = 99994;
     public static final long ID_FOR_TRASH = 99995;
-    public static final long ID_FOR_ABOUT = 99996;
+    public static final long ID_FOR_BILLING = 99996;
     public static final String OVERDUED_GROUP_NAME = "overduedGroupName";
     public static final String NEED_MIGRATE = "needMigrate";
     public static final String LAST_RADIO_WAS_OKAY_BEFORE = "lastRadioWasOkayBefore";

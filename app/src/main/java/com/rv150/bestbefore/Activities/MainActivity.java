@@ -467,10 +467,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 .withSelectable(false)
                 .withIcon(GoogleMaterial.Icon.gmd_email);
         PrimaryDrawerItem about = new PrimaryDrawerItem()
-                .withIdentifier(Resources.ID_FOR_ABOUT)
-                .withName(R.string.about_project)
+                .withIdentifier(Resources.ID_FOR_BILLING)
+                .withName(R.string.give_thanks)
                 .withSelectable(false)
-                .withIcon(GoogleMaterial.Icon.gmd_info);
+                .withIcon(GoogleMaterial.Icon.gmd_attach_money);
 
         boolean useGroups = sPrefs.getBoolean(Resources.PREF_USE_GROUPS, true);
         if (useGroups) {
@@ -575,8 +575,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             composeEmail(addresses, subject);
             return;
         }
-        if (id == Resources.ID_FOR_ABOUT) {
-            Intent intent = new Intent(this, AboutActivity.class);
+        if (id == Resources.ID_FOR_BILLING) {
+            Intent intent = new Intent(this, BillingActivity.class);
             startActivity(intent);
             return;
         }

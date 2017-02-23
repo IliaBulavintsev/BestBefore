@@ -175,5 +175,12 @@
     <string name="without_name">[без названия]</string>
     <string name="project_info">Данное приложение является open-source проектом и распространяется \"как есть\". Вы можете также принять участие в разработке приложения. Ссылка на исходный код:</string>
     <string name="project_url">https://github.com/madsunrise/BestBefore.git</string>
-    <string name="about_project">О проекте</string>
+    <string name="give_thanks">Поблагодарить</string>
+    <string name="chocolate_title">Шоколадный батончик</string>
+    <string name="pizza_title">Кусочек пиццы</string>
+    <string name="dinner_title">Обед</string>
+    <string name="what_do_you_want_to_give_to_developer">Чем Вы готовы угостить разработчика?\n</string>
+    <string name="will_eat">Покушаем?</string>
+    <string name="thanks_for_purchase">Спасибо за поддержку!</string>
+    <string name="something_wrong">Что-то пошло не так!</string>
 </resources>

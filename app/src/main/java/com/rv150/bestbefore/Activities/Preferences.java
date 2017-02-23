@@ -716,10 +716,13 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         if (requestCode == Resources.RC_DRIVE_API && resultCode == RESULT_OK) {
             mGoogleApiClient.connect();
         }
+
+        // Импорт из файла
         if (requestCode == Resources.RC_CHOOSE_FILE && resultCode == RESULT_OK) {
             FileService.readFromFile(this, data);
         }
 
+        // Экспорт в файл
         if (requestCode == RC_DIRECTORY_PICKER) {
             if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
                 String path = data.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
