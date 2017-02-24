@@ -46,7 +46,6 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -265,11 +264,9 @@ public class AddActivity extends AppCompatActivity {
             new AlertDialog.Builder(this).setTitle(R.string.help)
                     .setTitle(R.string.help)
                     .setMessage(R.string.whats_new_25)
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).show();
+                    .setPositiveButton(R.string.ok, null)
+                    .setCancelable(false)
+                    .show();
             SharedPreferences.Editor editor = sPrefs.edit();
             editor.putBoolean(Resources.WHATS_NEW_25_ADD, false);
             editor.apply();
@@ -287,7 +284,7 @@ public class AddActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals("")) {
+                if (s.toString().isEmpty()) {
                     previousDateProducedLength = 0;
                     return;
                 }
@@ -361,12 +358,12 @@ public class AddActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals("") || radioDateProduced.isChecked()) {
+                if (s.toString().isEmpty()|| radioDateProduced.isChecked()) {
                     previousOkayBeforeLength = 0;
                     return;
                 }
                 int len = s.length();
-                int selectionPos = okayBeforeOrDaysET.getSelectionStart() == 0? 0 : okayBeforeOrDaysET.getSelectionStart() - 1;
+                int selectionPos = okayBeforeOrDaysET.getSelectionStart() == 0 ? 0 : okayBeforeOrDaysET.getSelectionStart() - 1;
                 if (previousOkayBeforeLength > s.length() && flagForOkayBefore && s.toString().charAt(selectionPos) == '.') {
                     flagForOkayBefore = false;
                     String newValue = s.toString().substring(0, selectionPos) + s.toString().substring(selectionPos + 1, len);
@@ -469,7 +466,7 @@ public class AddActivity extends AppCompatActivity {
             spinnerQuantity.setSelection(measure);
             long photo = mProduct.getPhoto();
 
-            if (photo != 0) {
+            if (photo != 0 && usePhoto) {
                 isPhotoUsed = true;
                 final Bitmap bitmap = FileService.getBitmapFromFileId(getApplicationContext(), photo);
                 if (bitmap != null) {

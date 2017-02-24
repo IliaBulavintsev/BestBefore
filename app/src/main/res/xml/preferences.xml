@@ -226,12 +226,31 @@
             android:key="files_menu"
             android:title="@string/file_operations"
             android:persistent="false">
-            <Preference
-                android:title="@string/import_from_file"
-                android:key="import" />
-            <Preference
-                android:title="@string/export_to_file"
-                android:key="export" />
+
+            <PreferenceCategory
+                android:title="@string/_import" >
+                <Preference
+                    android:title="@string/import_from_file"
+                    android:key="import" />
+            </PreferenceCategory>
+
+            <PreferenceCategory
+                android:title="@string/_export" >
+                <Preference
+                    android:title="@string/export_to_file"
+                    android:key="export" />
+
+                <EditTextPreference
+                    android:key="file_name"
+                    android:title="@string/file_name"
+                    android:summary="@string/used_file_name_without_extension"
+                    android:defaultValue="@string/default_file_name" />
+
+                <CheckBoxPreference
+                    android:key="add_datetime"
+                    android:title="@string/add_datetime_to_filename"
+                    android:defaultValue="true" />
+            </PreferenceCategory>
         </PreferenceScreen>
     </PreferenceCategory>
 
@@ -240,6 +259,11 @@
     <PreferenceCategory
         android:title="@string/other"
         android:key="other_category">
+        <CheckBoxPreference
+            android:key="double_click_to_exit"
+            android:title="@string/confirm_exit"
+            android:summary="@string/close_app_by_double_click"
+            android:defaultValue="true" />
         <Preference
             android:key="clear_dictionary"
             android:title="@string/clear_user_dictionary" />

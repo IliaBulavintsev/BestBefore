@@ -9,6 +9,7 @@ import android.util.Log;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.MyNotification;
+import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Resources;
 
@@ -20,6 +21,8 @@ import java.util.List;
  * Created by Rudnev on 01.07.2016.
  */
 public class MyIntentService extends IntentService {
+    private static final String TAG = MyIntentService.class.getSimpleName();
+
     public MyIntentService() {
         super("MyIntentService");
     }
@@ -59,7 +62,7 @@ public class MyIntentService extends IntentService {
             }
 
             default: {
-               Log.d("Exception", "ID is wrong!");
+               Log.d(TAG, "ID is wrong!");
             }
         }
 
@@ -73,11 +76,14 @@ public class MyIntentService extends IntentService {
             Calendar date = currentItem.getDate();
             Calendar currentDate = new GregorianCalendar();
             long difference = date.getTimeInMillis()  - currentDate.getTimeInMillis();
-            int days = (int) (difference / (24*60*60*1000));
+            int days = (int) (difference / (24 * 60 * 60 * 1000));
 
             if (days == days_before && difference > 0) {
                 if (firstProduct == null) {
                     firstProduct = currentItem.getTitle();
+                    if (firstProduct == null || firstProduct.isEmpty()) {
+                        firstProduct = getString(R.string.without_name);
+                    }
                 }
                 count++;
             }

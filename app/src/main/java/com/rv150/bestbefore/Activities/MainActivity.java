@@ -41,6 +41,7 @@ import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -145,17 +146,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         // показ приветственного сообщения
         if (firstLaunch) {
-            String whatsNewText = getResources().getString(R.string.welcomeText);
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.welcomeTitle)
-                    .setMessage(whatsNewText)
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).show();
-            editor.putBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, false);
 
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.hi)
+                    .setMessage(R.string.welcome_text)
+                    .setPositiveButton(R.string.ok, null)
+                    .setCancelable(false)
+                    .show();
+
+            editor.putBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, false);
             Calendar installedAt = Calendar.getInstance();
             int installDay = installedAt.get(Calendar.DAY_OF_MONTH);
             int installMonth = installedAt.get(Calendar.MONTH);
@@ -170,23 +169,26 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             editor.apply();
         }
         else {
-            boolean warning = sPrefs.getBoolean(Resources.PREF_SHOW_SYNC_WARNING, true);
-            if (warning) {
+            boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW_34, true);
+            if (whatsNew) {
                 new AlertDialog.Builder(this)
                         .setCancelable(false)
-                        .setTitle(R.string.warning)
-                        .setMessage(R.string.sync_warning)
-                        .setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() {
+                        .setTitle(R.string.about_photos)
+                        .setMessage(R.string.about_photos_text)
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
-                        }).show();
+                        })
+                        .setCancelable(false)
+                        .show();
             }
         }
 
         editor.remove(Resources.NEED_MIGRATE);
         editor.remove(Resources.CONGRATULATION);
-        editor.putBoolean(Resources.PREF_SHOW_SYNC_WARNING, false);
+        editor.remove(Resources.PREF_SHOW_SYNC_WARNING);
+        editor.putBoolean(Resources.WHATS_NEW_34, false);
         editor.apply();
 
         mShortAnimationDuration = getResources().getInteger(
@@ -214,13 +216,19 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         imageView.setMinimumWidth(dm.widthPixels);
 
         final Bitmap bitmap = FileService.getBitmapFromFileId(getApplicationContext(), photo);
-        imageView.post(new Runnable() {
-            @Override
-            public void run() {
-                imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, imageView.getWidth(),
-                        imageView.getHeight(), false));
-            }
-        });
+        try {
+            imageView.post(new Runnable() {
+                @Override
+                public void run() {
+                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, imageView.getWidth(),
+                            imageView.getHeight(), false));
+                }
+            });
+        }
+        catch (Exception ex) {
+            Log.e(MainActivity.class.getSimpleName(), ex.getLocalizedMessage());
+            return;
+        }
 
 
 
@@ -364,15 +372,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         notifManager.cancelAll();
 
 
-        // Update drawer with new groups
-        setUpDrawer(toolbar);
-
-
         boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
         if (needShowOverdue) {
             // Удаление просроченных и показ сообщения
             List<Product> temp = productDAO.getAllNotRemoved();        // берем все продукты из базы
-            List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(temp);
+            List<String> newOverdue = DeleteOverdue.getOverdueNamesAndRemoveFresh(getApplicationContext(), temp);
             DeleteOverdue.markViewed(productDAO, temp);
             if (!newOverdue.isEmpty()) {
                 CharSequence[] cs = newOverdue.toArray(new CharSequence[newOverdue.size()]);
@@ -382,6 +386,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 builder.show();
             }
         }
+
+        // Update drawer with new groups and other changes
+        setUpDrawer(toolbar);
 
         sortMainList();
 
@@ -435,23 +442,25 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private void setUpDrawer(Toolbar toolbar) {
         drawerPosition = 2;
         final String mainGroupName = sPrefs.getString(Resources.MAIN_GROUP_NAME, getString(R.string.all_products));
+        int mainGroupCount = productDAO.getFreshCount();
+
         PrimaryDrawerItem allProducts = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_MAIN_GROUP)
-                .withName(mainGroupName)
+                .withName(mainGroupName + " (" + mainGroupCount + ')')
                 .withIcon(GoogleMaterial.Icon.gmd_view_list);
 
-
-
-
+        int overduedCount = productDAO.getOverduedCount();
         final String overdueGroupName = sPrefs.getString(Resources.OVERDUED_GROUP_NAME, getString(R.string.overdue_products));
         PrimaryDrawerItem overdued = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_OVERDUED)
-                .withName(overdueGroupName)
+                .withName(overdueGroupName + " (" + overduedCount + ')')
                 .withIcon(GoogleMaterial.Icon.gmd_history);
 
+        final String trashName = getString(R.string.trash);
+        int trashCount = productDAO.getRemovedCount();
         PrimaryDrawerItem trash = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_TRASH)
-                .withName(R.string.trash)
+                .withName(trashName + " (" + trashCount + ')')
                 .withIcon(GoogleMaterial.Icon.gmd_delete);
 
 
@@ -465,6 +474,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 .withName(R.string.feedback)
                 .withSelectable(false)
                 .withIcon(GoogleMaterial.Icon.gmd_email);
+        PrimaryDrawerItem about = new PrimaryDrawerItem()
+                .withIdentifier(Resources.ID_FOR_BILLING)
+                .withName(R.string.give_thanks)
+                .withSelectable(false)
+                .withIcon(GoogleMaterial.Icon.gmd_attach_money);
 
         boolean useGroups = sPrefs.getBoolean(Resources.PREF_USE_GROUPS, true);
         if (useGroups) {
@@ -484,7 +498,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                             trash,
                             new DividerDrawerItem(),
                             settings,
-                            feedback
+                            feedback,
+                            about
                     )
                     .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                         @Override
@@ -507,7 +522,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                             trash,
                             new DividerDrawerItem(),
                             settings,
-                            feedback
+                            feedback,
+                            about
                     )
                     .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                         @Override
@@ -523,8 +539,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         List<Group> userGroups = groupDAO.getAll();
         for (Group group: userGroups) {
+            int productsInGroup = productDAO.getCountForGroup(group.getId());
             PrimaryDrawerItem newItem = new PrimaryDrawerItem()
-                    .withName(group.getName())
+                    .withName(group.getName() + " (" + productsInGroup + ')')
                     .withIdentifier(group.getId())
                     .withIcon(GoogleMaterial.Icon.gmd_view_list);
             drawer.addItemAtPosition(newItem, drawerPosition++);
@@ -564,6 +581,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             String [] addresses = {getString(R.string.developer_email)};
             String subject = getString(R.string.email_subject);
             composeEmail(addresses, subject);
+            return;
+        }
+        if (id == Resources.ID_FOR_BILLING) {
+            Intent intent = new Intent(this, BillingActivity.class);
+            startActivity(intent);
             return;
         }
         // Смена группы
@@ -660,7 +682,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             return;
         }
         PrimaryDrawerItem newItem = new PrimaryDrawerItem()
-                .withName(name)
+                .withName(name + "(0)")
                 .withIdentifier(id)
                 .withIcon(GoogleMaterial.Icon.gmd_view_list);
         drawer.addItemAtPosition(newItem, drawerPosition);
@@ -736,6 +758,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             productDAO.deleteProduct(deletedProduct.getId());
         }
         deletedFromThisGroup = groupChoosen;
+        // Пробуем пересоздать drawer для обновления счетчиков
+        setUpDrawer(toolbar);
     }
 
     private void undoRemove() {
@@ -755,6 +779,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
         rvProducts.swapAdapter(adapter, false);
         deletedProduct = null;
+        // Пробуем пересоздать drawer для обновления счетчиков
+        setUpDrawer(toolbar);
     }
 
 
@@ -938,7 +964,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
                                 }
-                            }).show();
+                            })
+                            .setCancelable(false)
+                            .show();
                     SharedPreferences.Editor editor = sPrefs.edit();
                     editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
                     editor.apply();
@@ -1010,7 +1038,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     private void checkDoubleClick() {
-        if (doubleBackToExitPressedOnce) {
+        boolean noDoubleClickNeeded = !sPrefs.getBoolean("double_click_to_exit", true);
+        if (noDoubleClickNeeded || doubleBackToExitPressedOnce) {
             super.onBackPressed();
             return;
         }
@@ -1100,6 +1129,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                         R.string.product_has_been_restored, Toast.LENGTH_SHORT);
                                 toast.show();
 
+                                // Обновляем счетчики
+                                setUpDrawer(toolbar);
                             }
                         })
                         .setNegativeButton(R.string.no, null)

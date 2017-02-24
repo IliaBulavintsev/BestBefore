@@ -2,20 +2,22 @@ package com.rv150.bestbefore.Adapters;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
-import com.rv150.bestbefore.Resources;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -84,6 +86,7 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
         TextView itemDate;
         TextView daysLeftTextView;
         ImageView photo;
+        LinearLayout lowerLine;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -92,6 +95,7 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
             itemDate = (TextView) itemView.findViewById(R.id.item_date);
             daysLeftTextView = (TextView) itemView.findViewById(R.id.item_days_left);
             photo = (ImageView) itemView.findViewById(R.id.item_image);
+            lowerLine = (LinearLayout) itemView.findViewById(R.id.lower_line_product);
         }
     }
 
@@ -206,12 +210,16 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
             viewHolder.quantityTextView.setVisibility(View.VISIBLE);
             int quantity = item.getQuantity();
             String quantityStr = quantity + " " +
-                    Resources.Measures.values()[item.getMeasure()].getText();
+                    com.rv150.bestbefore.Resources.Measures.values()[item.getMeasure()].getText();
             viewHolder.quantityTextView.setText(quantityStr);
         }
         else {
             viewHolder.quantityTextView.setVisibility(View.GONE);
         }
+
+
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
         final ImageView imageView = viewHolder.photo;
         boolean photoEnabled = sPrefs.getBoolean("use_photo", true);
@@ -221,14 +229,24 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
             if (photo != 0) {
                 final String fileName = mContext.getFilesDir() + "/" + photo + ".jpeg";
                 File file = new File(fileName);
-                Picasso.with(mContext).load(file).resize(120, 160).into(imageView);
-
-                imageView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
+                if (file.exists()) {
+                    Picasso.with(mContext).load(file).resize(120, 160).into(imageView);
+                    imageView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
                             mZoomAnimation.zoom(imageView, photo);
-                    }
-                });
+                        }
+                    });
+                }
+                else {
+                    imageView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.no_image));
+                        }
+                    });
+                    imageView.setOnClickListener(null);
+                }
             }
             else {
                 imageView.post(new Runnable() {
@@ -237,13 +255,29 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
                         imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.no_image));
                     }
                 });
+                imageView.setOnClickListener(null);
             }
+
+            layoutParams.setMargins(0, dpToPx(15), 0, 0);
         }
         else {
             imageView.setVisibility(View.GONE);
+            layoutParams.setMargins(0, dpToPx(3), 0, dpToPx(5));
         }
+
+        LinearLayout lowerLine = viewHolder.lowerLine;
+        lowerLine.setLayoutParams(layoutParams);
     }
 
+
+    private int dpToPx(int dp) {
+        Resources r = mContext.getResources();
+        return  (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dp,
+                r.getDisplayMetrics()
+        );
+    }
 
 
 

@@ -25,8 +25,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.appindexing.Action;
@@ -209,7 +207,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestScopes(Drive.SCOPE_FILE)
                 .requestScopes(SCOPE_APPFOLDER)
-                .requestIdToken(getString(R.string.CLIENT_ID))
                 .requestEmail()
                 .build();
 
@@ -719,10 +716,13 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         if (requestCode == Resources.RC_DRIVE_API && resultCode == RESULT_OK) {
             mGoogleApiClient.connect();
         }
+
+        // Импорт из файла
         if (requestCode == Resources.RC_CHOOSE_FILE && resultCode == RESULT_OK) {
             FileService.readFromFile(this, data);
         }
 
+        // Экспорт в файл
         if (requestCode == RC_DIRECTORY_PICKER) {
             if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
                 String path = data.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
