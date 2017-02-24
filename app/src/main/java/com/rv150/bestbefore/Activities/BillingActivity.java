@@ -2,7 +2,6 @@ package com.rv150.bestbefore.Activities;
 
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
-import android.app.VoiceInteractor;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -26,11 +25,9 @@ import android.widget.Toast;
 import com.android.vending.billing.IInAppBillingService;
 import com.rv150.bestbefore.R;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -192,6 +189,7 @@ public class BillingActivity extends AppCompatActivity {
         if (requestCode == 1001) {
             if (resultCode == RESULT_OK) {
                 Toast.makeText(this, R.string.thanks_for_purchase, Toast.LENGTH_LONG).show();
+                finish();
             }
         }
     }

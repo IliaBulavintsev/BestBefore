@@ -16,8 +16,8 @@
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
     <string name="notificationTime">17:00</string>
-    <string name="welcomeTitle">Добрый день!</string>
-    <string name="welcomeText">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продукта в 17:00. Настроить напоминания, необходимые атрибуты и многое другое можно в настройках. \nХорошего дня! </string>
+
+
     <string name="overdue_products">Просроченные продукты</string>
     <string name="list_is_empty">Список пуст!</string>
     <string name="clear_list">Очистить список</string>
@@ -67,8 +67,8 @@
     <string name="backup_failed">Ошибка при создании бекапа</string>
     <string name="error_timeout">Превышено время ожидания ответа</string>
     <string name="data_not_found">Данные не найдены</string>
-    <string name="help_add">Число справа означает количество оставшихся полных дней до конца срока. Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
-    <string name="help_add_with_last_day">Число справа означает количество оставшихся полных дней до конца срока (восклицательный знак означает, что сегодня последний день). Просроченные продукты автоматически попадают в отдельный список, найти который можно в меню. </string>
+    <string name="help_add">Число справа означает количество оставшихся полных дней до конца срока. Увеличить фото продукта можно, нажав на него (не работает с фотографией-шаблоном).</string>
+    <string name="help_add_with_last_day">Число справа означает количество оставшихся полных дней до конца срока (восклицательный знак - если сегодня последний день). Увеличить фото продукта можно, нажав на него (не работает с фотографией-шаблоном).</string>
     <string name="warning">Внимание!</string>
     <string name="do_you_want_to_overwite_existing">Вы хотите перезаписать существующие данные данными с сервера?</string>
     <string name="yes">Да</string>
@@ -128,10 +128,8 @@
     <string name="remember_radiobuttons_state">Запоминать прошлое положение переключателей при добавлении продукта</string>
     <string name="clear_date_in_first_tap">Очищать поле ввода даты при первом нажатии</string>
     <string name="date_input">Ввод даты</string>
-    <string name="whats_new_25">Переходите к другим полям нажатием клавиши Enter на клавиатуре. \nДату можно ввести в формате DDMMYY или DDMMYYYY (например, 251017). \nДобавлено больше настроек касательно ввода, очень многое можно убрать или отключить. \nПримеры вводимых дат: 07012017, 7.1.2017, 7.1.17 и т.д.</string>
-    <string name="restore_deprecated">Восстановить со старого сервера</string>
+    <string name="whats_new_25">Дату можно вводить в формате DDMMYY или DDMMYYYY, либо воспользоваться виджетом календаря.</string>
     <string name="combine">Объединить</string>
-    <string name="sync_warning">Был изменен способ синхронизации! Пожалуйста, восстановите свои резервные копии из облака и сохраните их по новой, в противном случае данные в облаке могут быть потеряны! Текущии копии со старых серверов будут доступны еще некоторое время, чтобы Вы успели их скачать к себе. \nСпасибо за понимание</string>
     <string name="got_it">Принято</string>
     <string name="press_twice_to_exit">Нажмите еще раз для выхода</string>
     <string name="press_twice_to_close">Нажмите еще раз, чтобы закрыть</string>
@@ -180,7 +178,11 @@
     <string name="pizza_title">Кусочек пиццы</string>
     <string name="dinner_title">Обед</string>
     <string name="what_do_you_want_to_give_to_developer">Чем Вы готовы угостить разработчика?\n</string>
-    <string name="will_eat">Покушаем?</string>
+    <string name="will_eat">Пообедаем?</string>
     <string name="thanks_for_purchase">Спасибо за поддержку!</string>
     <string name="something_wrong">Что-то пошло не так!</string>
+    <string name="about_photos">О фотографиях</string>
+    <string name="about_photos_text">Друзья! К продуктам теперь можно прикреплять фотографии, а при нажатии на фото продукта в главном меню его можно увеличить (не работает с шаблоном). Также фотографии сохраняются при синхронизации с сервером или экспорте в файл. Надеюсь, Вам понравится.</string>
+    <string name="hi">Привет!</string>
+    <string name="welcome_text">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продуктов в 17:00. Это можно настроить :) \nХорошего дня!</string>
 </resources>

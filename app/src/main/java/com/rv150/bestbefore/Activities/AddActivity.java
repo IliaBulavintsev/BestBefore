@@ -264,11 +264,9 @@ public class AddActivity extends AppCompatActivity {
             new AlertDialog.Builder(this).setTitle(R.string.help)
                     .setTitle(R.string.help)
                     .setMessage(R.string.whats_new_25)
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).show();
+                    .setPositiveButton(R.string.ok, null)
+                    .setCancelable(false)
+                    .show();
             SharedPreferences.Editor editor = sPrefs.edit();
             editor.putBoolean(Resources.WHATS_NEW_25_ADD, false);
             editor.apply();
@@ -468,7 +466,7 @@ public class AddActivity extends AppCompatActivity {
             spinnerQuantity.setSelection(measure);
             long photo = mProduct.getPhoto();
 
-            if (photo != 0) {
+            if (photo != 0 && usePhoto) {
                 isPhotoUsed = true;
                 final Bitmap bitmap = FileService.getBitmapFromFileId(getApplicationContext(), photo);
                 if (bitmap != null) {

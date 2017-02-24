@@ -41,6 +41,7 @@ import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -145,17 +146,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         // показ приветственного сообщения
         if (firstLaunch) {
-            String whatsNewText = getResources().getString(R.string.welcomeText);
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.welcomeTitle)
-                    .setMessage(whatsNewText)
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).show();
-            editor.putBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, false);
 
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.hi)
+                    .setMessage(R.string.welcome_text)
+                    .setPositiveButton(R.string.ok, null)
+                    .setCancelable(false)
+                    .show();
+
+            editor.putBoolean(Resources.PREF_SHOW_WELCOME_SCREEN, false);
             Calendar installedAt = Calendar.getInstance();
             int installDay = installedAt.get(Calendar.DAY_OF_MONTH);
             int installMonth = installedAt.get(Calendar.MONTH);
@@ -170,23 +169,26 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             editor.apply();
         }
         else {
-            boolean warning = sPrefs.getBoolean(Resources.PREF_SHOW_SYNC_WARNING, true);
-            if (warning) {
+            boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW_34, true);
+            if (whatsNew) {
                 new AlertDialog.Builder(this)
                         .setCancelable(false)
-                        .setTitle(R.string.warning)
-                        .setMessage(R.string.sync_warning)
-                        .setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() {
+                        .setTitle(R.string.about_photos)
+                        .setMessage(R.string.about_photos_text)
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
-                        }).show();
+                        })
+                        .setCancelable(false)
+                        .show();
             }
         }
 
         editor.remove(Resources.NEED_MIGRATE);
         editor.remove(Resources.CONGRATULATION);
-        editor.putBoolean(Resources.PREF_SHOW_SYNC_WARNING, false);
+        editor.remove(Resources.PREF_SHOW_SYNC_WARNING);
+        editor.putBoolean(Resources.WHATS_NEW_34, false);
         editor.apply();
 
         mShortAnimationDuration = getResources().getInteger(
@@ -214,13 +216,19 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         imageView.setMinimumWidth(dm.widthPixels);
 
         final Bitmap bitmap = FileService.getBitmapFromFileId(getApplicationContext(), photo);
-        imageView.post(new Runnable() {
-            @Override
-            public void run() {
-                imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, imageView.getWidth(),
-                        imageView.getHeight(), false));
-            }
-        });
+        try {
+            imageView.post(new Runnable() {
+                @Override
+                public void run() {
+                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, imageView.getWidth(),
+                            imageView.getHeight(), false));
+                }
+            });
+        }
+        catch (Exception ex) {
+            Log.e(MainActivity.class.getSimpleName(), ex.getLocalizedMessage());
+            return;
+        }
 
 
 
@@ -956,7 +964,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
                                 }
-                            }).show();
+                            })
+                            .setCancelable(false)
+                            .show();
                     SharedPreferences.Editor editor = sPrefs.edit();
                     editor.putBoolean(Resources.PREF_SHOW_HELP_AFTER_FIRST_ADD, false);
                     editor.apply();
