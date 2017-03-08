@@ -31,6 +31,7 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -105,6 +106,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     private int mShortAnimationDuration;
     private Animator mCurrentAnimator;
+
+    private SearchView mSearchView = null;
 
 
     @Override
@@ -390,11 +393,20 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         // Update drawer with new groups and other changes
         setUpDrawer(toolbar);
 
+
+
         sortMainList();
-
-
         adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
         rvProducts.swapAdapter(adapter, false);
+
+        if (mSearchView != null) {
+           // mSearchView.setQuery("", false);
+           // mSearchView.clearFocus();
+            //MenuItemCompat.collapseActionView(searchItem);
+            mSearchView.setIconified(true);
+            //mSearchView.clearFocus();
+            rvProducts.requestFocus();
+        }
 
         // Надпись "Список пуст!"
         if (wrapperList.isEmpty()) {
@@ -795,13 +807,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         SearchManager searchManager = (SearchManager) MainActivity.this.getSystemService(Context.SEARCH_SERVICE);
 
-        SearchView searchView = null;
         if (searchItem != null) {
-            searchView = (SearchView) searchItem.getActionView();
+            mSearchView = (SearchView) searchItem.getActionView();
         }
-        if (searchView != null) {
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(MainActivity.this.getComponentName()));
-            searchView.setOnQueryTextListener(this);
+        if (mSearchView != null) {
+            mSearchView.setSearchableInfo(searchManager.getSearchableInfo(MainActivity.this.getComponentName()));
+            mSearchView.setOnQueryTextListener(this);
         }
         return super.onCreateOptionsMenu(menu);
     }
@@ -1258,7 +1269,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
 
     private void runAddActivity(int clickedPosition) {
-        final Product item = wrapperList.get(clickedPosition);
+        final Product item = adapter.getItem(clickedPosition);
         Intent intent = new Intent(this, AddActivity.class);
         intent.putExtra(Resources.STATUS, Resources.STATUS_EDIT);
         intent.putExtra(Product.class.getName(), (Parcelable) item);

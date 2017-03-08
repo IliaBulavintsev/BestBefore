@@ -280,6 +280,9 @@ public class RecyclerAdapter extends  RecyclerView.Adapter<RecyclerAdapter.ViewH
     }
 
 
+    public Product getItem(int pos) {
+        return filteredData.get(pos);
+    }
 
 
 

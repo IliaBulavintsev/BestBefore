@@ -30,7 +30,8 @@
         android:scrollbars="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/md_light_background"/>
+        android:background="@color/md_light_background"
+        android:focusableInTouchMode="true"/>
 
     <ImageView
         android:layout_width="wrap_content"

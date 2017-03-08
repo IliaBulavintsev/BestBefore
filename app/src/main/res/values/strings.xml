@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">Срок годности</string>
-    <string name="action_settings">Settings</string>
-    <string name="about_title">О программе</string>
     <string name="name">Название</string>
     <string name="title_activity_adding">adding</string>
     <string name="adding_product">Добавление продукта</string>
@@ -73,8 +71,6 @@
     <string name="do_you_want_to_overwite_existing">Вы хотите перезаписать существующие данные данными с сервера?</string>
     <string name="yes">Да</string>
     <string name="ok">OK</string>
-    <string name="backup_is_saving">Сохраняем данные</string>
-    <string name="fetching_data">Получаем данные</string>
     <string name="changing_product">Изменение продукта</string>
     <string name="quantity">Количество</string>
     <string name="sync_with_google">Синхронизация с Google</string>
