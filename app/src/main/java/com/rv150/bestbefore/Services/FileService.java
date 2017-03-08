@@ -1,6 +1,9 @@
 package com.rv150.bestbefore.Services;
 
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,10 +13,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.app.TaskStackBuilder;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.rv150.bestbefore.Activities.Preferences;
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
 import com.rv150.bestbefore.Exceptions.DuplicateEntryException;
@@ -62,7 +69,7 @@ public class FileService {
                  map = (Map) objectInputStream.readObject();
             }
             catch (OutOfMemoryError ex) {
-                Toast.makeText(context, R.string.out_of_memory_try_to_close_apps, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, R.string.out_of_memory_try_use_less_photos, Toast.LENGTH_LONG).show();
                 return;
             }
             finally {
@@ -119,10 +126,10 @@ public class FileService {
         private Map<String, Object> map;
         private ProgressDialog dialog;
         private Context mContext;
-        private String mSuccessMsg;
+        private String message;
 
         private final boolean mUnion;
-        private boolean isSuccess = false;
+
 
         public SavingMapToDB(Context context, Map<String, Object> map, boolean union) {
             this.map = map;
@@ -141,11 +148,10 @@ public class FileService {
         }
 
 
-
         @Override
         protected Void doInBackground(String... params) {
             try {
-                mSuccessMsg = params[0];
+                message = params[0];
                 ProductDAO productDAO = ProductDAO.getInstance(mContext);
                 GroupDAO groupDAO = GroupDAO.getInstance(mContext);
 
@@ -187,11 +193,14 @@ public class FileService {
                     }
                     productDAO.insertProduct(product);
                 }
-                isSuccess = true;
             }
             catch (Exception e) {
                 Log.e(TAG, "Error saving in DB: " + e.getMessage());
-                isSuccess = false;
+                message = mContext.getString(R.string.internal_error_has_occured);
+            }
+            catch (OutOfMemoryError ex) {
+                Log.e(TAG, "Error saving in DB: out of memory!");
+                message = mContext.getString(R.string.out_of_memory_try_use_less_photos);
             }
             return null;
         }
@@ -200,27 +209,27 @@ public class FileService {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             dialog.hide();
-            if (isSuccess) {
-                Toast.makeText(mContext,
-                        mSuccessMsg, Toast.LENGTH_SHORT).show();
-            }
-            else {
-                Toast.makeText(mContext, R.string.internal_error_has_occured,
-                        Toast.LENGTH_SHORT).show();
-            }
+            dialog = null;
+            Toast.makeText(mContext,
+                    message, Toast.LENGTH_SHORT).show();
         }
     }
 
 
 
 
-    public static class DoExport extends AsyncTask<String, Void, Void> {
+    public static class DoExport extends AsyncTask<String, Integer, Void> {
 
         private Context mContext;
         private boolean isSuccess = false;
         private String path;
         private String fileName;
         private SharedPreferences sPrefs;
+        private String errorMsg = "";
+
+        private NotificationCompat.Builder mBuilder;
+        private final int mId = 945271120;
+        private NotificationManager mNotifyManager;
 
         public DoExport(Context context) {
             this.mContext = context;
@@ -231,44 +240,120 @@ public class FileService {
         protected void onPreExecute() {
             super.onPreExecute();
             Toast.makeText(mContext, R.string.please_wait, Toast.LENGTH_SHORT).show();
+            initNotification();
+            setStartedNotification();
+        }
+
+        private void initNotification() {
+            mNotifyManager = (NotificationManager) mContext
+                    .getSystemService(Context.NOTIFICATION_SERVICE);
+            mBuilder = new NotificationCompat.Builder(mContext);
+        }
+        private void setStartedNotification() {
+            mBuilder.setContentText(mContext.getString(R.string.export_in_progress))
+                    .setSmallIcon(R.drawable.notify);
+            if (Build.VERSION.SDK_INT >= 16) {
+                mBuilder.setPriority(Notification.PRIORITY_MAX);
+            }
+
+
+            // Creates an explicit intent for an Activity in your app
+            Intent resultIntent = new Intent(mContext, Preferences.class);
+
+            // The stack builder object will contain an artificial back stack for
+            // the
+            // started Activity.
+            // This ensures that navigating backward from the Activity leads out of
+            // your application to the Home screen.
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
+            // Adds the back stack for the Intent (but not the Intent itself)
+            stackBuilder.addParentStack(Preferences.class);
+            // Adds the Intent that starts the Activity to the top of the stack
+            stackBuilder.addNextIntent(resultIntent);
+            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+            mBuilder.setContentIntent(resultPendingIntent);
+
+            mNotifyManager.notify(mId, mBuilder.build());
+        }
+
+        private void updateProgressNotification(int incr) {
+            mBuilder.setProgress(100, incr, false);
+            mNotifyManager.notify(mId, mBuilder.build());
+        }
+
+        private void setCompletedNotification() {
+            mBuilder.setSmallIcon(R.drawable.notify)
+                    .setContentTitle(mContext.getString(R.string.export_finished))
+                    .setContentText("");
+
+            // Creates an explicit intent for an Activity in your app
+            Intent resultIntent = new Intent(mContext, Preferences.class);
+
+            // The stack builder object will contain an artificial back stack for
+            // the
+            // started Activity.
+            // This ensures that navigating backward from the Activity leads out of
+            // your application to the Home screen.
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
+            // Adds the back stack for the Intent (but not the Intent itself)
+            stackBuilder.addParentStack(Preferences.class);
+            // Adds the Intent that starts the Activity to the top of the stack
+            stackBuilder.addNextIntent(resultIntent);
+            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+            mBuilder.setContentIntent(resultPendingIntent);
+
+            mNotifyManager.notify(mId, mBuilder.build());
         }
 
         @Override
+        protected void onProgressUpdate(Integer... values) {
+            Log.d(TAG, "onProgressUpdate with argument = " + values[0]);
+            super.onProgressUpdate(values);
+            updateProgressNotification(values[0]);
+        }
+
+
+        @Override
         protected Void doInBackground(String... params) {
-            path = params[0];
-            ProductDAO productDAO = ProductDAO.getInstance(mContext);
-            GroupDAO groupDAO = GroupDAO.getInstance(mContext);
-
-            List<Product> products = productDAO.getAll();
-            if (products.isEmpty()) {
-                return null;
-            }
-            List<Group> groups = groupDAO.getAll();
-            Map<String, Object> map = new HashMap<>();
-            map.put("products", products);
-            if (!groups.isEmpty()) {
-                map.put("groups", groups);
-            }
-
-            int size = products.size();
-
-            for (int i = 0; i < size; ++i) {
-                Product product = products.get(i);
-                long fileId = product.getPhoto();
-                if (fileId != 0) {
-                    Bitmap bitmap = getBitmapFromFileId(mContext, fileId);
-                    SerializableBitmap serializableBitmap = new SerializableBitmap(bitmap);
-                    map.put(String.valueOf(fileId), serializableBitmap);
-                }
-            }
 
             try {
+                path = params[0];
+                ProductDAO productDAO = ProductDAO.getInstance(mContext);
+                GroupDAO groupDAO = GroupDAO.getInstance(mContext);
+                List<Product> products = productDAO.getAll();
+                if (products.isEmpty()) {
+                    return null;
+                }
+                publishProgress(5);
+                List<Group> groups = groupDAO.getAll();
+                Map<String, Object> map = new HashMap<>();
+                map.put("products", products);
+                if (!groups.isEmpty()) {
+                    map.put("groups", groups);
+                }
+
+                int size = products.size();
+
+
+                for (int i = 0; i < size; ++i) {
+                    publishProgress(i * 100 / size);
+                    Product product = products.get(i);
+                    long fileId = product.getPhoto();
+                    if (fileId != 0) {
+                        Bitmap bitmap = getBitmapFromFileId(mContext, fileId);
+                        SerializableBitmap serializableBitmap = new SerializableBitmap(bitmap);
+                        map.put(String.valueOf(fileId), serializableBitmap);
+                    }
+                }
+
                 String defaultFileName = mContext.getString(R.string.default_file_name);
                 fileName = sPrefs.getString("file_name", defaultFileName);
 
                 boolean useDateTime = sPrefs.getBoolean("add_datetime", true);
                 if (useDateTime) {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
                     String dateTime = sdf.format(Calendar.getInstance().getTime());
                     fileName += ' ' + dateTime;
                 }
@@ -288,10 +373,17 @@ public class FileService {
                 objectStream.flush();
                 objectStream.close();
                 isSuccess = true;
+                publishProgress(100);
             }
             catch (Exception e) {
                 Log.e(TAG, "Error exporting to file");
                 isSuccess = false;
+                errorMsg = mContext.getString(R.string.internal_error_has_occured);
+            }
+            catch (OutOfMemoryError ex) {
+                Log.e(TAG, "Error saving in DB: out of memory!");
+                isSuccess = false;
+                errorMsg = mContext.getString(R.string.out_of_memory_try_use_less_photos);
             }
             return null;
         }
@@ -299,12 +391,13 @@ public class FileService {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            setCompletedNotification();
             if (isSuccess) {
                 Toast.makeText(mContext, String.format(mContext.getString(R.string.export_success),
-                        fileName, path), Toast.LENGTH_LONG).show();
+                        fileName, path), Toast.LENGTH_SHORT).show();
             }
             else {
-                Toast.makeText(mContext, R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, errorMsg, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -325,7 +418,7 @@ public class FileService {
         return saveBitmapToFile(context, bitmap, System.currentTimeMillis());
     }
 
-    public static long saveBitmapToFile(Context context, Bitmap bitmap, long fileId) throws IOException {
+    private static long saveBitmapToFile(Context context, Bitmap bitmap, long fileId) throws IOException {
         File file = new File(context.getFilesDir() + "/" + fileId  + ".jpeg");
         if (file.exists()) {
             return fileId;

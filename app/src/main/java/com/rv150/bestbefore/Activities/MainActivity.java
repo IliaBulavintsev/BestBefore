@@ -726,6 +726,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
         rvProducts.swapAdapter(adapter, false);
         isEmpty.setVisibility(View.VISIBLE);
+        setUpDrawer(toolbar);
         Toast toast = Toast.makeText(getApplicationContext(),
                 R.string.group_was_cleared, Toast.LENGTH_SHORT);
         toast.show();

@@ -157,7 +157,7 @@
     <string name="no_apps_found_try_to_install_explorer">Не найдено приложений для выбора файла. Попробуйте установить сторонний файловый проводник из Google Play</string>
     <string name="please_wait">Пожалуйста, подождите&#8230;</string>
     <string name="import_process">Подождите, идет импорт данных&#8230;</string>
-    <string name="out_of_memory_try_to_close_apps">Недостаточно памяти для продолжения, попробуйте закрыть другие приложения</string>
+    <string name="out_of_memory_try_use_less_photos">Недостаточно памяти для продолжения, попробуйте использовать меньше фотографий.</string>
     <string name="file_name">Имя файла</string>
     <string name="default_file_name">Products</string>
     <string name="used_file_name_without_extension">Используемое имя файла без учета расширения</string>
@@ -181,4 +181,6 @@
     <string name="about_photos_text">Друзья! К продуктам теперь можно прикреплять фотографии, а при нажатии на фото продукта в главном меню его можно увеличить (не работает с шаблоном). Также фотографии сохраняются при синхронизации с сервером или экспорте в файл. Надеюсь, Вам понравится.</string>
     <string name="hi">Привет!</string>
     <string name="welcome_text">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продуктов в 17:00. Это можно настроить :) \nХорошего дня!</string>
+    <string name="export_finished">Экспорт завершен</string>
+    <string name="export_in_progress">Идет экспорт в файл&#8230;</string>
 </resources>
