@@ -369,11 +369,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         rvProducts.swapAdapter(adapter, false);
 
         if (mSearchView != null) {
-           // mSearchView.setQuery("", false);
-           // mSearchView.clearFocus();
-            //MenuItemCompat.collapseActionView(searchItem);
             mSearchView.setIconified(true);
-            //mSearchView.clearFocus();
             rvProducts.requestFocus();
         }
 
@@ -733,8 +729,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
 
     private void deleteItem() {
-        deletedProduct = wrapperList.get(position);
-        wrapperList.remove(position);
+        deletedProduct = adapter.getItem(position);
+        wrapperList.remove(deletedProduct);
         if (wrapperList.isEmpty()) {
             isEmpty.setVisibility(View.VISIBLE);
         }
@@ -751,6 +747,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         deletedFromThisGroup = groupChoosen;
         // Пробуем пересоздать drawer для обновления счетчиков
         setUpDrawer(toolbar);
+        if (mSearchView != null) {
+            mSearchView.setIconified(true);
+            rvProducts.requestFocus();
+        }
     }
 
     private void undoRemove() {

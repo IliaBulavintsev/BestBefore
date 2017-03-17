@@ -339,5 +339,32 @@ public class Product implements Parcelable, Serializable {
             }
         };
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Product product = (Product) o;
+
+        if (mQuantity != product.mQuantity) return false;
+        if (mGroupId != product.mGroupId) return false;
+        if (mId != product.mId) return false;
+        if (mViewed != product.mViewed) return false;
+        if (mRemoved != product.mRemoved) return false;
+        if (mRemovedAt != product.mRemovedAt) return false;
+        if (measure != product.measure) return false;
+        if (photo != product.photo) return false;
+        if (!mTitle.equals(product.mTitle)) return false;
+        if (!mProduced.equals(product.mProduced)) return false;
+        if (!mDate.equals(product.mDate)) return false;
+        return mCreatedAt.equals(product.mCreatedAt);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (mId ^ (mId >>> 32));
+    }
 }
 
