@@ -251,6 +251,13 @@
                     android:title="@string/add_datetime_to_filename"
                     android:defaultValue="true" />
             </PreferenceCategory>
+
+            <PreferenceCategory
+                android:title="@string/excel" >
+                <Preference
+                    android:title="@string/export_to_excel"
+                    android:key="export_to_excel" />
+            </PreferenceCategory>
         </PreferenceScreen>
     </PreferenceCategory>
 

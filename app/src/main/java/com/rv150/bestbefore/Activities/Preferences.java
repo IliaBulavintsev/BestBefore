@@ -57,6 +57,7 @@ import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
+import com.rv150.bestbefore.Services.Excel;
 import com.rv150.bestbefore.Services.FileService;
 
 import net.rdrei.android.dirchooser.DirectoryChooserActivity;
@@ -339,6 +340,22 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             }
         });
 
+
+        final Preference excel = findPreference("export_to_excel");
+        excel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                List<Product> products = productDAO.getAll();
+                if (products.isEmpty()) {
+                    Toast.makeText(getApplicationContext(),
+                            R.string.nothing_to_export, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
+                new Excel(Preferences.this).execute();
+                return true;
+            }
+        });
 
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.

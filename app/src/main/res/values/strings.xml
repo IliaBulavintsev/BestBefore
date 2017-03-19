@@ -183,4 +183,6 @@
     <string name="welcome_text">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продуктов в 17:00. Это можно настроить :) \nХорошего дня!</string>
     <string name="export_finished">Экспорт завершен</string>
     <string name="export_in_progress">Идет экспорт в файл&#8230;</string>
+    <string name="export_to_excel">Экспорт в формате Excel</string>
+    <string name="excel">Excel</string>
 </resources>
