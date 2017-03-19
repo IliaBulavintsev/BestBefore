@@ -2,12 +2,14 @@ package com.rv150.bestbefore.Services;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -22,7 +24,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by ivan on 19.03.17.
@@ -121,46 +126,43 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
     }
 
     private boolean makeXls() {
-        ArrayList arList=null;
-        ArrayList al=null;
 
 
         String inFilePath = Environment.getExternalStorageDirectory().toString()+"/bestBefore.csv";
-        String outFilePath = Environment.getExternalStorageDirectory().toString()+"/test.xls";
+        String outFilePath = Environment.getExternalStorageDirectory().toString()+"/test.xlsx";
         String thisLine;
 
 
         try {
+            InputStream csvStream = new FileInputStream(inFilePath);
+            InputStreamReader csvStreamReader = new InputStreamReader(csvStream);
+            CSVReader csvReader = new CSVReader(csvStreamReader);
 
-            FileInputStream fis = new FileInputStream(inFilePath);
-            DataInputStream myInput = new DataInputStream(fis);
+            // throw away the header
+          //  csvReader.readNext();
 
-            arList = new ArrayList();
-            while ((thisLine = myInput.readLine()) != null) {
-                al = new ArrayList();
-                String strar[] = thisLine.split(",");
-                for (int j = 0; j < strar.length; j++) {
-                    al.add(strar[j]);
-                }
-                arList.add(al);
-                System.out.println();
+            String[] line;
+            List<String[]> arList = new ArrayList<>();
+
+            while ((line = csvReader.readNext()) != null) {
+                arList.add(line);
             }
-        } catch (Exception e) {
-            System.out.println("shit");
-        }
 
-        try
-        {
+
+
+
+
             HSSFWorkbook hwb = new HSSFWorkbook();
             HSSFSheet sheet = hwb.createSheet("new sheet");
             for(int k=0;k<arList.size();k++)
             {
-                ArrayList ardata = (ArrayList)arList.get(k);
-                HSSFRow row = sheet.createRow((short) 0+k);
-                for(int p=0;p<ardata.size();p++)
+                String[] ardata = arList.get(k);
+                HSSFRow row = sheet.createRow((short) k);
+
+                for(int p=0; p < ardata.length; p++)
                 {
-                    HSSFCell cell = row.createCell((short) p);
-                    String data = ardata.get(p).toString();
+                    HSSFCell cell = row.createCell(p);
+                    String data = ardata[p];
                     if(data.startsWith("=")){
                         cell.setCellType(Cell.CELL_TYPE_STRING);
                         data=data.replaceAll("\"", "");
@@ -175,8 +177,6 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
                         cell.setCellType(Cell.CELL_TYPE_NUMERIC);
                         cell.setCellValue(data);
                     }
-                    //*/
-                    // cell.setCellValue(ardata.get(p).toString());
                 }
                 System.out.println();
             }
