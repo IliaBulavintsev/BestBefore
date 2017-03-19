@@ -2,7 +2,6 @@ package com.rv150.bestbefore.Services;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -11,6 +10,7 @@ import android.widget.Toast;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.rv150.bestbefore.R;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -18,7 +18,6 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,8 +25,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by ivan on 19.03.17.
@@ -77,35 +79,62 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
             CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
             //SQLiteDatabase db = dbhelper.getWritableDatabase();
 
-            Cursor curCSV = dbHelper.getReadableDatabase().rawQuery("select * from " + DBHelper.Product.TABLE_NAME, null);
+            String[] header = {
+                    mContext.getString(R.string.name),
+                    mContext.getString(R.string.date_produced),
+                    mContext.getString(R.string.okay_before),
+                    mContext.getString(R.string.quantity),
+                    mContext.getString(R.string.group)
+            };
+            csvWrite.writeNext(header);
 
-            csvWrite.writeNext(curCSV.getColumnNames());
+            Cursor curProduct = dbHelper.getReadableDatabase().rawQuery("select " +
+                    DBHelper.Product.COLUMN_NAME_NAME + ", " +
+                    DBHelper.Product.COLUMN_NAME_PRODUCED + ", " +
+                    DBHelper.Product.COLUMN_NAME_DATE + ", " +
+                    DBHelper.Product.COLUMN_NAME_QUANTITY + ", " +
+                    DBHelper.Product.COLUMN_NAME_GROUP_ID +
+                    " from " + DBHelper.Product.TABLE_NAME, null);
 
-            while (curCSV.moveToNext())
+            while (curProduct.moveToNext()) {
 
-            {
+                String name = curProduct.getString(0);
+
+                long producedMillis = curProduct.getLong(1);
+                long bestBeforeMillis = curProduct.getLong(2);
+
+                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+                String produced = sdf.format(new Date(producedMillis));
+                String bestBefore = sdf.format(new Date(bestBeforeMillis));
+
+                String quantity = String.valueOf(curProduct.getInt(3));
+
+                long groupId = curProduct.getInt(4);
+                String groupName = "";
+
+                Cursor curGroup = dbHelper.getReadableDatabase().rawQuery("SELECT " +
+                        DBHelper.Group.COLUMN_NAME_NAME +
+                        " FROM " + DBHelper.Group.TABLE_NAME +
+                        " WHERE " + DBHelper.Group._ID + " = ?", new String[] {String.valueOf(groupId)});
+                if (curGroup.moveToNext()) {
+                    groupName = curGroup.getString(0);
+                }
+                curGroup.close();
 
                 String arrStr[] = {
-                        curCSV.getString(0),
-                        curCSV.getString(1),
-                        curCSV.getString(2),
-                        curCSV.getString(3),
-                        curCSV.getString(4),
-                        curCSV.getString(5),
-                        curCSV.getString(6)};
+                        name,
+                        produced,
+                        bestBefore,
+                        quantity,
+                        groupName
+                };
 
                 csvWrite.writeNext(arrStr);
             }
 
             csvWrite.close();
-            curCSV.close();
-
-            /*String data="";
-        data=readSavedData();
-        data= data.replace(",", ";");
-        writeData(data);*/
-
-           return makeXls();
+            curProduct.close();
+            return makeXls();
 
         } catch (IOException e) {
             Log.e(getClass().getSimpleName(), e.getMessage());
@@ -117,29 +146,24 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
         if (this.mProgressDialog.isShowing()) {
             this.mProgressDialog.dismiss();
         }
-
         if (success) {
-            Toast.makeText(mContext, "Export succeed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, R.string.file_name_was_saved_to, Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(mContext, "Export failed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
         }
     }
 
     private boolean makeXls() {
 
-
         String inFilePath = Environment.getExternalStorageDirectory().toString()+"/bestBefore.csv";
         String outFilePath = Environment.getExternalStorageDirectory().toString()+"/test.xlsx";
-        String thisLine;
 
 
         try {
             InputStream csvStream = new FileInputStream(inFilePath);
             InputStreamReader csvStreamReader = new InputStreamReader(csvStream);
             CSVReader csvReader = new CSVReader(csvStreamReader);
-
-            // throw away the header
-          //  csvReader.readNext();
+            
 
             String[] line;
             List<String[]> arList = new ArrayList<>();
