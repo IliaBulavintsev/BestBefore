@@ -67,6 +67,7 @@ public final class Resources {
     public static final String OVERDUED_GROUP_NAME = "overduedGroupName";
     public static final String NEED_MIGRATE = "needMigrate";
     public static final String LAST_RADIO_WAS_OKAY_BEFORE = "lastRadioWasOkayBefore";
+    public static final String SOME_ACTION = "checking_data";
 
     public enum Measures {
         PIECE("шт"),

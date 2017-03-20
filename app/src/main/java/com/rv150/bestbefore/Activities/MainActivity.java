@@ -31,7 +31,6 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -75,6 +74,7 @@ import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.FileService;
+import com.rv150.bestbefore.Services.PhotoService;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -402,6 +402,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
         editor.apply();
         new InsertForAutocomplete(wrapperList).execute();
+
+        boolean job = sPrefs.getBoolean(Resources.SOME_ACTION, true);
+        if (job) {
+            new Thread(new PhotoService(this)).start();
+        }
     }
 
 
