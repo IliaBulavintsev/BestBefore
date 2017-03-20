@@ -185,4 +185,5 @@
     <string name="export_in_progress">Идет экспорт в файл&#8230;</string>
     <string name="export_to_excel">Экспорт в формате Excel</string>
     <string name="excel">Excel</string>
+    <string name="excel_file_was_formed">Excel файл был сформирован</string>
 </resources>

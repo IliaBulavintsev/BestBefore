@@ -76,7 +76,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import static com.google.android.gms.drive.Drive.SCOPE_APPFOLDER;
-import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER;
+import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER_EXCEL;
+import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER_FILE;
 
 /**
  * Created by Rudnev on 01.07.2016.
@@ -335,7 +336,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                         .allowNewDirectoryNameModification(true)
                         .build();
                 chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
-                Preferences.this.startActivityForResult(chooserIntent, RC_DIRECTORY_PICKER);
+                Preferences.this.startActivityForResult(chooserIntent, RC_DIRECTORY_PICKER_FILE);
                 return true;
             }
         });
@@ -352,7 +353,14 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     return true;
                 }
 
-                new Excel(Preferences.this).execute();
+                final Intent chooserIntent = new Intent(Preferences.this, DirectoryChooserActivity.class);
+                final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
+                        .newDirectoryName("New folder")
+                        .allowReadOnlyDirectory(true)
+                        .allowNewDirectoryNameModification(true)
+                        .build();
+                chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
+                Preferences.this.startActivityForResult(chooserIntent, RC_DIRECTORY_PICKER_EXCEL);
                 return true;
             }
         });
@@ -740,10 +748,18 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         }
 
         // Экспорт в файл
-        if (requestCode == RC_DIRECTORY_PICKER) {
+        if (requestCode == RC_DIRECTORY_PICKER_FILE) {
             if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
                 String path = data.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
                 new FileService.DoExport(getApplicationContext()).execute(path);
+            }
+        }
+
+        // Excel
+        if (requestCode == RC_DIRECTORY_PICKER_EXCEL) {
+            if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
+                String path = data.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
+                new Excel(this).execute(path);
             }
         }
     }

@@ -41,6 +41,8 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
     private final ProgressDialog mProgressDialog;
     private final Context mContext;
 
+    private String mTargetPath;
+
     public Excel(Context context) {
         this.mContext = context;
         mProgressDialog = new ProgressDialog(mContext);
@@ -60,14 +62,13 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
 
 
     protected Boolean doInBackground(final String... args) {
-
-        File exportDir = new File(Environment.getExternalStorageDirectory(), "");
+        mTargetPath = args[0];
+        File exportDir = mContext.getCacheDir();
 
         if (!exportDir.exists()) {
             if (!exportDir.mkdirs()) {
                 return false;
             }
-            ;
         }
 
         DBHelper dbHelper = DBHelper.getInstance(mContext);
@@ -77,7 +78,6 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
         try {
 
             CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
-            //SQLiteDatabase db = dbhelper.getWritableDatabase();
 
             String[] header = {
                     mContext.getString(R.string.name),
@@ -147,7 +147,7 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
             this.mProgressDialog.dismiss();
         }
         if (success) {
-            Toast.makeText(mContext, R.string.file_name_was_saved_to, Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, R.string.excel_file_was_formed, Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(mContext, R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
         }
@@ -155,8 +155,8 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
 
     private boolean makeXls() {
 
-        String inFilePath = Environment.getExternalStorageDirectory().toString()+"/bestBefore.csv";
-        String outFilePath = Environment.getExternalStorageDirectory().toString()+"/test.xlsx";
+        String inFilePath = mContext.getCacheDir().getPath() + "/bestBefore.csv";
+        String outFilePath = mTargetPath + "/Products.xlsx";
 
 
         try {
@@ -171,9 +171,6 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
             while ((line = csvReader.readNext()) != null) {
                 arList.add(line);
             }
-
-
-
 
 
             HSSFWorkbook hwb = new HSSFWorkbook();
@@ -207,7 +204,6 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
             FileOutputStream fileOut = new FileOutputStream(outFilePath);
             hwb.write(fileOut);
             fileOut.close();
-            System.out.println("Your excel file has been generated");
         } catch ( Exception ex ) {
             ex.printStackTrace();
             return false;
