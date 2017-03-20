@@ -4,12 +4,12 @@
     <string name="title_activity_adding">adding</string>
     <string name="adding_product">Добавление продукта</string>
     <string name="enterName">Введите название продукта</string>
-    <string name="dateOfMan">Дата изготовления</string>
-    <string name="okayBefore">Годен до</string>
+    <string name="date_produced">Дата изготовления</string>
+    <string name="okay_before">Годен до</string>
     <string name="chooseDateOfExpiry">Дата окончания</string>
     <string name="chooseDateOfExpiry2">срока годности</string>
     <string name="chooseBestBefore">Укажите срок хранения (в сутках)</string>
-    <string name="bestBefore">Срок хранения</string>
+    <string name="best_before">Срок хранения</string>
     <string name="dney">суток</string>
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
@@ -153,7 +153,7 @@
     <string name="sure_you_want_remove_all_backups">Вы действительно хотите удалить ВСЕ резервные копии на сервере? Действие необратимо!</string>
     <string name="remove_all_copies">Удалить все резервные копии</string>
     <string name="expanded_image">Увеличенное изображение</string>
-    <string name="export_success" formatted="false">Файл %s был сохранен в %s</string>
+    <string name="file_name_was_saved_to" formatted="false">Файл %s был сохранен в %s</string>
     <string name="no_apps_found_try_to_install_explorer">Не найдено приложений для выбора файла. Попробуйте установить сторонний файловый проводник из Google Play</string>
     <string name="please_wait">Пожалуйста, подождите&#8230;</string>
     <string name="import_process">Подождите, идет импорт данных&#8230;</string>
@@ -183,4 +183,7 @@
     <string name="welcome_text">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продуктов в 17:00. Это можно настроить :) \nХорошего дня!</string>
     <string name="export_finished">Экспорт завершен</string>
     <string name="export_in_progress">Идет экспорт в файл&#8230;</string>
+    <string name="export_to_excel">Экспорт в формате Excel</string>
+    <string name="excel">Excel</string>
+    <string name="excel_file_was_formed">Excel файл был сформирован</string>
 </resources>

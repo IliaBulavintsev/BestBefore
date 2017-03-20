@@ -59,7 +59,7 @@
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/okayBefore"
+                android:text="@string/okay_before"
                 android:id="@+id/radioButtonOkayBefore"
                 android:checked="true"
                 android:onClick="onRadioOkayBeforeClick"
@@ -68,7 +68,7 @@
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/dateOfMan"
+                android:text="@string/date_produced"
                 android:id="@+id/radioButtonDateProduced"
                 android:checked="false"
                 android:onClick="onRadioDateManClick"
@@ -88,7 +88,7 @@
                 android:id="@+id/date_produced_TV"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/dateOfMan"
+                android:text="@string/date_produced"
                 android:layout_weight = "0"/>
 
 
@@ -127,7 +127,7 @@
                 android:id="@+id/best_before_or_days_TV"
                 android:layout_width="125dp"
                 android:layout_height="wrap_content"
-                android:text="@string/okayBefore" />
+                android:text="@string/okay_before" />
 
 
             <EditText

@@ -353,7 +353,7 @@ public class FileService {
 
                 boolean useDateTime = sPrefs.getBoolean("add_datetime", true);
                 if (useDateTime) {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
                     String dateTime = sdf.format(Calendar.getInstance().getTime());
                     fileName += ' ' + dateTime;
                 }
@@ -393,7 +393,7 @@ public class FileService {
             super.onPostExecute(aVoid);
             setCompletedNotification();
             if (isSuccess) {
-                Toast.makeText(mContext, String.format(mContext.getString(R.string.export_success),
+                Toast.makeText(mContext, String.format(mContext.getString(R.string.file_name_was_saved_to),
                         fileName, path), Toast.LENGTH_SHORT).show();
             }
             else {

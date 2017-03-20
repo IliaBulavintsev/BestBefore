@@ -57,6 +57,7 @@ import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
+import com.rv150.bestbefore.Services.Excel;
 import com.rv150.bestbefore.Services.FileService;
 
 import net.rdrei.android.dirchooser.DirectoryChooserActivity;
@@ -75,7 +76,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import static com.google.android.gms.drive.Drive.SCOPE_APPFOLDER;
-import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER;
+import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER_EXCEL;
+import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER_FILE;
 
 /**
  * Created by Rudnev on 01.07.2016.
@@ -335,11 +337,34 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                         .allowNewDirectoryNameModification(true)
                         .build();
                 chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
-                Preferences.this.startActivityForResult(chooserIntent, RC_DIRECTORY_PICKER);
+                Preferences.this.startActivityForResult(chooserIntent, RC_DIRECTORY_PICKER_FILE);
                 return true;
             }
         });
 
+
+        final Preference excel = findPreference("export_to_excel");
+        excel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                List<Product> products = productDAO.getAll();
+                if (products.isEmpty()) {
+                    Toast.makeText(getApplicationContext(),
+                            R.string.nothing_to_export, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
+                final Intent chooserIntent = new Intent(Preferences.this, DirectoryChooserActivity.class);
+                final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
+                        .newDirectoryName("New folder")
+                        .allowReadOnlyDirectory(true)
+                        .allowNewDirectoryNameModification(true)
+                        .build();
+                chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
+                Preferences.this.startActivityForResult(chooserIntent, RC_DIRECTORY_PICKER_EXCEL);
+                return true;
+            }
+        });
 
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -724,10 +749,18 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         }
 
         // Экспорт в файл
-        if (requestCode == RC_DIRECTORY_PICKER) {
+        if (requestCode == RC_DIRECTORY_PICKER_FILE) {
             if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
                 String path = data.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
                 new FileService.DoExport(getApplicationContext()).execute(path);
+            }
+        }
+
+        // Excel
+        if (requestCode == RC_DIRECTORY_PICKER_EXCEL) {
+            if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
+                String path = data.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
+                new Excel(this).execute(path);
             }
         }
     }

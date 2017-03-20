@@ -17,7 +17,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:theme"
-        android:largeHeap="true">
+        android:largeHeap="true"
+        >
 
 
         <activity

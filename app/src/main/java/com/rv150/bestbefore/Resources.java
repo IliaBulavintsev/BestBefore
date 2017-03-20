@@ -51,7 +51,8 @@ public final class Resources {
     public static final int RC_SETTINGS = 3;
     public static final int RC_CHOOSE_FILE = 4;
     public static final int RC_CAMERA = 5;
-    public static final int RC_DIRECTORY_PICKER = 6;
+    public static final int RC_DIRECTORY_PICKER_FILE = 6;
+    public static final int RC_DIRECTORY_PICKER_EXCEL = 7;
     public static final int RESULT_ADD = 1;
     public static final int RESULT_MODIFY = 2;
     public static final String CONGRATULATION = "happy_new_2017_year";
