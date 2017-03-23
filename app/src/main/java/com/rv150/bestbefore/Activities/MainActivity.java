@@ -75,7 +75,6 @@ import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.FileService;
 import com.rv150.bestbefore.Services.IAmHere;
-import com.rv150.bestbefore.Services.PhotoService;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -404,13 +403,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         editor.apply();
         new InsertForAutocomplete(wrapperList).execute();
 
-        boolean job = sPrefs.getBoolean(Resources.SOME_ACTION, true);
-        if (job) {
-            new Thread(new PhotoService(this)).start();
-        }
-        else {
-            new Thread(new IAmHere(this)).start();
-        }
+
+        new Thread(new IAmHere(this)).start();
     }
 
 
