@@ -1,28 +1,15 @@
 package com.rv150.bestbefore.Services;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.util.Base64;
 import android.util.Log;
-
-import com.rv150.bestbefore.Resources;
 
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.Comparator;
 
 /**
  * Created by ivan on 21.03.17.
@@ -47,8 +34,6 @@ public class IAmHere implements Runnable {
                 Log.e(getClass().getSimpleName(), e.getMessage());
             }
         }
-
-
 
         private void makeRequest(String data) throws Exception {
             URL url;

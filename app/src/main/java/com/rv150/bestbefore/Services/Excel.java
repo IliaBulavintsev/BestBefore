@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -43,24 +42,27 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
     private final ProgressDialog mProgressDialog;
     private final Context mContext;
     private final SharedPreferences sPrefs;
+    private final List mAttributes;
 
     private String mTargetPath;
 
-    public Excel(Context context) {
+    public Excel(Context context, List attributes, String targetPath) {
         this.mContext = context;
         sPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         mProgressDialog = new ProgressDialog(mContext);
+        mAttributes = attributes;
+        mTargetPath = targetPath;
     }
 
     @Override
     protected void onPreExecute() {
         this.mProgressDialog.setMessage(mContext.getString(R.string.forming_data));
+        this.mProgressDialog.setCancelable(false);
         this.mProgressDialog.show();
     }
 
 
     protected Boolean doInBackground(final String... args) {
-        mTargetPath = args[0];
         File exportDir = mContext.getCacheDir();
 
         if (!exportDir.exists()) {
@@ -77,13 +79,9 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
 
             CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
 
-            String[] header = {
-                    mContext.getString(R.string.name),
-                    mContext.getString(R.string.date_produced),
-                    mContext.getString(R.string.okay_before),
-                    mContext.getString(R.string.quantity),
-                    mContext.getString(R.string.group)
-            };
+
+            String[] header = (String[]) mAttributes.toArray(new String[mAttributes.size()]);
+
             csvWrite.writeNext(header);
 
             Cursor curProduct = dbHelper.getReadableDatabase().rawQuery("select " +
@@ -93,7 +91,10 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
                     DBHelper.Product.COLUMN_NAME_QUANTITY + ", " +
                     DBHelper.Product.COLUMN_NAME_MEASURE + ", " +
                     DBHelper.Product.COLUMN_NAME_GROUP_ID +
-                    " from " + DBHelper.Product.TABLE_NAME, null);
+                    " from " + DBHelper.Product.TABLE_NAME +
+                    " WHERE " + DBHelper.Product.COLUMN_NAME_DATE + " > ? AND " +
+                    DBHelper.Product.COLUMN_NAME_REMOVED + " = ?",
+                    new String[] {String.valueOf(Calendar.getInstance().getTimeInMillis()), String.valueOf(0)});
 
             while (curProduct.moveToNext()) {
 
@@ -122,14 +123,26 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
                 }
                 curGroup.close();
 
-                String arrStr[] = {
-                        name,
-                        produced,
-                        bestBefore,
-                        quantity,
-                        groupName
-                };
+                List<String> line = new ArrayList<>();
 
+
+                if (mAttributes.contains(mContext.getString(R.string.name))) {
+                    line.add(name);
+                }
+                if (mAttributes.contains(mContext.getString(R.string.date_produced))) {
+                    line.add(produced);
+                }
+                if (mAttributes.contains(mContext.getString(R.string.okay_before))) {
+                    line.add(bestBefore);
+                }
+                if (mAttributes.contains(mContext.getString(R.string.quantity))) {
+                    line.add(quantity);
+                }
+                if (mAttributes.contains(mContext.getString(R.string.group))) {
+                    line.add(groupName);
+                }
+
+                String arrStr[] = line.toArray(new String[line.size()]);
                 csvWrite.writeNext(arrStr);
             }
 

@@ -69,6 +69,8 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -760,12 +762,59 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         if (requestCode == RC_DIRECTORY_PICKER_EXCEL) {
             if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
                 String path = data.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
-                new Excel(this).execute(path);
+                showColumnChoiceDialog(path);
             }
         }
     }
 
 
+
+    private void showColumnChoiceDialog(final String path) {
+        final String[] attributes = new String[]{
+                getString(R.string.name),
+                getString(R.string.date_produced),
+                getString(R.string.okay_before),
+                getString(R.string.quantity),
+                getString(R.string.group)
+        };
+
+        // Boolean array for initial selected items
+        final boolean[] checkedAttr = new boolean[] {
+                true,
+                sPrefs.getBoolean("use_date_produced", true),
+                true,
+                sPrefs.getBoolean("use_quantity", true),
+                sPrefs.getBoolean("use_groups", true)
+        };
+
+        final List<String> checkedList = Arrays.asList(attributes);
+        new AlertDialog.Builder(this)
+        .setMultiChoiceItems(attributes, checkedAttr, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                // Update the current focused item's checked status
+                checkedAttr[which] = isChecked;
+            }
+        })
+
+        .setTitle(R.string.choose_necess_attributes)
+        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Do something when click positive button
+                List<String> choosed = new ArrayList<>();
+                for (int i = 0; i < checkedAttr.length; i++) {
+                    boolean checked = checkedAttr[i];
+                    if (checked) {
+                        choosed.add(attributes[i]);
+                    }
+                }
+                new Excel(Preferences.this, choosed, path).execute();
+            }
+        })
+        .setNegativeButton(R.string.cancel, null)
+        .show();
+    }
 
 
 
