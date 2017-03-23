@@ -134,7 +134,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         productDAO = ProductDAO.getInstance(getApplicationContext());
         groupDAO = GroupDAO.getInstance(getApplicationContext());
 
-        verifyStoragePermissions();
+
 
 
         // Листенеры на тайм пикеры
@@ -296,6 +296,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         filesMenu.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                verifyStoragePermissions();
                 return true;
             }
         });
@@ -587,7 +588,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                                     }
                                 })
                                 .show();
-
                     }
                 });
     }
