@@ -257,6 +257,16 @@
                 <Preference
                     android:title="@string/export_to_excel"
                     android:key="export_to_excel" />
+                <EditTextPreference
+                    android:key="excel_name"
+                    android:title="@string/file_name"
+                    android:summary="@string/used_file_name_without_extension"
+                    android:defaultValue="@string/default_file_name" />
+
+                <CheckBoxPreference
+                    android:key="add_datetime_to_excel"
+                    android:title="@string/add_datetime_to_filename"
+                    android:defaultValue="true" />
             </PreferenceCategory>
         </PreferenceScreen>
     </PreferenceCategory>

@@ -353,7 +353,7 @@ public class FileService {
 
                 boolean useDateTime = sPrefs.getBoolean("add_datetime", true);
                 if (useDateTime) {
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault());
                     String dateTime = sdf.format(Calendar.getInstance().getTime());
                     fileName += ' ' + dateTime;
                 }
