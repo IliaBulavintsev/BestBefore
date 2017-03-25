@@ -809,7 +809,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     }
                 }
                 showCategoriesChoice(choosed, path);
-                //new Excel(Preferences.this, choosed, path).execute();
             }
         })
         .setNegativeButton(R.string.cancel, null)
@@ -817,10 +816,10 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     }
 
 
-    private void showCategoriesChoice(final List choosedAttr, final String targetPath) {
+    private void showCategoriesChoice(final List<String> choosedColumns, final String targetPath) {
         List<Group> groups = groupDAO.getAll();
         int groupsCount = groups.size();
-        List<String> items = new ArrayList<>();
+        final List<String> items = new ArrayList<>();
         items.add(getString(R.string.all_fresh_products));
         if (groupsCount > 0 && sPrefs.getBoolean(Resources.PREF_USE_GROUPS, true)) {
             for (Group group: groups) {
@@ -855,20 +854,22 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        final List<String> choosed = new ArrayList<>();
+                        final List<String> choosedCategories = new ArrayList<>();
+                        int choosenGroupsCount = 0;
                         for (int i = 0; i < checkedAttr.length; i++) {
                             boolean checked = checkedAttr[i];
                             if (checked) {
-                                choosed.add(dialogItems[i]);
+                                String item = dialogItems[i];
+                                if (!item.equals(getString(R.string.all_fresh_products)) &&     // Сколько групп выбрал юзер
+                                        !item.equals(getString(R.string.overdue_products)) &&
+                                        !item.equals(getString(R.string.trash))) {
+                                    choosenGroupsCount++;
+                                }
+                                choosedCategories.add(item);
                             }
                         }
 
-                        String test = "";
-                        for (String item: choosed) {
-                            test += item + ' ';
-                        }
-                        Toast.makeText(getApplicationContext(), test, Toast.LENGTH_SHORT).show();
-                        //new Excel(Preferences.this, choosed, path).execute();
+                        new Excel(Preferences.this, choosedColumns, choosedCategories, choosenGroupsCount, targetPath).execute();
                     }
                 })
                 .setNegativeButton(R.string.cancel, null)

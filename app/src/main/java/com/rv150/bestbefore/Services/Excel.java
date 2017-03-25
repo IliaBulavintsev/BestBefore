@@ -11,6 +11,9 @@ import android.widget.Toast;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.rv150.bestbefore.DAO.GroupDAO;
+import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
 
@@ -42,16 +45,28 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
     private final ProgressDialog mProgressDialog;
     private final Context mContext;
     private final SharedPreferences sPrefs;
-    private final List mAttributes;
+    private final List<String> mColumns;
+    private final List<String> mCategories;
+
+    private final ProductDAO productDAO;
+    private final GroupDAO groupDAO;
 
     private String mTargetPath;
 
-    public Excel(Context context, List attributes, String targetPath) {
+    private final int mGroupsCount;
+
+    private boolean noDataFlag = false;
+
+    public Excel(Context context, List<String> columns, List<String> categories, int groupsCount, String targetPath) {
         this.mContext = context;
         sPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         mProgressDialog = new ProgressDialog(mContext);
-        mAttributes = attributes;
+        mColumns = columns;
+        mCategories = categories;
         mTargetPath = targetPath;
+        productDAO = ProductDAO.getInstance(context);
+        groupDAO = GroupDAO.getInstance(context);
+        mGroupsCount = groupsCount;
     }
 
     @Override
@@ -63,94 +78,10 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
 
 
     protected Boolean doInBackground(final String... args) {
-        File exportDir = mContext.getCacheDir();
-
-        if (!exportDir.exists()) {
-            if (!exportDir.mkdirs()) {
-                return false;
-            }
-        }
-
-        DBHelper dbHelper = DBHelper.getInstance(mContext);
-
-        File file = new File(exportDir, "bestBefore.csv");
-
         try {
-
-            CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
-
-
-            String[] header = (String[]) mAttributes.toArray(new String[mAttributes.size()]);
-
-            csvWrite.writeNext(header);
-
-            Cursor curProduct = dbHelper.getReadableDatabase().rawQuery("select " +
-                    DBHelper.Product.COLUMN_NAME_NAME + ", " +
-                    DBHelper.Product.COLUMN_NAME_PRODUCED + ", " +
-                    DBHelper.Product.COLUMN_NAME_DATE + ", " +
-                    DBHelper.Product.COLUMN_NAME_QUANTITY + ", " +
-                    DBHelper.Product.COLUMN_NAME_MEASURE + ", " +
-                    DBHelper.Product.COLUMN_NAME_GROUP_ID +
-                    " from " + DBHelper.Product.TABLE_NAME +
-                    " WHERE " + DBHelper.Product.COLUMN_NAME_DATE + " > ? AND " +
-                    DBHelper.Product.COLUMN_NAME_REMOVED + " = ?",
-                    new String[] {String.valueOf(Calendar.getInstance().getTimeInMillis()), String.valueOf(0)});
-
-            while (curProduct.moveToNext()) {
-
-                String name = curProduct.getString(0);
-
-                long producedMillis = curProduct.getLong(1);
-                long bestBeforeMillis = curProduct.getLong(2);
-
-                SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
-                String produced = sdf.format(new Date(producedMillis));
-                String bestBefore = sdf.format(new Date(bestBeforeMillis));
-
-                String quantity = String.valueOf(curProduct.getInt(3));
-                int measure = curProduct.getInt(4);
-                quantity += " " + Resources.Measures.values()[measure].getText();
-
-                long groupId = curProduct.getInt(5);
-                String groupName = "";
-
-                Cursor curGroup = dbHelper.getReadableDatabase().rawQuery("SELECT " +
-                        DBHelper.Group.COLUMN_NAME_NAME +
-                        " FROM " + DBHelper.Group.TABLE_NAME +
-                        " WHERE " + DBHelper.Group._ID + " = ?", new String[] {String.valueOf(groupId)});
-                if (curGroup.moveToNext()) {
-                    groupName = curGroup.getString(0);
-                }
-                curGroup.close();
-
-                List<String> line = new ArrayList<>();
-
-
-                if (mAttributes.contains(mContext.getString(R.string.name))) {
-                    line.add(name);
-                }
-                if (mAttributes.contains(mContext.getString(R.string.date_produced))) {
-                    line.add(produced);
-                }
-                if (mAttributes.contains(mContext.getString(R.string.okay_before))) {
-                    line.add(bestBefore);
-                }
-                if (mAttributes.contains(mContext.getString(R.string.quantity))) {
-                    line.add(quantity);
-                }
-                if (mAttributes.contains(mContext.getString(R.string.group))) {
-                    line.add(groupName);
-                }
-
-                String arrStr[] = line.toArray(new String[line.size()]);
-                csvWrite.writeNext(arrStr);
-            }
-
-            csvWrite.close();
-            curProduct.close();
-            return makeXls();
-
-        } catch (IOException e) {
+            boolean csv = makeCsv();
+            return csv && makeXls();
+        } catch (Exception e) {
             Log.e(getClass().getSimpleName(), e.getMessage());
             return false;
         }
@@ -163,11 +94,108 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
         if (success) {
             Toast.makeText(mContext, R.string.excel_file_was_formed, Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(mContext, R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
+            if (noDataFlag) {
+                Toast.makeText(mContext, R.string.nothing_to_export, Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(mContext, R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
-    private boolean makeXls() {
+
+
+
+
+    private boolean makeCsv() throws Exception {
+        File exportDir = mContext.getCacheDir();
+
+        if (!exportDir.exists()) {
+            if (!exportDir.mkdirs()) {
+                return false;
+            }
+        }
+
+
+        List<Product> finalProducts = new ArrayList<>();
+        if (mCategories.contains(mContext.getString(R.string.all_fresh_products))) {
+            finalProducts = productDAO.getFresh();
+        }
+        else {
+            for (int i = 0; i < mGroupsCount; ++i) {
+                String groupName = mCategories.get(i);
+                long groupId = groupDAO.get(groupName).getId();
+                finalProducts.addAll(productDAO.getFreshFromGroup(groupId));
+            }
+        }
+
+        if (mCategories.contains(mContext.getString(R.string.overdue_products))) {
+            finalProducts.addAll(productDAO.getOverdued());
+        }
+        if (mCategories.contains(mContext.getString(R.string.trash))) {
+            finalProducts.addAll(productDAO.getRemoved());
+        }
+
+        if (finalProducts.isEmpty()) {
+            noDataFlag = true;
+            return false;
+        }
+
+
+
+        File file = new File(exportDir, "bestBefore.csv");
+
+        CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
+
+
+        String[] header = mColumns.toArray(new String[mColumns.size()]);
+
+        csvWrite.writeNext(header);
+
+
+        for (Product product: finalProducts) {
+            String name = product.getTitle();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+            String produced = sdf.format(product.getProduced().getTime());
+            String bestBefore = sdf.format(product.getDate().getTime());
+
+            String quantity = String.valueOf(product.getQuantity());
+            int measure = product.getMeasure();
+            quantity += " " + Resources.Measures.values()[measure].getText();
+
+            long groupId = product.getGroupId();
+
+            String groupName = "";
+            if (groupId != -1) {
+                groupName = groupDAO.get(groupId).getName();
+            }
+
+            List<String> line = new ArrayList<>();
+            if (mColumns.contains(mContext.getString(R.string.name))) {
+                line.add(name);
+            }
+            if (mColumns.contains(mContext.getString(R.string.date_produced))) {
+                line.add(produced);
+            }
+            if (mColumns.contains(mContext.getString(R.string.okay_before))) {
+                line.add(bestBefore);
+            }
+            if (mColumns.contains(mContext.getString(R.string.quantity))) {
+                line.add(quantity);
+            }
+            if (mColumns.contains(mContext.getString(R.string.group))) {
+                line.add(groupName);
+            }
+
+            String arrStr[] = line.toArray(new String[line.size()]);
+            csvWrite.writeNext(arrStr);
+        }
+        csvWrite.close();
+        return true;
+    }
+
+    private boolean makeXls() throws Exception {
 
         String defaultFileName = mContext.getString(R.string.default_file_name);
         String fileName = sPrefs.getString("excel_name", defaultFileName);
@@ -185,55 +213,51 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
         String outFilePath = mTargetPath + '/' + fileName;
 
 
-        try {
-            InputStream csvStream = new FileInputStream(inFilePath);
-            InputStreamReader csvStreamReader = new InputStreamReader(csvStream);
-            CSVReader csvReader = new CSVReader(csvStreamReader);
-            
-
-            String[] line;
-            List<String[]> arList = new ArrayList<>();
-
-            while ((line = csvReader.readNext()) != null) {
-                arList.add(line);
-            }
+        InputStream csvStream = new FileInputStream(inFilePath);
+        InputStreamReader csvStreamReader = new InputStreamReader(csvStream);
+        CSVReader csvReader = new CSVReader(csvStreamReader);
 
 
-            HSSFWorkbook hwb = new HSSFWorkbook();
-            HSSFSheet sheet = hwb.createSheet(mContext.getString(R.string.products_list));
-            for (int k = 0; k < arList.size(); k++)
-            {
-                String[] ardata = arList.get(k);
-                HSSFRow row = sheet.createRow((short) k);
+        String[] line;
+        List<String[]> arList = new ArrayList<>();
 
-                for (int p = 0; p < ardata.length; p++)
-                {
-                    HSSFCell cell = row.createCell(p);
-                    String data = ardata[p];
-                    if(data.startsWith("=")){
-                        cell.setCellType(Cell.CELL_TYPE_STRING);
-                        data=data.replaceAll("\"", "");
-                        data=data.replaceAll("=", "");
-                        cell.setCellValue(data);
-                    }else if(data.startsWith("\"")){
-                        data=data.replaceAll("\"", "");
-                        cell.setCellType(Cell.CELL_TYPE_STRING);
-                        cell.setCellValue(data);
-                    }else{
-                        data=data.replaceAll("\"", "");
-                        cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                        cell.setCellValue(data);
-                    }
-                }
-                System.out.println();
-            }
-            FileOutputStream fileOut = new FileOutputStream(outFilePath);
-            hwb.write(fileOut);
-            fileOut.close();
-        } catch ( Exception ex ) {
-            ex.printStackTrace();
-            return false;
+        while ((line = csvReader.readNext()) != null) {
+            arList.add(line);
         }
+
+
+        HSSFWorkbook hwb = new HSSFWorkbook();
+        HSSFSheet sheet = hwb.createSheet(mContext.getString(R.string.products_list));
+        for (int k = 0; k < arList.size(); k++)
+        {
+            String[] ardata = arList.get(k);
+            HSSFRow row = sheet.createRow((short) k);
+
+            for (int p = 0; p < ardata.length; p++)
+            {
+                HSSFCell cell = row.createCell(p);
+                String data = ardata[p];
+                if(data.startsWith("=")){
+                    cell.setCellType(Cell.CELL_TYPE_STRING);
+                    data=data.replaceAll("\"", "");
+                    data=data.replaceAll("=", "");
+                    cell.setCellValue(data);
+                }else if(data.startsWith("\"")){
+                    data=data.replaceAll("\"", "");
+                    cell.setCellType(Cell.CELL_TYPE_STRING);
+                    cell.setCellValue(data);
+                }else{
+                    data=data.replaceAll("\"", "");
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue(data);
+                }
+            }
+            System.out.println();
+        }
+        FileOutputStream fileOut = new FileOutputStream(outFilePath);
+        hwb.write(fileOut);
+        fileOut.close();
+
         return true;
     }
 }
