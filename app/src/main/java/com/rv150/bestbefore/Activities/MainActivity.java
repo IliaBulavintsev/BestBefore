@@ -178,12 +178,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             editor.apply();
         }
         else {
-            boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW_34, true);
+            boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW_38, true);
             if (whatsNew) {
                 new AlertDialog.Builder(this)
                         .setCancelable(false)
-                        .setTitle(R.string.about_photos)
-                        .setMessage(R.string.about_photos_text)
+                        .setTitle(R.string.whats_new_title)
+                        .setMessage(R.string.whats_new_excel)
                         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
@@ -197,7 +197,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         editor.remove(Resources.NEED_MIGRATE);
         editor.remove(Resources.CONGRATULATION);
         editor.remove(Resources.PREF_SHOW_SYNC_WARNING);
-        editor.putBoolean(Resources.WHATS_NEW_34, false);
+        editor.remove(Resources.WHATS_NEW_34);
+        editor.putBoolean(Resources.WHATS_NEW_38, false);
         editor.apply();
 
         mShortAnimationDuration = getResources().getInteger(

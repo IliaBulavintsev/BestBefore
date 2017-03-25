@@ -417,6 +417,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void backup() {
+        Toast.makeText(this, R.string.please_be_patient, Toast.LENGTH_SHORT).show();
         googleOperation = GOOGLE_BACKUP;
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                 .setResultCallback(driveContentsCallback);

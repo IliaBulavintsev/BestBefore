@@ -37,6 +37,7 @@ public final class Resources {
     public static final String PREF_DAYS_IN_FIFTH_NOTIF = "days_in_fifth";
     public static final String PREF_USE_GROUPS = "use_groups";
     public static final String WHATS_NEW_34 = "whats_new_in_34";
+    public static final String WHATS_NEW_38 = "whats_new_in_38";
     public static final String STANDART = "STANDART";
     public static final String SPOILED_TO_FRESH = "SPOILED_TO_FRESH";
     public static final String FRESH_TO_SPOILED = "FRESH_TO_SPOILED";
@@ -70,7 +71,6 @@ public final class Resources {
     public static final String OVERDUED_GROUP_NAME = "overduedGroupName";
     public static final String NEED_MIGRATE = "needMigrate";
     public static final String LAST_RADIO_WAS_OKAY_BEFORE = "lastRadioWasOkayBefore";
-    public static final String SOME_ACTION = "checking_data";
 
     public enum Measures {
         PIECE("шт"),

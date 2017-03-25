@@ -192,4 +192,6 @@
     <string name="choose_necess_attributes">Выберите нужные аттрибуты</string>
     <string name="all_fresh_products">Все свежие продукты</string>
     <string name="choose_categories">Выберите категории</string>
+    <string name="whats_new_excel">Доступен экспорт данных в Excel-формате. \n\nНе забывайте оценить приложение :)</string>
+    <string name="please_be_patient">Пожалуйста, будьте терпеливы&#8230;</string>
 </resources>
