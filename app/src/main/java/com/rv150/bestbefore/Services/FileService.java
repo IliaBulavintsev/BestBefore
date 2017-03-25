@@ -110,6 +110,7 @@ public class FileService {
             else {
                 new SavingMapToDB(context, map, false).execute(context.getString(R.string.import_success));
             }
+            StatService.markImport(context);
         }
         catch (Exception e) {
             Toast toast = Toast.makeText(context,
@@ -395,6 +396,7 @@ public class FileService {
             if (isSuccess) {
                 Toast.makeText(mContext, String.format(mContext.getString(R.string.file_name_was_saved_to),
                         fileName, path), Toast.LENGTH_SHORT).show();
+                StatService.markExportFile(mContext);
             }
             else {
                 Toast.makeText(mContext, errorMsg, Toast.LENGTH_LONG).show();

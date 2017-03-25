@@ -59,6 +59,7 @@ import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.Excel;
 import com.rv150.bestbefore.Services.FileService;
+import com.rv150.bestbefore.Services.StatService;
 
 import net.rdrei.android.dirchooser.DirectoryChooserActivity;
 import net.rdrei.android.dirchooser.DirectoryChooserConfig;
@@ -70,7 +71,6 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -538,10 +538,10 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     @Override
                     public void onResult(DriveFolder.DriveFileResult result) {
                         if (result.getStatus().isSuccess()) {
-                            Toast toast = Toast.makeText(getApplicationContext(),
-                                    R.string.backup_success, Toast.LENGTH_SHORT);
-                            toast.show();
+                            Toast.makeText(getApplicationContext(),
+                                    R.string.backup_success, Toast.LENGTH_SHORT).show();
                             Drive.DriveApi.requestSync(mGoogleApiClient);
+                            StatService.markGoogleBackup(Preferences.this);
 
                         } else {
                             Toast toast = Toast.makeText(getApplicationContext(),
@@ -638,6 +638,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     new FileService.SavingMapToDB(Preferences.this,
                             map, false).execute(getString(R.string.restore_success));
                 }
+                StatService.markGoogleRestore(Preferences.this);
             }
             catch (Exception ex) {
                 Toast.makeText(getApplicationContext(), R

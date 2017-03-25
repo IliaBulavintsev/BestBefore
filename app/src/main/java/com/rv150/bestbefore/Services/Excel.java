@@ -3,7 +3,6 @@ package com.rv150.bestbefore.Services;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -28,7 +27,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
@@ -36,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -96,6 +93,7 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
         }
         if (success) {
             Toast.makeText(mContext, R.string.excel_file_was_formed, Toast.LENGTH_SHORT).show();
+            StatService.markExportExcel(mContext);
         } else {
             if (noDataFlag) {
                 Toast.makeText(mContext, R.string.nothing_to_export, Toast.LENGTH_SHORT).show();
