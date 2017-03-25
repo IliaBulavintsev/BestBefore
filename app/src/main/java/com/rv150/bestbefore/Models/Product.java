@@ -20,7 +20,7 @@ public class Product implements Parcelable, Serializable {
     private Calendar mProduced;
     private Calendar mDate;
     private Calendar mCreatedAt;
-    private int mQuantity;
+    private int mQuantity = 1;
     private long mGroupId = -1;
     private long mId;
     private int mViewed = 0;

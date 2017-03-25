@@ -787,7 +787,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 sPrefs.getBoolean("use_groups", true)
         };
 
-        final List<String> checkedList = Arrays.asList(attributes);
         new AlertDialog.Builder(this)
         .setMultiChoiceItems(attributes, checkedAttr, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
@@ -802,20 +801,80 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Do something when click positive button
-                List<String> choosed = new ArrayList<>();
+                final List<String> choosed = new ArrayList<>();
                 for (int i = 0; i < checkedAttr.length; i++) {
                     boolean checked = checkedAttr[i];
                     if (checked) {
                         choosed.add(attributes[i]);
                     }
                 }
-                new Excel(Preferences.this, choosed, path).execute();
+                showCategoriesChoice(choosed, path);
             }
         })
         .setNegativeButton(R.string.cancel, null)
         .show();
     }
 
+
+    private void showCategoriesChoice(final List<String> choosedColumns, final String targetPath) {
+        List<Group> groups = groupDAO.getAll();
+        int groupsCount = groups.size();
+        final List<String> items = new ArrayList<>();
+        items.add(getString(R.string.all_fresh_products));
+        if (groupsCount > 0 && sPrefs.getBoolean(Resources.PREF_USE_GROUPS, true)) {
+            for (Group group: groups) {
+                items.add(group.getName());
+            }
+            groups.clear();
+        }
+
+        items.add(getString(R.string.overdue_products));
+        items.add(getString(R.string.trash));
+        int attrCount = items.size();
+        final String[] dialogItems = items.toArray(new String[attrCount]);
+        items.clear();
+
+        final boolean[] checkedAttr = new boolean[attrCount];
+        checkedAttr[0] = true;                              // Отмечаем "Все свежие продукты"
+        for (int i = 1; i <= groupsCount; ++i) {        // Отмечаем все группы
+            checkedAttr[i] = true;
+        }
+
+
+
+        new AlertDialog.Builder(this)
+                .setMultiChoiceItems(dialogItems, checkedAttr, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                        checkedAttr[which] = isChecked;
+                    }
+                })
+
+                .setTitle(R.string.choose_categories)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        final List<String> choosedCategories = new ArrayList<>();
+                        int choosenGroupsCount = 0;
+                        for (int i = 0; i < checkedAttr.length; i++) {
+                            boolean checked = checkedAttr[i];
+                            if (checked) {
+                                String item = dialogItems[i];
+                                if (!item.equals(getString(R.string.all_fresh_products)) &&     // Сколько групп выбрал юзер
+                                        !item.equals(getString(R.string.overdue_products)) &&
+                                        !item.equals(getString(R.string.trash))) {
+                                    choosenGroupsCount++;
+                                }
+                                choosedCategories.add(item);
+                            }
+                        }
+
+                        new Excel(Preferences.this, choosedColumns, choosedCategories, choosenGroupsCount, targetPath).execute();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
 
 
 
