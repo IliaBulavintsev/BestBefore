@@ -187,6 +187,8 @@
     <string name="excel">Excel</string>
     <string name="excel_file_was_formed">Excel файл был сформирован</string>
     <string name="products_list">Список продуктов</string>
-    <string name="forming_data">Формируем данные...</string>
+    <string name="forming_data">Формируем данные&#8230;</string>
     <string name="choose_necess_attributes">Выберите нужные аттрибуты</string>
+    <string name="all_fresh_products">Все свежие продукты</string>
+    <string name="choose_categories">Выберите категории</string>
 </resources>
