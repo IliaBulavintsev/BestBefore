@@ -269,8 +269,8 @@
                     android:defaultValue="true" />
 
                 <com.rv150.bestbefore.Preferences.ListPreferenceWithSummary
-                    android:entries="@array/sortOptions"
-                    android:entryValues="@array/sortValues"
+                    android:entries="@array/sortOptionsExcel"
+                    android:entryValues="@array/sortValuesExcel"
                     android:key="how_to_sort_excel"
                     android:title="@string/data_sort"
                     android:defaultValue="SPOILED_TO_FRESH">

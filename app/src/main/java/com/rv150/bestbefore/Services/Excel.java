@@ -13,6 +13,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.rv150.bestbefore.DAO.GroupDAO;
 import com.rv150.bestbefore.DAO.ProductDAO;
+import com.rv150.bestbefore.Models.Group;
 import com.rv150.bestbefore.Models.Product;
 import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Resources;
@@ -34,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -274,6 +276,26 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
                 break;
             case Resources.BY_NAME:
                 Collections.sort(list, Product.getByNameComparator());
+                break;
+            case Resources.BY_GROUPS:
+                Collections.sort(list, new Comparator<Product>() {
+                    @Override
+                    public int compare(Product o1, Product o2) {
+                        if (o1.getGroupId() == -1 && o2.getGroupId() != -1) {
+                            return -1;
+                        }
+                        if (o2.getGroupId() == -1 && o1.getGroupId() != -1) {
+                            return 1;
+                        }
+                        if (o1.getGroupId() == -1 && o2.getGroupId() == -1) {
+                            return 0;
+                        }
+
+                        Group group1 = groupDAO.get(o1.getGroupId());
+                        Group group2 = groupDAO.get(o2.getGroupId());
+                        return group1.getName().compareTo(group2.getName());
+                    }
+                });
                 break;
             default:
                 break;
