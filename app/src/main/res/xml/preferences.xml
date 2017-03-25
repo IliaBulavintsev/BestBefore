@@ -267,6 +267,14 @@
                     android:key="add_datetime_to_excel"
                     android:title="@string/add_datetime_to_filename"
                     android:defaultValue="true" />
+
+                <com.rv150.bestbefore.Preferences.ListPreferenceWithSummary
+                    android:entries="@array/sortOptions"
+                    android:entryValues="@array/sortValues"
+                    android:key="how_to_sort_excel"
+                    android:title="@string/data_sort"
+                    android:defaultValue="SPOILED_TO_FRESH">
+                </com.rv150.bestbefore.Preferences.ListPreferenceWithSummary>
             </PreferenceCategory>
         </PreferenceScreen>
     </PreferenceCategory>

@@ -14,6 +14,7 @@ public final class Resources {
     public static final String PREF_INSTALL_MONTH = "install_month";
     public static final String PREF_INSTALL_YEAR = "install_year";
     public static final String PREF_HOW_TO_SORT = "how_to_sort";
+    public static final String PREF_HOW_TO_SORT_EXCEL = "how_to_sort_excel";
     public static final String PREF_FIRST_HOUR = "first_hour";
     public static final String PREF_FIRST_MINUTE = "first_minute";
     public static final String PREF_SECOND_HOUR = "second_hour";

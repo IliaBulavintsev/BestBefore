@@ -26,6 +26,7 @@
     <string name="manage_notifications">Управление напоминаниями</string>
     <string name="whats_new_title">Что нового?</string>
     <string name="sort">Сортировка</string>
+    <string name="data_sort">Сортировка данных</string>
     <string name="last_overdue">Последние просроченные</string>
     <string name="rate_app_msg">Вы не хотели бы оценить приложение в Google Play?</string>
     <string name="rate">Оценить</string>

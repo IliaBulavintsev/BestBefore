@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -141,15 +142,13 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
             return false;
         }
 
+        sortList(finalProducts);
 
 
         File file = new File(exportDir, "bestBefore.csv");
 
         CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
-
-
         String[] header = mColumns.toArray(new String[mColumns.size()]);
-
         csvWrite.writeNext(header);
 
 
@@ -259,5 +258,25 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
         fileOut.close();
 
         return true;
+    }
+
+    private void sortList(List<Product> list) {
+        String howToSort = sPrefs.getString(Resources.PREF_HOW_TO_SORT_EXCEL, Resources.STANDART);
+        switch (howToSort) {
+            case Resources.STANDART:
+                Collections.sort(list, Product.getStandartComparator());
+                break;
+            case Resources.SPOILED_TO_FRESH:
+                Collections.sort(list, Product.getSpoiledToFreshComparator());
+                break;
+            case Resources.FRESH_TO_SPOILED:
+                Collections.sort(list, Product.getFreshToSpoiledComparator());
+                break;
+            case Resources.BY_NAME:
+                Collections.sort(list, Product.getByNameComparator());
+                break;
+            default:
+                break;
+        }
     }
 }
