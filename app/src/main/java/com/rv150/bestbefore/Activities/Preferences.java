@@ -57,7 +57,9 @@ import com.rv150.bestbefore.R;
 import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
+import com.rv150.bestbefore.Services.Excel;
 import com.rv150.bestbefore.Services.FileService;
+import com.rv150.bestbefore.Services.StatService;
 
 import net.rdrei.android.dirchooser.DirectoryChooserActivity;
 import net.rdrei.android.dirchooser.DirectoryChooserConfig;
@@ -68,6 +70,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +78,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import static com.google.android.gms.drive.Drive.SCOPE_APPFOLDER;
-import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER;
+import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER_EXCEL;
+import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER_FILE;
 
 /**
  * Created by Rudnev on 01.07.2016.
@@ -129,6 +133,8 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         productDAO = ProductDAO.getInstance(getApplicationContext());
         groupDAO = GroupDAO.getInstance(getApplicationContext());
+
+
 
 
         // Листенеры на тайм пикеры
@@ -334,11 +340,34 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                         .allowNewDirectoryNameModification(true)
                         .build();
                 chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
-                Preferences.this.startActivityForResult(chooserIntent, RC_DIRECTORY_PICKER);
+                Preferences.this.startActivityForResult(chooserIntent, RC_DIRECTORY_PICKER_FILE);
                 return true;
             }
         });
 
+
+        final Preference excel = findPreference("export_to_excel");
+        excel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                List<Product> products = productDAO.getAll();
+                if (products.isEmpty()) {
+                    Toast.makeText(getApplicationContext(),
+                            R.string.nothing_to_export, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
+                final Intent chooserIntent = new Intent(Preferences.this, DirectoryChooserActivity.class);
+                final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
+                        .newDirectoryName("New folder")
+                        .allowReadOnlyDirectory(true)
+                        .allowNewDirectoryNameModification(true)
+                        .build();
+                chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
+                Preferences.this.startActivityForResult(chooserIntent, RC_DIRECTORY_PICKER_EXCEL);
+                return true;
+            }
+        });
 
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -388,6 +417,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void backup() {
+        Toast.makeText(this, R.string.please_be_patient, Toast.LENGTH_SHORT).show();
         googleOperation = GOOGLE_BACKUP;
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                 .setResultCallback(driveContentsCallback);
@@ -509,10 +539,10 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     @Override
                     public void onResult(DriveFolder.DriveFileResult result) {
                         if (result.getStatus().isSuccess()) {
-                            Toast toast = Toast.makeText(getApplicationContext(),
-                                    R.string.backup_success, Toast.LENGTH_SHORT);
-                            toast.show();
+                            Toast.makeText(getApplicationContext(),
+                                    R.string.backup_success, Toast.LENGTH_SHORT).show();
                             Drive.DriveApi.requestSync(mGoogleApiClient);
+                            StatService.markGoogleBackup(Preferences.this);
 
                         } else {
                             Toast toast = Toast.makeText(getApplicationContext(),
@@ -559,7 +589,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                                     }
                                 })
                                 .show();
-
                     }
                 });
     }
@@ -610,6 +639,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     new FileService.SavingMapToDB(Preferences.this,
                             map, false).execute(getString(R.string.restore_success));
                 }
+                StatService.markGoogleRestore(Preferences.this);
             }
             catch (Exception ex) {
                 Toast.makeText(getApplicationContext(), R
@@ -723,16 +753,130 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         }
 
         // Экспорт в файл
-        if (requestCode == RC_DIRECTORY_PICKER) {
+        if (requestCode == RC_DIRECTORY_PICKER_FILE) {
             if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
                 String path = data.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
                 new FileService.DoExport(getApplicationContext()).execute(path);
+            }
+        }
+
+        // Excel
+        if (requestCode == RC_DIRECTORY_PICKER_EXCEL) {
+            if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
+                String path = data.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
+                showColumnChoiceDialog(path);
             }
         }
     }
 
 
 
+    private void showColumnChoiceDialog(final String path) {
+        final String[] attributes = new String[]{
+                getString(R.string.name),
+                getString(R.string.date_produced),
+                getString(R.string.okay_before),
+                getString(R.string.quantity),
+                getString(R.string.group)
+        };
+
+        // Boolean array for initial selected items
+        final boolean[] checkedAttr = new boolean[] {
+                true,
+                sPrefs.getBoolean("use_date_produced", true),
+                true,
+                sPrefs.getBoolean("use_quantity", true),
+                sPrefs.getBoolean("use_groups", true)
+        };
+
+        new AlertDialog.Builder(this)
+        .setMultiChoiceItems(attributes, checkedAttr, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                // Update the current focused item's checked status
+                checkedAttr[which] = isChecked;
+            }
+        })
+
+        .setTitle(R.string.choose_necess_attributes)
+        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Do something when click positive button
+                final List<String> choosed = new ArrayList<>();
+                for (int i = 0; i < checkedAttr.length; i++) {
+                    boolean checked = checkedAttr[i];
+                    if (checked) {
+                        choosed.add(attributes[i]);
+                    }
+                }
+                showCategoriesChoice(choosed, path);
+            }
+        })
+        .setNegativeButton(R.string.cancel, null)
+        .show();
+    }
+
+
+    private void showCategoriesChoice(final List<String> choosedColumns, final String targetPath) {
+        List<Group> groups = groupDAO.getAll();
+        int groupsCount = groups.size();
+        final List<String> items = new ArrayList<>();
+        items.add(getString(R.string.all_fresh_products));
+        if (groupsCount > 0 && sPrefs.getBoolean(Resources.PREF_USE_GROUPS, true)) {
+            for (Group group: groups) {
+                items.add(group.getName());
+            }
+            groups.clear();
+        }
+
+        items.add(getString(R.string.overdue_products));
+        items.add(getString(R.string.trash));
+        int attrCount = items.size();
+        final String[] dialogItems = items.toArray(new String[attrCount]);
+        items.clear();
+
+        final boolean[] checkedAttr = new boolean[attrCount];
+        checkedAttr[0] = true;                              // Отмечаем "Все свежие продукты"
+        for (int i = 1; i <= groupsCount; ++i) {        // Отмечаем все группы
+            checkedAttr[i] = true;
+        }
+
+
+
+        new AlertDialog.Builder(this)
+                .setMultiChoiceItems(dialogItems, checkedAttr, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                        checkedAttr[which] = isChecked;
+                    }
+                })
+
+                .setTitle(R.string.choose_categories)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        final List<String> choosedCategories = new ArrayList<>();
+                        int choosenGroupsCount = 0;
+                        for (int i = 0; i < checkedAttr.length; i++) {
+                            boolean checked = checkedAttr[i];
+                            if (checked) {
+                                String item = dialogItems[i];
+                                if (!item.equals(getString(R.string.all_fresh_products)) &&     // Сколько групп выбрал юзер
+                                        !item.equals(getString(R.string.overdue_products)) &&
+                                        !item.equals(getString(R.string.trash))) {
+                                    choosenGroupsCount++;
+                                }
+                                choosedCategories.add(item);
+                            }
+                        }
+
+                        new Excel(Preferences.this, choosedColumns, choosedCategories, choosenGroupsCount, targetPath).execute();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
 
 
 

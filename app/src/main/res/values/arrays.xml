@@ -13,4 +13,20 @@
         <item>STANDART</item>
         <item>BY_NAME</item>
     </string-array>
+
+    <string-array name="sortOptionsExcel">
+        <item>От скоро испортившихся к свежим</item>
+        <item>От свежих к скоро испортившимся</item>
+        <item>По дате добавления</item>
+        <item>По названию</item>
+        <item>По группам</item>
+    </string-array>
+
+    <string-array name="sortValuesExcel">
+        <item>SPOILED_TO_FRESH</item>
+        <item>FRESH_TO_SPOILED</item>
+        <item>STANDART</item>
+        <item>BY_NAME</item>
+        <item>BY_GROUPS</item>
+    </string-array>
 </resources>

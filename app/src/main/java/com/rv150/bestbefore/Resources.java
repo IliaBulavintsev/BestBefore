@@ -14,6 +14,7 @@ public final class Resources {
     public static final String PREF_INSTALL_MONTH = "install_month";
     public static final String PREF_INSTALL_YEAR = "install_year";
     public static final String PREF_HOW_TO_SORT = "how_to_sort";
+    public static final String PREF_HOW_TO_SORT_EXCEL = "how_to_sort_excel";
     public static final String PREF_FIRST_HOUR = "first_hour";
     public static final String PREF_FIRST_MINUTE = "first_minute";
     public static final String PREF_SECOND_HOUR = "second_hour";
@@ -36,10 +37,12 @@ public final class Resources {
     public static final String PREF_DAYS_IN_FIFTH_NOTIF = "days_in_fifth";
     public static final String PREF_USE_GROUPS = "use_groups";
     public static final String WHATS_NEW_34 = "whats_new_in_34";
+    public static final String WHATS_NEW_38 = "whats_new_in_38";
     public static final String STANDART = "STANDART";
     public static final String SPOILED_TO_FRESH = "SPOILED_TO_FRESH";
     public static final String FRESH_TO_SPOILED = "FRESH_TO_SPOILED";
     public static final String BY_NAME = "BY_NAME";
+    public static final String BY_GROUPS = "BY_GROUPS";
     public static final String SHOW_OVERDUE_DIALOG = "needShowOverdue";
     public static final String GROUP_ID = "groupName";
     public static final String STATUS = "status";
@@ -51,7 +54,8 @@ public final class Resources {
     public static final int RC_SETTINGS = 3;
     public static final int RC_CHOOSE_FILE = 4;
     public static final int RC_CAMERA = 5;
-    public static final int RC_DIRECTORY_PICKER = 6;
+    public static final int RC_DIRECTORY_PICKER_FILE = 6;
+    public static final int RC_DIRECTORY_PICKER_EXCEL = 7;
     public static final int RESULT_ADD = 1;
     public static final int RESULT_MODIFY = 2;
     public static final String CONGRATULATION = "happy_new_2017_year";

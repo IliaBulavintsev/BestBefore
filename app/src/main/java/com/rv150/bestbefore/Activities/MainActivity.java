@@ -74,6 +74,7 @@ import com.rv150.bestbefore.Receivers.AlarmReceiver;
 import com.rv150.bestbefore.Resources;
 import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.FileService;
+import com.rv150.bestbefore.Services.IAmHere;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -99,12 +100,20 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private Drawer drawer;
     private int drawerPosition;
     private long groupChoosen = Resources.ID_MAIN_GROUP;
+    private long lastChoosenGroup = Resources.ID_MAIN_GROUP;
     private long deletedFromThisGroup;
 
     private boolean doubleBackToExitPressedOnce = false;
 
     private int mShortAnimationDuration;
     private Animator mCurrentAnimator;
+    private ImageView imageView;
+    private View thumbView;
+    private boolean zoomIn = false;
+    private float startScaleFinal;
+    private Rect startBounds;
+
+    private SearchView mSearchView = null;
 
 
     @Override
@@ -169,12 +178,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             editor.apply();
         }
         else {
-            boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW_34, true);
+            boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW_38, true);
             if (whatsNew) {
                 new AlertDialog.Builder(this)
                         .setCancelable(false)
-                        .setTitle(R.string.about_photos)
-                        .setMessage(R.string.about_photos_text)
+                        .setTitle(R.string.whats_new_title)
+                        .setMessage(R.string.whats_new_excel)
                         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
@@ -188,7 +197,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         editor.remove(Resources.NEED_MIGRATE);
         editor.remove(Resources.CONGRATULATION);
         editor.remove(Resources.PREF_SHOW_SYNC_WARNING);
-        editor.putBoolean(Resources.WHATS_NEW_34, false);
+        editor.remove(Resources.WHATS_NEW_34);
+        editor.putBoolean(Resources.WHATS_NEW_38, false);
         editor.apply();
 
         mShortAnimationDuration = getResources().getInteger(
@@ -196,169 +206,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
 
-
-
-
-    public void zoom(final View thumbView, long photo) {
-        // If there's an animation in progress, cancel it
-        // immediately and proceed with this one.
-        if (mCurrentAnimator != null) {
-            mCurrentAnimator.cancel();
-        }
-
-        // Load the high-resolution "zoomed-in" image.
-        final ImageView imageView = (ImageView) findViewById(
-                R.id.expanded_image);
-
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        imageView.setMinimumHeight(dm.widthPixels / 3 * 4);
-        imageView.setMinimumWidth(dm.widthPixels);
-
-        final Bitmap bitmap = FileService.getBitmapFromFileId(getApplicationContext(), photo);
-        try {
-            imageView.post(new Runnable() {
-                @Override
-                public void run() {
-                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, imageView.getWidth(),
-                            imageView.getHeight(), false));
-                }
-            });
-        }
-        catch (Exception ex) {
-            Log.e(MainActivity.class.getSimpleName(), ex.getLocalizedMessage());
-            return;
-        }
-
-
-
-        // Calculate the starting and ending bounds for the zoomed-in image.
-        // This step involves lots of math. Yay, math.
-        final Rect startBounds = new Rect();
-        final Rect finalBounds = new Rect();
-        final Point globalOffset = new Point();
-
-        // The start bounds are the global visible rectangle of the thumbnail,
-        // and the final bounds are the global visible rectangle of the container
-        // view. Also set the container view's offset as the origin for the
-        // bounds, since that's the origin for the positioning animation
-        // properties (X, Y).
-        thumbView.getGlobalVisibleRect(startBounds);
-        findViewById(R.id.container)
-                .getGlobalVisibleRect(finalBounds, globalOffset);
-        startBounds.offset(-globalOffset.x, -globalOffset.y);
-        finalBounds.offset(-globalOffset.x, -globalOffset.y);
-
-        // Adjust the start bounds to be the same aspect ratio as the final
-        // bounds using the "center crop" technique. This prevents undesirable
-        // stretching during the animation. Also calculate the start scaling
-        // factor (the end scaling factor is always 1.0).
-        float startScale;
-        if ((float) finalBounds.width() / finalBounds.height()
-                > (float) startBounds.width() / startBounds.height()) {
-            // Extend start bounds horizontally
-            startScale = (float) startBounds.height() / finalBounds.height();
-            float startWidth = startScale * finalBounds.width();
-            float deltaWidth = (startWidth - startBounds.width()) / 2;
-            startBounds.left -= deltaWidth;
-            startBounds.right += deltaWidth;
-        } else {
-            // Extend start bounds vertically
-            startScale = (float) startBounds.width() / finalBounds.width();
-            float startHeight = startScale * finalBounds.height();
-            float deltaHeight = (startHeight - startBounds.height()) / 2;
-            startBounds.top -= deltaHeight;
-            startBounds.bottom += deltaHeight;
-        }
-
-        // Hide the thumbnail and show the zoomed-in view. When the animation
-        // begins, it will position the zoomed-in view in the place of the
-        // thumbnail.
-        thumbView.setAlpha(0f);
-        imageView.setVisibility(View.VISIBLE);
-
-        // Set the pivot point for SCALE_X and SCALE_Y transformations
-        // to the top-left corner of the zoomed-in view (the default
-        // is the center of the view).
-        imageView.setPivotX(0f);
-        imageView.setPivotY(0f);
-
-        // Construct and run the parallel animation of the four translation and
-        // scale properties (X, Y, SCALE_X, and SCALE_Y).
-        AnimatorSet set = new AnimatorSet();
-        set
-                .play(ObjectAnimator.ofFloat(imageView, View.X,
-                        startBounds.left, finalBounds.left))
-                .with(ObjectAnimator.ofFloat(imageView, View.Y,
-                        startBounds.top, finalBounds.top))
-                .with(ObjectAnimator.ofFloat(imageView, View.SCALE_X,
-                        startScale, 1f)).with(ObjectAnimator.ofFloat(imageView,
-                View.SCALE_Y, startScale, 1f));
-        set.setDuration(mShortAnimationDuration);
-        set.setInterpolator(new DecelerateInterpolator());
-        set.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mCurrentAnimator = null;
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                mCurrentAnimator = null;
-            }
-        });
-        set.start();
-        mCurrentAnimator = set;
-
-        // Upon clicking the zoomed-in image, it should zoom back down
-        // to the original bounds and show the thumbnail instead of
-        // the expanded image.
-        final float startScaleFinal = startScale;
-
-
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mCurrentAnimator != null) {
-                    mCurrentAnimator.cancel();
-                }
-
-                // Animate the four positioning/sizing properties in parallel,
-                // back to their original values.
-                AnimatorSet set = new AnimatorSet();
-                set.play(ObjectAnimator
-                        .ofFloat(imageView, View.X, startBounds.left))
-                        .with(ObjectAnimator
-                                .ofFloat(imageView,
-                                        View.Y,startBounds.top))
-                        .with(ObjectAnimator
-                                .ofFloat(imageView,
-                                        View.SCALE_X, startScaleFinal))
-                        .with(ObjectAnimator
-                                .ofFloat(imageView,
-                                        View.SCALE_Y, startScaleFinal));
-                set.setDuration(mShortAnimationDuration);
-                set.setInterpolator(new DecelerateInterpolator());
-                set.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        thumbView.setAlpha(1f);
-                        imageView.setVisibility(View.GONE);
-                        mCurrentAnimator = null;
-                    }
-
-                    @Override
-                    public void onAnimationCancel(Animator animation) {
-                        thumbView.setAlpha(1f);
-                        imageView.setVisibility(View.GONE);
-                        mCurrentAnimator = null;
-                    }
-                });
-                set.start();
-                mCurrentAnimator = set;
-            }
-        });
-    }
 
 
 
@@ -391,10 +238,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         setUpDrawer(toolbar);
 
         sortMainList();
-
-
         adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
         rvProducts.swapAdapter(adapter, false);
+
+        if (mSearchView != null) {
+            mSearchView.setIconified(true);
+            rvProducts.requestFocus();
+        }
 
         // Надпись "Список пуст!"
         if (wrapperList.isEmpty()) {
@@ -425,10 +275,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
         editor.apply();
         new InsertForAutocomplete(wrapperList).execute();
+
+
+        new Thread(new IAmHere(this)).start();
     }
-
-
-
 
 
 
@@ -588,6 +438,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             startActivity(intent);
             return;
         }
+
+        // сохраняем старое значение
+        if (groupChoosen == Resources.ID_FOR_TRASH || groupChoosen == Resources.ID_FOR_OVERDUED) {
+            lastChoosenGroup = Resources.ID_MAIN_GROUP;
+        }
+        else {
+            lastChoosenGroup = groupChoosen;
+        }
         // Смена группы
         groupChoosen = id;
         changeGroup();
@@ -617,6 +475,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             wrapperList = productDAO.getFreshFromGroup(group.getId());
             setTitle(group.getName());
             fab.show();
+            lastChoosenGroup = Resources.ID_MAIN_GROUP;
         }
         sortMainList();
         adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
@@ -714,6 +573,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         adapter = new RecyclerAdapter(wrapperList, getApplicationContext(), this);
         rvProducts.swapAdapter(adapter, false);
         isEmpty.setVisibility(View.VISIBLE);
+        setUpDrawer(toolbar);
         Toast toast = Toast.makeText(getApplicationContext(),
                 R.string.group_was_cleared, Toast.LENGTH_SHORT);
         toast.show();
@@ -732,18 +592,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
 
-
-
-
-
-
-
-
-
-
     private void deleteItem() {
-        deletedProduct = wrapperList.get(position);
-        wrapperList.remove(position);
+        deletedProduct = adapter.getItem(position);
+        wrapperList.remove(deletedProduct);
         if (wrapperList.isEmpty()) {
             isEmpty.setVisibility(View.VISIBLE);
         }
@@ -760,6 +611,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         deletedFromThisGroup = groupChoosen;
         // Пробуем пересоздать drawer для обновления счетчиков
         setUpDrawer(toolbar);
+        if (mSearchView != null) {
+            mSearchView.setIconified(true);
+            rvProducts.requestFocus();
+        }
     }
 
     private void undoRemove() {
@@ -795,13 +650,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         SearchManager searchManager = (SearchManager) MainActivity.this.getSystemService(Context.SEARCH_SERVICE);
 
-        SearchView searchView = null;
         if (searchItem != null) {
-            searchView = (SearchView) searchItem.getActionView();
+            mSearchView = (SearchView) searchItem.getActionView();
         }
-        if (searchView != null) {
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(MainActivity.this.getComponentName()));
-            searchView.setOnQueryTextListener(this);
+        if (mSearchView != null) {
+            mSearchView.setSearchableInfo(searchManager.getSearchableInfo(MainActivity.this.getComponentName()));
+            mSearchView.setOnQueryTextListener(this);
         }
         return super.onCreateOptionsMenu(menu);
     }
@@ -1002,6 +856,25 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public void onBackPressed() {
+        if (drawer.isDrawerOpen()) {
+            drawer.closeDrawer();
+            return;
+        }
+
+        if (zoomIn) {
+            zoomOutImage();
+            return;
+        }
+
+        if (groupChoosen != Resources.ID_MAIN_GROUP) {
+            groupChoosen = lastChoosenGroup;
+            changeGroup();
+            drawer.setSelection(groupChoosen);
+            lastChoosenGroup = Resources.ID_MAIN_GROUP;
+            return;
+        }
+
+
         boolean needRate = sPrefs.getBoolean(Resources.PREF_NEED_RATE, true);
         if (needRate) {
             int installDay = sPrefs.getInt(Resources.PREF_INSTALL_DAY, 11);
@@ -1258,7 +1131,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
 
     private void runAddActivity(int clickedPosition) {
-        final Product item = wrapperList.get(clickedPosition);
+        final Product item = adapter.getItem(clickedPosition);
         Intent intent = new Intent(this, AddActivity.class);
         intent.putExtra(Resources.STATUS, Resources.STATUS_EDIT);
         intent.putExtra(Product.class.getName(), (Parcelable) item);
@@ -1416,5 +1289,180 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 R.string.group_was_renamed, Toast.LENGTH_SHORT);
         toast.show();
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (drawer != null && drawer.isDrawerOpen()) {
+            drawer.closeDrawer();
+        }
+    }
+
+    public void zoom(final View thumbView, long photo) {
+        // If there's an animation in progress, cancel it
+        // immediately and proceed with this one.
+        if (mCurrentAnimator != null) {
+            mCurrentAnimator.cancel();
+        }
+
+        this.thumbView = thumbView;
+
+        // Load the high-resolution "zoomed-in" image.
+        this.imageView = (ImageView) findViewById(
+                R.id.expanded_image);
+
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        imageView.setMinimumHeight(dm.widthPixels / 3 * 4);
+        imageView.setMinimumWidth(dm.widthPixels);
+
+        final Bitmap bitmap = FileService.getBitmapFromFileId(getApplicationContext(), photo);
+        try {
+            imageView.post(new Runnable() {
+                @Override
+                public void run() {
+                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, imageView.getWidth(),
+                            imageView.getHeight(), false));
+                }
+            });
+        }
+        catch (Exception ex) {
+            Log.e(MainActivity.class.getSimpleName(), ex.getLocalizedMessage());
+            return;
+        }
+
+
+
+        // Calculate the starting and ending bounds for the zoomed-in image.
+        // This step involves lots of math. Yay, math.
+        startBounds = new Rect();
+        final Rect finalBounds = new Rect();
+        final Point globalOffset = new Point();
+
+        // The start bounds are the global visible rectangle of the thumbnail,
+        // and the final bounds are the global visible rectangle of the container
+        // view. Also set the container view's offset as the origin for the
+        // bounds, since that's the origin for the positioning animation
+        // properties (X, Y).
+        thumbView.getGlobalVisibleRect(startBounds);
+        findViewById(R.id.container)
+                .getGlobalVisibleRect(finalBounds, globalOffset);
+        startBounds.offset(-globalOffset.x, -globalOffset.y);
+        finalBounds.offset(-globalOffset.x, -globalOffset.y);
+
+        // Adjust the start bounds to be the same aspect ratio as the final
+        // bounds using the "center crop" technique. This prevents undesirable
+        // stretching during the animation. Also calculate the start scaling
+        // factor (the end scaling factor is always 1.0).
+        float startScale;
+        if ((float) finalBounds.width() / finalBounds.height()
+                > (float) startBounds.width() / startBounds.height()) {
+            // Extend start bounds horizontally
+            startScale = (float) startBounds.height() / finalBounds.height();
+            float startWidth = startScale * finalBounds.width();
+            float deltaWidth = (startWidth - startBounds.width()) / 2;
+            startBounds.left -= deltaWidth;
+            startBounds.right += deltaWidth;
+        } else {
+            // Extend start bounds vertically
+            startScale = (float) startBounds.width() / finalBounds.width();
+            float startHeight = startScale * finalBounds.height();
+            float deltaHeight = (startHeight - startBounds.height()) / 2;
+            startBounds.top -= deltaHeight;
+            startBounds.bottom += deltaHeight;
+        }
+
+        // Hide the thumbnail and show the zoomed-in view. When the animation
+        // begins, it will position the zoomed-in view in the place of the
+        // thumbnail.
+        thumbView.setAlpha(0f);
+        imageView.setVisibility(View.VISIBLE);
+
+        // Set the pivot point for SCALE_X and SCALE_Y transformations
+        // to the top-left corner of the zoomed-in view (the default
+        // is the center of the view).
+        imageView.setPivotX(0f);
+        imageView.setPivotY(0f);
+
+        // Construct and run the parallel animation of the four translation and
+        // scale properties (X, Y, SCALE_X, and SCALE_Y).
+        AnimatorSet set = new AnimatorSet();
+        set
+                .play(ObjectAnimator.ofFloat(imageView, View.X,
+                        startBounds.left, finalBounds.left))
+                .with(ObjectAnimator.ofFloat(imageView, View.Y,
+                        startBounds.top, finalBounds.top))
+                .with(ObjectAnimator.ofFloat(imageView, View.SCALE_X,
+                        startScale, 1f)).with(ObjectAnimator.ofFloat(imageView,
+                View.SCALE_Y, startScale, 1f));
+        set.setDuration(mShortAnimationDuration);
+        set.setInterpolator(new DecelerateInterpolator());
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mCurrentAnimator = null;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                mCurrentAnimator = null;
+            }
+        });
+        set.start();
+        mCurrentAnimator = set;
+
+        // Upon clicking the zoomed-in image, it should zoom back down
+        // to the original bounds and show the thumbnail instead of
+        // the expanded image.
+        this.startScaleFinal = startScale;
+        zoomIn = true;
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                zoomOutImage();
+            }
+        });
+    }
+
+    public void zoomOutImage() {
+            if (mCurrentAnimator != null) {
+                mCurrentAnimator.cancel();
+            }
+
+            // Animate the four positioning/sizing properties in parallel,
+            // back to their original values.
+            AnimatorSet set = new AnimatorSet();
+            set.play(ObjectAnimator
+                    .ofFloat(imageView, View.X, startBounds.left))
+                    .with(ObjectAnimator
+                            .ofFloat(imageView,
+                                    View.Y,startBounds.top))
+                    .with(ObjectAnimator
+                            .ofFloat(imageView,
+                                    View.SCALE_X, startScaleFinal))
+                    .with(ObjectAnimator
+                            .ofFloat(imageView,
+                                    View.SCALE_Y, startScaleFinal));
+            set.setDuration(mShortAnimationDuration);
+            set.setInterpolator(new DecelerateInterpolator());
+            set.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    thumbView.setAlpha(1f);
+                    imageView.setVisibility(View.GONE);
+                    mCurrentAnimator = null;
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    thumbView.setAlpha(1f);
+                    imageView.setVisibility(View.GONE);
+                    mCurrentAnimator = null;
+                }
+            });
+            set.start();
+            mCurrentAnimator = set;
+            zoomIn = false;
+        }
 }
 

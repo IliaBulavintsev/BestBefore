@@ -595,7 +595,7 @@ public class AddActivity extends AppCompatActivity {
 
 
     public void onRadioOkayBeforeClick(View view) {
-        okayBeforeOrDaysTV.setText(R.string.okayBefore);
+        okayBeforeOrDaysTV.setText(R.string.okay_before);
         okayBeforeOrDaysET.setHint(R.string.dateFormat);
         setDateText(okayBefore, okayBeforeOrDaysET);
         spinnerStorageLife.setVisibility(View.GONE);
@@ -608,7 +608,7 @@ public class AddActivity extends AppCompatActivity {
     }
 
     public void onRadioDateManClick(View view) {
-        okayBeforeOrDaysTV.setText(R.string.bestBefore);
+        okayBeforeOrDaysTV.setText(R.string.best_before);
         okayBeforeOrDaysET.setHint("");
         okayBeforeOrDaysET.setText("");
         spinnerStorageLife.setVisibility(View.VISIBLE);

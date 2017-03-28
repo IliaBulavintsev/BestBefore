@@ -1,17 +1,15 @@
 <resources>
     <string name="app_name">Срок годности</string>
-    <string name="action_settings">Settings</string>
-    <string name="about_title">О программе</string>
     <string name="name">Название</string>
     <string name="title_activity_adding">adding</string>
     <string name="adding_product">Добавление продукта</string>
     <string name="enterName">Введите название продукта</string>
-    <string name="dateOfMan">Дата изготовления</string>
-    <string name="okayBefore">Годен до</string>
+    <string name="date_produced">Дата изготовления</string>
+    <string name="okay_before">Годен до</string>
     <string name="chooseDateOfExpiry">Дата окончания</string>
     <string name="chooseDateOfExpiry2">срока годности</string>
     <string name="chooseBestBefore">Укажите срок хранения (в сутках)</string>
-    <string name="bestBefore">Срок хранения</string>
+    <string name="best_before">Срок хранения</string>
     <string name="dney">суток</string>
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
@@ -28,6 +26,7 @@
     <string name="manage_notifications">Управление напоминаниями</string>
     <string name="whats_new_title">Что нового?</string>
     <string name="sort">Сортировка</string>
+    <string name="data_sort">Сортировка данных</string>
     <string name="last_overdue">Последние просроченные</string>
     <string name="rate_app_msg">Вы не хотели бы оценить приложение в Google Play?</string>
     <string name="rate">Оценить</string>
@@ -73,8 +72,6 @@
     <string name="do_you_want_to_overwite_existing">Вы хотите перезаписать существующие данные данными с сервера?</string>
     <string name="yes">Да</string>
     <string name="ok">OK</string>
-    <string name="backup_is_saving">Сохраняем данные</string>
-    <string name="fetching_data">Получаем данные</string>
     <string name="changing_product">Изменение продукта</string>
     <string name="quantity">Количество</string>
     <string name="sync_with_google">Синхронизация с Google</string>
@@ -157,11 +154,11 @@
     <string name="sure_you_want_remove_all_backups">Вы действительно хотите удалить ВСЕ резервные копии на сервере? Действие необратимо!</string>
     <string name="remove_all_copies">Удалить все резервные копии</string>
     <string name="expanded_image">Увеличенное изображение</string>
-    <string name="export_success" formatted="false">Файл %s был сохранен в %s</string>
+    <string name="file_name_was_saved_to" formatted="false">Файл %s был сохранен в %s</string>
     <string name="no_apps_found_try_to_install_explorer">Не найдено приложений для выбора файла. Попробуйте установить сторонний файловый проводник из Google Play</string>
     <string name="please_wait">Пожалуйста, подождите&#8230;</string>
     <string name="import_process">Подождите, идет импорт данных&#8230;</string>
-    <string name="out_of_memory_try_to_close_apps">Недостаточно памяти для продолжения, попробуйте закрыть другие приложения</string>
+    <string name="out_of_memory_try_use_less_photos">Недостаточно памяти для продолжения, попробуйте использовать меньше фотографий.</string>
     <string name="file_name">Имя файла</string>
     <string name="default_file_name">Products</string>
     <string name="used_file_name_without_extension">Используемое имя файла без учета расширения</string>
@@ -185,4 +182,16 @@
     <string name="about_photos_text">Друзья! К продуктам теперь можно прикреплять фотографии, а при нажатии на фото продукта в главном меню его можно увеличить (не работает с шаблоном). Также фотографии сохраняются при синхронизации с сервером или экспорте в файл. Надеюсь, Вам понравится.</string>
     <string name="hi">Привет!</string>
     <string name="welcome_text">Спасибо, что установили приложение! Вы будете получать уведомление в последний день срока годности продуктов в 17:00. Это можно настроить :) \nХорошего дня!</string>
+    <string name="export_finished">Экспорт завершен</string>
+    <string name="export_in_progress">Идет экспорт в файл&#8230;</string>
+    <string name="export_to_excel">Экспорт в формате Excel</string>
+    <string name="excel">Excel</string>
+    <string name="excel_file_was_formed">Excel файл был сформирован</string>
+    <string name="products_list">Список продуктов</string>
+    <string name="forming_data">Формируем данные&#8230;</string>
+    <string name="choose_necess_attributes">Выберите нужные аттрибуты</string>
+    <string name="all_fresh_products">Все свежие продукты</string>
+    <string name="choose_categories">Выберите категории</string>
+    <string name="whats_new_excel">Доступен экспорт данных в Excel-формате. \n\nНе забывайте оценить приложение :)</string>
+    <string name="please_be_patient">Пожалуйста, будьте терпеливы&#8230;</string>
 </resources>

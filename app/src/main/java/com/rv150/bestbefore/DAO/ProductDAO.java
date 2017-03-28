@@ -79,7 +79,7 @@ public class ProductDAO {
 
     public List<Product> getFresh() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Calendar now = new GregorianCalendar();
+        Calendar now = Calendar.getInstance();
         String query = "SELECT * FROM " + DBHelper.Product.TABLE_NAME +
                 " WHERE " + DBHelper.Product.COLUMN_NAME_DATE + " > ? AND " +
                 DBHelper.Product.COLUMN_NAME_REMOVED + " = ?";
