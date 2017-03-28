@@ -37,8 +37,10 @@ captures/
 .idea/*
 .idea/
 
+projectFilesBackup/
+
 # Keystore files
-*.jks
+.jks
 
 *.DS_Store
 
