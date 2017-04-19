@@ -13,6 +13,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -350,6 +351,11 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         excel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                    Toast.makeText(Preferences.this, R.string.not_stable_in_kitkat, Toast.LENGTH_LONG).show();
+                    return true;
+                }
+
                 List<Product> products = productDAO.getAll();
                 if (products.isEmpty()) {
                     Toast.makeText(getApplicationContext(),

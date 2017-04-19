@@ -224,8 +224,14 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
             arList.add(line);
         }
 
-
-        HSSFWorkbook hwb = new HSSFWorkbook();
+        HSSFWorkbook hwb;
+        try {
+           hwb = new HSSFWorkbook();
+        }
+        catch (NoClassDefFoundError ex) {
+            Log.e(getClass().getSimpleName(), "Apache not found: " + ex.getMessage());
+            return false;
+        }
         HSSFSheet sheet = hwb.createSheet(mContext.getString(R.string.products_list));
         for (int k = 0; k < arList.size(); k++)
         {
