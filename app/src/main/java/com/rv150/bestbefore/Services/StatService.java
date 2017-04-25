@@ -24,12 +24,17 @@ public class StatService {
     private static final String DEVICE_ID = "deviceId";
     private static final String ACTION = "action";
     private static final String ACTION_IMPORT = "import";
+    private static final String ACTION_TRYING_IMPORT = "trying_import";
     private static final String ACTION_EXPORT_TO_FILE = "export_file";
     private static final String ACTION_EXPORT_TO_EXCEL = "export_excel";
     private static final String ACTION_GOOGLE_BACKUP = "google_backup";
     private static final String ACTION_GOOGLE_RESTORE = "google_restore";
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    public static void tryingImport(Context context) {
+        makeJob(context, ACTION_TRYING_IMPORT);
+    }
 
     public static void markImport(Context context) {
         makeJob(context, ACTION_IMPORT);

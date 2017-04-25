@@ -306,6 +306,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         importPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                StatService.tryingImport(Preferences.this);
                 Intent intent = new Intent()
                         .setType("text/plain")
                         .setAction(Intent.ACTION_GET_CONTENT);
