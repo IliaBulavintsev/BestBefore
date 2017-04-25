@@ -61,6 +61,10 @@ public class FileService {
             try {
                  map = (Map) objectInputStream.readObject();
             }
+            catch (Exception ex) {
+                Toast.makeText(context, R.string.internal_error_has_occured, Toast.LENGTH_LONG).show();
+                return;
+            }
             catch (OutOfMemoryError ex) {
                 Toast.makeText(context, R.string.out_of_memory_try_use_less_photos, Toast.LENGTH_LONG).show();
                 return;
@@ -368,6 +372,10 @@ public class FileService {
                 objectStream.close();
                 isSuccess = true;
                 publishProgress(100);
+            }
+            catch (IOException ex) {
+                isSuccess = false;
+                errorMsg = mContext.getString(R.string.failed_creating_file);
             }
             catch (Exception e) {
                 Log.e(TAG, "Error exporting to file");

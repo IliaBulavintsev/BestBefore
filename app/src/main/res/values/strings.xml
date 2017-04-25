@@ -196,4 +196,5 @@
     <string name="please_be_patient">Пожалуйста, будьте терпеливы&#8230;</string>
     <string name="not_stable_in_kitkat">Функция работает нестабильно на Android Kitkat</string>
     <string name="failed_create_temp_file">Ошибка при создании временного файла!</string>
+    <string name="failed_creating_file">Ошибка создания файла</string>
 </resources>

@@ -349,32 +349,34 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
         final Preference excel = findPreference("export_to_excel");
-        excel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-                    Toast.makeText(Preferences.this, R.string.not_stable_in_kitkat, Toast.LENGTH_LONG).show();
+        if (excel != null) {
+            excel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                        Toast.makeText(Preferences.this, R.string.not_stable_in_kitkat, Toast.LENGTH_LONG).show();
+                        return true;
+                    }
+
+                    List<Product> products = productDAO.getAll();
+                    if (products.isEmpty()) {
+                        Toast.makeText(getApplicationContext(),
+                                R.string.nothing_to_export, Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+
+                    final Intent chooserIntent = new Intent(Preferences.this, DirectoryChooserActivity.class);
+                    final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
+                            .newDirectoryName("New folder")
+                            .allowReadOnlyDirectory(true)
+                            .allowNewDirectoryNameModification(true)
+                            .build();
+                    chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
+                    Preferences.this.startActivityForResult(chooserIntent, RC_DIRECTORY_PICKER_EXCEL);
                     return true;
                 }
-
-                List<Product> products = productDAO.getAll();
-                if (products.isEmpty()) {
-                    Toast.makeText(getApplicationContext(),
-                            R.string.nothing_to_export, Toast.LENGTH_SHORT).show();
-                    return true;
-                }
-
-                final Intent chooserIntent = new Intent(Preferences.this, DirectoryChooserActivity.class);
-                final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
-                        .newDirectoryName("New folder")
-                        .allowReadOnlyDirectory(true)
-                        .allowNewDirectoryNameModification(true)
-                        .build();
-                chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
-                Preferences.this.startActivityForResult(chooserIntent, RC_DIRECTORY_PICKER_EXCEL);
-                return true;
-            }
-        });
+            });
+        }
 
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
