@@ -61,6 +61,7 @@ import com.rv150.bestbefore.Services.DBHelper;
 import com.rv150.bestbefore.Services.Excel;
 import com.rv150.bestbefore.Services.FileService;
 import com.rv150.bestbefore.Services.StatService;
+import com.rv150.bestbefore.UiThread;
 
 import net.rdrei.android.dirchooser.DirectoryChooserActivity;
 import net.rdrei.android.dirchooser.DirectoryChooserConfig;
@@ -79,6 +80,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import static com.google.android.gms.drive.Drive.SCOPE_APPFOLDER;
+import static com.google.android.gms.drive.DriveStatusCodes.DRIVE_RATE_LIMIT_EXCEEDED;
 import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER_EXCEL;
 import static com.rv150.bestbefore.Resources.RC_DIRECTORY_PICKER_FILE;
 
@@ -426,7 +428,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void backup() {
-        Toast.makeText(this, R.string.please_be_patient, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.please_wait, Toast.LENGTH_SHORT).show();
         googleOperation = GOOGLE_BACKUP;
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                 .setResultCallback(driveContentsCallback);
@@ -457,8 +459,12 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                                     .setResultCallback(driveContentsCallback);
                         }
                         else {
-                            Toast.makeText(Preferences.this,
-                                   "Ошибка синхронизации", Toast.LENGTH_SHORT).show();
+                            if (status.getStatusCode() == DRIVE_RATE_LIMIT_EXCEEDED) {
+                                Toast.makeText(Preferences.this, R.string.temp_error_try_later, Toast.LENGTH_SHORT).show();
+                            }
+                            else {
+                                Toast.makeText(Preferences.this, R.string.sync_error, Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
                 });
@@ -467,11 +473,16 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     final ResultCallback<DriveApi.DriveContentsResult> driveContentsCallback =
             new ResultCallback<DriveApi.DriveContentsResult>() {
         @Override
-        public void onResult(DriveApi.DriveContentsResult result) {
+        public void onResult(final DriveApi.DriveContentsResult result) {
             if (result.getStatus().isSuccess()) {
                 switch (googleOperation) {
                     case GOOGLE_BACKUP:
-                        CreateFileOnGoogleDrive(result);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                CreateFileOnGoogleDrive(result);
+                            }
+                        }).start();
                         break;
                     case GOOGLE_RESTORE:
                         OpenFileFromGoogleDrive();
@@ -487,15 +498,20 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     };
 
 
+
     private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result) {
 
         final DriveContents driveContents = result.getDriveContents();
 
         List<Product> products = productDAO.getAll();
         if (products.isEmpty()) {
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    R.string.nothing_to_backup, Toast.LENGTH_SHORT);
-            toast.show();
+            UiThread.run(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            R.string.nothing_to_backup, Toast.LENGTH_SHORT).show();
+                }
+            });
             return;
         }
         List<Group> groups = groupDAO.getAll();
@@ -522,9 +538,6 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             oos.close();
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    R.string.backup_failed, Toast.LENGTH_SHORT);
-            toast.show();
             if (oos != null) {
                 try {
                     oos.close();
@@ -533,34 +546,60 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     Log.e(TAG, "Error closing OutputStream");
                 }
             }
+            UiThread.run(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            R.string.backup_failed, Toast.LENGTH_SHORT).show();
+                }
+            });
             return;
         }
 
-        DateFormat ndf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.UK);
+        try {
+            DateFormat ndf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.UK);
 
-        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setTitle("Копия " + ndf.format(Calendar.getInstance().getTime()))
-                .setMimeType("text/plain")
-                .setStarred(true).build();
-        Drive.DriveApi.getAppFolder(mGoogleApiClient)
-                .createFile(mGoogleApiClient, changeSet, driveContents)
-                .setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
-                    @Override
-                    public void onResult(DriveFolder.DriveFileResult result) {
-                        if (result.getStatus().isSuccess()) {
-                            Toast.makeText(getApplicationContext(),
-                                    R.string.backup_success, Toast.LENGTH_SHORT).show();
-                            Drive.DriveApi.requestSync(mGoogleApiClient);
-                            StatService.markGoogleBackup(Preferences.this);
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                    .setTitle("Копия " + ndf.format(Calendar.getInstance().getTime()))
+                    .setMimeType("text/plain")
+                    .setStarred(true).build();
+            Drive.DriveApi.getAppFolder(mGoogleApiClient)
+                    .createFile(mGoogleApiClient, changeSet, driveContents)
+                    .setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
+                        @Override
+                        public void onResult(DriveFolder.DriveFileResult result) {
+                            if (result.getStatus().isSuccess()) {
+                                UiThread.run(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getApplicationContext(),
+                                                R.string.backup_success, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                                Drive.DriveApi.requestSync(mGoogleApiClient);
+                                StatService.markGoogleBackup(Preferences.this);
 
-                        } else {
-                            Toast toast = Toast.makeText(getApplicationContext(),
-                                    R.string.backup_failed, Toast.LENGTH_SHORT);
-                            toast.show();
+                            } else {
+                                UiThread.run(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getApplicationContext(),
+                                                R.string.backup_failed, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
                         }
-                    }
-                });
-
+                    });
+        }
+        catch (final Exception ex) {
+            UiThread.run(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            ex.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
     }
 
 
@@ -960,7 +999,9 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     @Override
     public void onStart() {
         super.onStart();
-        mGoogleApiClient.connect(GoogleApiClient.SIGN_IN_MODE_OPTIONAL);
+        if (!mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect(GoogleApiClient.SIGN_IN_MODE_OPTIONAL);
+        }
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -981,7 +1022,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     @Override
     public void onStop() {
         super.onStop();
-        mGoogleApiClient.disconnect();
+       // mGoogleApiClient.disconnect();
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.

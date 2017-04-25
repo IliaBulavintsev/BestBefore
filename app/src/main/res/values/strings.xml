@@ -197,4 +197,6 @@
     <string name="not_stable_in_kitkat">Функция работает нестабильно на Android Kitkat</string>
     <string name="failed_create_temp_file">Ошибка при создании временного файла!</string>
     <string name="failed_creating_file">Ошибка создания файла</string>
+    <string name="sync_error">Ошибка синхронизации</string>
+    <string name="temp_error_try_later">Временная ошибка. Попробуйте повторить позже и все получится!</string>
 </resources>

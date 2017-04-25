@@ -34,7 +34,7 @@ public class SerializableBitmap implements Serializable {
      */
     private void writeObject(ObjectOutputStream out) throws IOException {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, stream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 35, stream);
         BitmapDataObject bitmapDataObject = new BitmapDataObject();
         bitmapDataObject.imageByteArray = stream.toByteArray();
         out.writeObject(bitmapDataObject);

@@ -30,7 +30,6 @@ import com.rv150.bestbefore.Models.SerializableBitmap;
 import com.rv150.bestbefore.R;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -113,6 +112,9 @@ public class FileService {
             Toast toast = Toast.makeText(context,
                     R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
             toast.show();
+        }
+        catch (OutOfMemoryError ex) {
+            Toast.makeText(context, R.string.out_of_memory_try_use_less_photos, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -206,8 +208,9 @@ public class FileService {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            dialog.hide();
-            dialog = null;
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
             Toast.makeText(mContext,
                     message, Toast.LENGTH_SHORT).show();
         }

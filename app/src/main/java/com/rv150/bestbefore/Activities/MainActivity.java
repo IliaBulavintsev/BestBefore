@@ -218,6 +218,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         NotificationManager notifManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notifManager.cancelAll();
 
+        if (drawer != null && drawer.isDrawerOpen()) {
+            drawer.closeDrawer();
+        }
 
         boolean needShowOverdue = sPrefs.getBoolean(Resources.SHOW_OVERDUE_DIALOG, true);
         if (needShowOverdue) {
