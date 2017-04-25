@@ -53,16 +53,9 @@ public class FileService {
     private static final String TAG = FileService.class.getSimpleName();
 
     public static void readFromFile(final Context context, Intent intent) {
-        Uri uri = intent.getData();
-        File file = new File(uri.getPath());
-        if (!file.exists()) {
-            Toast toast = Toast.makeText(context,
-                    R.string.file_open_error, Toast.LENGTH_SHORT);
-            toast.show();
-            return;
-        }
         try {
-            InputStream inputStream = new FileInputStream(file);
+            Uri uri = intent.getData();
+            InputStream inputStream = context.getContentResolver().openInputStream(uri);
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
             final Map<String, Object> map;
             try {
