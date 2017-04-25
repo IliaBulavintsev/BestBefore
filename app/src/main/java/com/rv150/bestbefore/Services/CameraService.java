@@ -61,7 +61,9 @@ public class CameraService {
                 throw new RuntimeException("Go to way2");
             }
             File imageFile = new File(context.getExternalCacheDir(), TEMP_IMAGE_NAME);
-            imageFile.getParentFile().mkdirs();
+            if (imageFile.getParentFile() != null) {
+                imageFile.getParentFile().mkdirs();
+            }
             return imageFile;
         }
         catch (Exception ex) {

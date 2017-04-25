@@ -97,6 +97,7 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
         } else {
             if (noDataFlag) {
                 Toast.makeText(mContext, R.string.nothing_to_export, Toast.LENGTH_SHORT).show();
+                StatService.markExportExcel(mContext);
             }
             else {
                 Toast.makeText(mContext, R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();

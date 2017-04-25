@@ -194,7 +194,6 @@
     <string name="choose_categories">Выберите категории</string>
     <string name="whats_new_excel">Доступен экспорт данных в Excel-формате. \n\nНе забывайте оценить приложение :)</string>
     <string name="please_be_patient">Пожалуйста, будьте терпеливы&#8230;</string>
-    <string name="not_stable_in_kitkat">Функция работает нестабильно на Android Kitkat</string>
     <string name="failed_create_temp_file">Ошибка при создании временного файла!</string>
     <string name="failed_creating_file">Ошибка создания файла</string>
     <string name="sync_error">Ошибка синхронизации</string>

@@ -262,6 +262,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         Preference backup = findPreference("backup");
         backup.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
+                StatService.tryingGoogleBackup(Preferences.this);
                 backup();
                 return true;
             }
@@ -270,6 +271,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         final Preference restore = findPreference("restore");
         restore.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
+                StatService.tryingGoogleRestore(Preferences.this);
                 restore();
                 return true;
             }
@@ -330,6 +332,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
         exportPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                StatService.tryingExportFile(Preferences.this);
                 List<Product> products = productDAO.getAll();
                 if (products.isEmpty()) {
                     Toast.makeText(getApplicationContext(),
@@ -355,11 +358,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
             excel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-                        Toast.makeText(Preferences.this, R.string.not_stable_in_kitkat, Toast.LENGTH_LONG).show();
-                        return true;
-                    }
-
+                    StatService.tryingExportExcel(Preferences.this);
                     List<Product> products = productDAO.getAll();
                     if (products.isEmpty()) {
                         Toast.makeText(getApplicationContext(),
@@ -449,6 +448,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
     }
 
     private void startErasingCloud() {
+        StatService.tryingGoogleClear(Preferences.this);
         Drive.DriveApi.requestSync(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
@@ -730,6 +730,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                                                 if (status.isSuccess()) {
                                                     Toast.makeText(Preferences.this,
                                                             R.string.success, Toast.LENGTH_SHORT).show();
+                                                    StatService.markGoogleClear(Preferences.this);
                                                 }
                                                 else {
                                                     Toast.makeText(Preferences.this,
