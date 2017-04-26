@@ -460,7 +460,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                         }
                         else {
                             if (status.getStatusCode() == DRIVE_RATE_LIMIT_EXCEEDED) {
-                                Toast.makeText(Preferences.this, R.string.temp_error_try_later, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(Preferences.this, R.string.temp_error_try_later, Toast.LENGTH_LONG).show();
                             }
                             else {
                                 Toast.makeText(Preferences.this, R.string.sync_error, Toast.LENGTH_SHORT).show();
@@ -500,63 +500,67 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
 
 
     private void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result) {
-
-        final DriveContents driveContents = result.getDriveContents();
-
-        List<Product> products = productDAO.getAll();
-        if (products.isEmpty()) {
-            UiThread.run(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            R.string.nothing_to_backup, Toast.LENGTH_SHORT).show();
-                }
-            });
-            return;
-        }
-        List<Group> groups = groupDAO.getAll();
-        Map<String, Object> map = new HashMap<>();
-        map.put("products", products);
-        if (!groups.isEmpty()) {
-            map.put("groups", groups);
-        }
-
-        for (Product product: products) {
-            long fileId = product.getPhoto();
-            if (fileId != 0) {
-                Bitmap bitmap = FileService.getBitmapFromFileId(this, fileId);
-                SerializableBitmap serializableBitmap = new SerializableBitmap(bitmap);
-                map.put(String.valueOf(fileId), serializableBitmap);
-            }
-        }
-
-        final OutputStream outputStream = driveContents.getOutputStream();
-        ObjectOutputStream oos = null;
         try {
-            oos = new ObjectOutputStream(outputStream);
-            oos.writeObject(map);
-            oos.close();
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
-            if (oos != null) {
-                try {
-                    oos.close();
-                }
-                catch (IOException ee) {
-                    Log.e(TAG, "Error closing OutputStream");
+            final DriveContents driveContents = result.getDriveContents();
+
+            List<Product> products = productDAO.getAll();
+            if (products.isEmpty()) {
+                UiThread.run(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),
+                                R.string.nothing_to_backup, Toast.LENGTH_SHORT).show();
+                    }
+                });
+                return;
+            }
+
+            Map<String, Object> map = new HashMap<>();
+
+            for (Product product : products) {
+                long fileId = product.getPhoto();
+                if (fileId != 0) {
+                    Bitmap bitmap = FileService.getBitmapFromFileId(this, fileId);
+                    if (bitmap == null) {
+                        product.setPhoto(0);
+                        continue;
+                    }
+                    SerializableBitmap serializableBitmap = new SerializableBitmap(bitmap);
+                    map.put(String.valueOf(fileId), serializableBitmap);
                 }
             }
-            UiThread.run(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            R.string.backup_failed, Toast.LENGTH_SHORT).show();
-                }
-            });
-            return;
-        }
 
-        try {
+            List<Group> groups = groupDAO.getAll();
+            map.put("products", products);
+            if (!groups.isEmpty()) {
+                map.put("groups", groups);
+            }
+
+            final OutputStream outputStream = driveContents.getOutputStream();
+            ObjectOutputStream oos = null;
+            try {
+                oos = new ObjectOutputStream(outputStream);
+                oos.writeObject(map);
+                oos.close();
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
+                if (oos != null) {
+                    try {
+                        oos.close();
+                    } catch (IOException ee) {
+                        Log.e(TAG, "Error closing OutputStream");
+                    }
+                }
+                UiThread.run(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),
+                                R.string.backup_failed, Toast.LENGTH_SHORT).show();
+                    }
+                });
+                return;
+            }
+
             DateFormat ndf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.UK);
 
             MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
@@ -596,7 +600,16 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                 @Override
                 public void run() {
                     Toast.makeText(getApplicationContext(),
-                            ex.getMessage(), Toast.LENGTH_LONG).show();
+                            getString(R.string.error) + " " +ex.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+        catch (OutOfMemoryError ex) {
+            UiThread.run(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            R.string.out_of_memory_try_use_less_photos, Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -662,8 +675,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                     new AlertDialog.Builder(Preferences.this)
                             .setTitle(R.string.warning)
                             .setMessage(R.string.do_you_want_to_overwrite_existing_from_server)
-                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
-                            {
+                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     new FileService.SavingMapToDB(Preferences.this,
@@ -671,8 +683,7 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                                 }
 
                             })
-                            .setNeutralButton(R.string.combine, new DialogInterface.OnClickListener()
-                            {
+                            .setNeutralButton(R.string.combine, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     new FileService.SavingMapToDB(Preferences.this,
@@ -682,16 +693,17 @@ public class Preferences extends PreferenceActivity implements GoogleApiClient.C
                             })
                             .setNegativeButton(R.string.no, null)
                             .show();
-                }
-                else {
+                } else {
                     new FileService.SavingMapToDB(Preferences.this,
                             map, false).execute(getString(R.string.restore_success));
                 }
                 StatService.markGoogleRestore(Preferences.this);
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Toast.makeText(getApplicationContext(), R
                         .string.internal_error_has_occured, Toast.LENGTH_LONG).show();
+            } catch (OutOfMemoryError ex) {
+                Toast.makeText(getApplicationContext(),
+                        R.string.out_of_memory_try_use_less_photos, Toast.LENGTH_LONG).show();
             }
         }
     };

@@ -158,7 +158,7 @@
     <string name="no_apps_found_try_to_install_explorer">Не найдено приложений для выбора файла. Попробуйте установить сторонний файловый проводник из Google Play</string>
     <string name="please_wait">Пожалуйста, подождите&#8230;</string>
     <string name="import_process">Подождите, идет импорт данных&#8230;</string>
-    <string name="out_of_memory_try_use_less_photos">Недостаточно памяти для продолжения, попробуйте использовать меньше фотографий.</string>
+    <string name="out_of_memory_try_use_less_photos">Недостаточно памяти для продолжения, попробуйте использовать меньше фотографий</string>
     <string name="file_name">Имя файла</string>
     <string name="default_file_name">Products</string>
     <string name="used_file_name_without_extension">Используемое имя файла без учета расширения</string>
@@ -197,5 +197,6 @@
     <string name="failed_create_temp_file">Ошибка при создании временного файла!</string>
     <string name="failed_creating_file">Ошибка создания файла</string>
     <string name="sync_error">Ошибка синхронизации</string>
-    <string name="temp_error_try_later">Временная ошибка. Попробуйте повторить позже и все получится!</string>
+    <string name="temp_error_try_later">Превышен лимит запросов к Google Диску. Попробуйте повторить позже</string>
+    <string name="error">Ошибка!</string>
 </resources>

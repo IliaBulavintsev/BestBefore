@@ -188,8 +188,13 @@ public class FileService {
                     long fileId = product.getPhoto();
                     if (fileId != 0) {
                         SerializableBitmap serializableBitmap = (SerializableBitmap) map.get(String.valueOf(fileId));
-                        Bitmap bitmap = serializableBitmap.getBitmap();
-                        saveBitmapToFile(mContext, bitmap, fileId);
+                        if (serializableBitmap != null) {
+                            Bitmap bitmap = serializableBitmap.getBitmap();
+                            saveBitmapToFile(mContext, bitmap, fileId);
+                        }
+                        else {
+                            product.setPhoto(0);
+                        }
                     }
                     productDAO.insertProduct(product);
                 }
