@@ -907,16 +907,35 @@ public class AddActivity extends AppCompatActivity {
 
 
     public void openCamera(View view) {
-        Intent intent = CameraService.getPickImageIntent(getApplicationContext());
-        startActivityForResult(intent, Resources.RC_CAMERA);
+        try {
+            Intent intent = CameraService.getPickImageIntent(getApplicationContext());
+            startActivityForResult(intent, Resources.RC_CAMERA);
+        }
+        catch (IOException ex) {
+            Toast.makeText(this, R.string.failed_create_temp_file, Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception ex) {
+            Toast.makeText(this, R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Resources.RC_CAMERA && resultCode == RESULT_OK) {
-            File imageFile = CameraService.getTempFile(getApplicationContext());
-            if (imageFile == null) {
+            File imageFile;
+            try {
+                imageFile = CameraService.getTempFile(getApplicationContext());
+                if (imageFile == null) {
+                    throw new RuntimeException("ImageFile is null!");
+                }
+            }
+            catch (IOException ex) {
+                Toast.makeText(getApplicationContext(),
+                        R.string.failed_create_temp_file, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            catch (Exception ex) {
                 Toast.makeText(getApplicationContext(),
                         R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
                 return;

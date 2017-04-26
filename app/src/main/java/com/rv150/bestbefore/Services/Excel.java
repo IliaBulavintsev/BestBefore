@@ -97,6 +97,7 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
         } else {
             if (noDataFlag) {
                 Toast.makeText(mContext, R.string.nothing_to_export, Toast.LENGTH_SHORT).show();
+                StatService.markExportExcel(mContext);
             }
             else {
                 Toast.makeText(mContext, R.string.internal_error_has_occured, Toast.LENGTH_SHORT).show();
@@ -224,8 +225,14 @@ public class Excel extends AsyncTask<String, Void, Boolean> {
             arList.add(line);
         }
 
-
-        HSSFWorkbook hwb = new HSSFWorkbook();
+        HSSFWorkbook hwb;
+        try {
+           hwb = new HSSFWorkbook();
+        }
+        catch (NoClassDefFoundError ex) {
+            Log.e(getClass().getSimpleName(), "Apache not found: " + ex.getMessage());
+            return false;
+        }
         HSSFSheet sheet = hwb.createSheet(mContext.getString(R.string.products_list));
         for (int k = 0; k < arList.size(); k++)
         {

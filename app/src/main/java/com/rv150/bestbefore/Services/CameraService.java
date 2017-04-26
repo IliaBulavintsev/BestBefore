@@ -10,6 +10,7 @@ import android.provider.MediaStore;
 import com.rv150.bestbefore.R;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +21,9 @@ import java.util.List;
 public class CameraService {
 
     private static final String TEMP_IMAGE_NAME = "tempImage";
+    private static boolean useWay2 = false;
 
-    public static Intent getPickImageIntent(Context context) {
+    public static Intent getPickImageIntent(Context context) throws IOException {
         Intent chooserIntent = null;
 
         List<Intent> intentList = new ArrayList<>();
@@ -53,9 +55,21 @@ public class CameraService {
         return list;
     }
 
-    public static File getTempFile(Context context) {
-        File imageFile = new File(context.getExternalCacheDir(), TEMP_IMAGE_NAME);
-        imageFile.getParentFile().mkdirs();
-        return imageFile;
+    public static File getTempFile(Context context) throws IOException {
+        try {
+            if (useWay2) {
+                throw new RuntimeException("Go to way2");
+            }
+            File imageFile = new File(context.getExternalCacheDir(), TEMP_IMAGE_NAME);
+            if (imageFile.getParentFile() != null) {
+                imageFile.getParentFile().mkdirs();
+            }
+            return imageFile;
+        }
+        catch (Exception ex) {
+            useWay2 = true;
+            File outputDir = context.getCacheDir(); // context being the Activity pointer
+            return File.createTempFile(TEMP_IMAGE_NAME, null, outputDir);
+        }
     }
 }

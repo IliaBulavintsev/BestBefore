@@ -24,12 +24,23 @@ public class StatService {
     private static final String DEVICE_ID = "deviceId";
     private static final String ACTION = "action";
     private static final String ACTION_IMPORT = "import";
+    private static final String ACTION_TRYING_IMPORT = "try_import";
     private static final String ACTION_EXPORT_TO_FILE = "export_file";
+    private static final String ACTION_TRYING_EXPORT_TO_FILE = "try_export_file";
     private static final String ACTION_EXPORT_TO_EXCEL = "export_excel";
+    private static final String ACTION_TRY_EXPORT_TO_EXCEL = "try_export_excel";
     private static final String ACTION_GOOGLE_BACKUP = "google_backup";
+    private static final String ACTION_TRY_GOOGLE_BACKUP = "try_google_backup";
     private static final String ACTION_GOOGLE_RESTORE = "google_restore";
+    private static final String ACTION_TRY_GOOGLE_RESTORE = "try_google_restore";
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static final String ACTION_GOOGLE_CLEAR = "google_clear";
+    private static final String ACTION_TRY_GOOGLE_CLEAR = "try_google_clear";
+
+    public static void tryingImport(Context context) {
+        makeJob(context, ACTION_TRYING_IMPORT);
+    }
 
     public static void markImport(Context context) {
         makeJob(context, ACTION_IMPORT);
@@ -39,17 +50,42 @@ public class StatService {
         makeJob(context, ACTION_EXPORT_TO_FILE);
     }
 
+    public static void tryingExportFile(Context context) {
+        makeJob(context, ACTION_TRYING_EXPORT_TO_FILE);
+    }
+
     public static void markExportExcel(Context context) {
         makeJob(context, ACTION_EXPORT_TO_EXCEL);
+    }
+
+    public static void tryingExportExcel(Context context) {
+        makeJob(context, ACTION_TRY_EXPORT_TO_EXCEL);
     }
 
     public static void markGoogleBackup(Context context) {
         makeJob(context, ACTION_GOOGLE_BACKUP);
     }
 
+    public static void tryingGoogleBackup(Context context) {
+        makeJob(context, ACTION_TRY_GOOGLE_BACKUP);
+    }
+
     public static void markGoogleRestore(Context context) {
         makeJob(context, ACTION_GOOGLE_RESTORE);
     }
+
+    public static void tryingGoogleRestore(Context context) {
+        makeJob(context, ACTION_TRY_GOOGLE_RESTORE);
+    }
+
+    public static void tryingGoogleClear(Context context) {
+        makeJob(context, ACTION_TRY_GOOGLE_CLEAR);
+    }
+
+    public static void markGoogleClear(Context context) {
+        makeJob(context, ACTION_GOOGLE_CLEAR);
+    }
+
 
 
     private static void makeJob(Context context, String action) {

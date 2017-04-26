@@ -252,36 +252,6 @@
                     android:defaultValue="true" />
             </PreferenceCategory>
         </PreferenceScreen>
-
-        <PreferenceScreen
-            android:key="excel_menu"
-            android:title="@string/excel"
-            android:persistent="false">
-            <PreferenceCategory
-                android:title="@string/excel" >
-                <Preference
-                    android:title="@string/export_to_excel"
-                    android:key="export_to_excel" />
-                <EditTextPreference
-                    android:key="excel_name"
-                    android:title="@string/file_name"
-                    android:summary="@string/used_file_name_without_extension"
-                    android:defaultValue="@string/default_file_name" />
-
-                <CheckBoxPreference
-                    android:key="add_datetime_to_excel"
-                    android:title="@string/add_datetime_to_filename"
-                    android:defaultValue="true" />
-
-                <com.rv150.bestbefore.Preferences.ListPreferenceWithSummary
-                    android:entries="@array/sortOptionsExcel"
-                    android:entryValues="@array/sortValuesExcel"
-                    android:key="how_to_sort_excel"
-                    android:title="@string/data_sort"
-                    android:defaultValue="SPOILED_TO_FRESH">
-                </com.rv150.bestbefore.Preferences.ListPreferenceWithSummary>
-            </PreferenceCategory>
-        </PreferenceScreen>
     </PreferenceCategory>
 
 

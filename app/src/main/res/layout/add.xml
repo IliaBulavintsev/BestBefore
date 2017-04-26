@@ -154,8 +154,7 @@
             <Spinner
                 android:id="@+id/spinner_storage_life"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:drawable/btn_dropdown"
+                android:layout_height="match_parent"
                 android:spinnerMode="dropdown"
                 android:visibility="gone"
                 android:layout_weight="0"
@@ -186,8 +185,7 @@
             <Spinner
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/spinner_groups"
-                android:background="@android:drawable/btn_dropdown" />
+                android:id="@+id/spinner_groups" />
 
         </LinearLayout>
 
@@ -217,11 +215,10 @@
 
             <Spinner
                 android:layout_marginBottom="10dp"
-                android:layout_width="100dp"
+                android:layout_width="75dp"
                 android:dropDownWidth="75dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/spinner_quantity"
-                android:background="@android:drawable/btn_dropdown" />
+                android:id="@+id/spinner_quantity" />
 
         </LinearLayout>
     </LinearLayout>
@@ -232,29 +229,26 @@
         android:id="@+id/btnLL"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/buttons_back"
-        android:divider="@drawable/vertical_divider"
-        android:dividerPadding="12dip"
-        android:showDividers="middle">
+        android:layout_gravity="bottom">
 
         <Button
             android:id="@+id/button"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:layout_weight="1"
             android:onClick="onSaveClick"
             android:text="@string/save"
-            android:background="?android:attr/selectableItemBackground"/>
+            android:textColor="@color/md_green_700"
+            style="?borderlessButtonStyle"/>
 
         <Button
             android:id="@+id/buttonCancel"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:layout_weight="1"
             android:onClick="onCancelClick"
             android:text="@string/cancel"
-            android:background="?android:attr/selectableItemBackground"/>
+            android:textColor="@color/md_green_700"
+            style="?borderlessButtonStyle"/>
     </LinearLayout>
-
 </RelativeLayout>

@@ -30,7 +30,6 @@ import com.rv150.bestbefore.Models.SerializableBitmap;
 import com.rv150.bestbefore.R;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,20 +52,17 @@ public class FileService {
     private static final String TAG = FileService.class.getSimpleName();
 
     public static void readFromFile(final Context context, Intent intent) {
-        Uri uri = intent.getData();
-        File file = new File(uri.getPath());
-        if (!file.exists()) {
-            Toast toast = Toast.makeText(context,
-                    R.string.file_open_error, Toast.LENGTH_SHORT);
-            toast.show();
-            return;
-        }
         try {
-            InputStream inputStream = new FileInputStream(file);
+            Uri uri = intent.getData();
+            InputStream inputStream = context.getContentResolver().openInputStream(uri);
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
             final Map<String, Object> map;
             try {
                  map = (Map) objectInputStream.readObject();
+            }
+            catch (Exception ex) {
+                Toast.makeText(context, R.string.internal_error_has_occured, Toast.LENGTH_LONG).show();
+                return;
             }
             catch (OutOfMemoryError ex) {
                 Toast.makeText(context, R.string.out_of_memory_try_use_less_photos, Toast.LENGTH_LONG).show();
@@ -116,6 +112,9 @@ public class FileService {
             Toast toast = Toast.makeText(context,
                     R.string.internal_error_has_occured, Toast.LENGTH_SHORT);
             toast.show();
+        }
+        catch (OutOfMemoryError ex) {
+            Toast.makeText(context, R.string.out_of_memory_try_use_less_photos, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -189,8 +188,13 @@ public class FileService {
                     long fileId = product.getPhoto();
                     if (fileId != 0) {
                         SerializableBitmap serializableBitmap = (SerializableBitmap) map.get(String.valueOf(fileId));
-                        Bitmap bitmap = serializableBitmap.getBitmap();
-                        saveBitmapToFile(mContext, bitmap, fileId);
+                        if (serializableBitmap != null) {
+                            Bitmap bitmap = serializableBitmap.getBitmap();
+                            saveBitmapToFile(mContext, bitmap, fileId);
+                        }
+                        else {
+                            product.setPhoto(0);
+                        }
                     }
                     productDAO.insertProduct(product);
                 }
@@ -209,8 +213,9 @@ public class FileService {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            dialog.hide();
-            dialog = null;
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
             Toast.makeText(mContext,
                     message, Toast.LENGTH_SHORT).show();
         }
@@ -375,6 +380,10 @@ public class FileService {
                 objectStream.close();
                 isSuccess = true;
                 publishProgress(100);
+            }
+            catch (IOException ex) {
+                isSuccess = false;
+                errorMsg = mContext.getString(R.string.failed_creating_file);
             }
             catch (Exception e) {
                 Log.e(TAG, "Error exporting to file");

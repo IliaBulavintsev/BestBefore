@@ -1,4 +1,4 @@
-# Built application files
+# built application files
 *.apk
 *.ap_
 
@@ -34,10 +34,14 @@ captures/
 
 # Intellij
 *.iml
+<<<<<<< HEAD
 .idea/*
 .idea/
 
 projectFilesBackup/
+=======
+.idea/
+>>>>>>> develop
 
 # Keystore files
 .jks
@@ -46,3 +50,14 @@ projectFilesBackup/
 
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
+# Freeline
+freeline.py
+freeline/
+freeline_project_description.json
+
+# MacOS Files
+*.DS_Store
