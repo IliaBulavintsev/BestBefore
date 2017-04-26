@@ -236,6 +236,7 @@ public class AddActivity extends AppCompatActivity {
             TextView quantityTV = (TextView) findViewById(R.id.quantityTV);
             quantityTV.setVisibility(View.GONE);
             quantityET.setVisibility(View.GONE);
+            spinnerQuantity.setVisibility(View.GONE);
         }
 
         boolean useGroups = sPrefs.getBoolean("use_groups", true);
