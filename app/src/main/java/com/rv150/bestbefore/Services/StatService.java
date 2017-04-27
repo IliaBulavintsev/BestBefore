@@ -23,6 +23,8 @@ public class StatService {
 
     private static final String DEVICE_ID = "deviceId";
     private static final String ACTION = "action";
+    private static final String VERSION = "version";
+
     private static final String ACTION_IMPORT = "import";
     private static final String ACTION_TRYING_IMPORT = "try_import";
     private static final String ACTION_EXPORT_TO_FILE = "export_file";
@@ -33,10 +35,11 @@ public class StatService {
     private static final String ACTION_TRY_GOOGLE_BACKUP = "try_google_backup";
     private static final String ACTION_GOOGLE_RESTORE = "google_restore";
     private static final String ACTION_TRY_GOOGLE_RESTORE = "try_google_restore";
-
-    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final String ACTION_GOOGLE_CLEAR = "google_clear";
     private static final String ACTION_TRY_GOOGLE_CLEAR = "try_google_clear";
+
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+
 
     public static void tryingImport(Context context) {
         makeJob(context, ACTION_TRYING_IMPORT);
@@ -93,6 +96,7 @@ public class StatService {
             JSONObject request = new JSONObject();
             request.put(DEVICE_ID, getDeviceId(context));
             request.put(ACTION, action);
+            request.put(VERSION, 40);
             executor.execute(new Request(serverURL + "stat", request));
         }
         catch (Exception ex) {
