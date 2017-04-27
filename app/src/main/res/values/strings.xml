@@ -47,6 +47,22 @@
         <item quantity="other">Осталось %d дней</item>
     </plurals>
 
+    <plurals name="calculatorFresh">
+        <item quantity="zero">Сегодня последний день!</item>
+        <item quantity="one">Продукт годен в течение %d дня</item>
+        <item quantity="two">Продукт годен в течение %d дней</item>
+        <item quantity="few">Продукт годен в течение %d дней</item>
+        <item quantity="many">Продукт годен в течение %d дней</item>
+        <item quantity="other">Продукт годен в течение %d дня</item>
+    </plurals>
+
+    <plurals name="calculatorSpoil">
+        <item quantity="one">Продукт просрочен на %d день!</item>
+        <item quantity="two">Продукт просрочен на %d дня!</item>
+        <item quantity="few">Продукт просрочен на %d дня!</item>
+        <item quantity="many">Продукт просрочен на %d дней!</item>
+        <item quantity="other">Продукт просрочен на %d дней!</item>
+    </plurals>
 
     <string name="best_before_expires">Срок годности истекает!</string>
     <string name="last_day">Последний день!</string>
