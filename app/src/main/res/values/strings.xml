@@ -49,11 +49,11 @@
 
     <plurals name="calculatorFresh">
         <item quantity="zero">Сегодня последний день!</item>
-        <item quantity="one">Продукт годен в течение %d дня*</item>
-        <item quantity="two">Продукт годен в течение %d дней*</item>
-        <item quantity="few">Продукт годен в течение %d дней*</item>
-        <item quantity="many">Продукт годен в течение %d дней*</item>
-        <item quantity="other">Продукт годен в течение %d дня*</item>
+        <item quantity="one">Продукт годен в течение %d дня</item>
+        <item quantity="two">Продукт годен в течение %d дней</item>
+        <item quantity="few">Продукт годен в течение %d дней</item>
+        <item quantity="many">Продукт годен в течение %d дней</item>
+        <item quantity="other">Продукт годен в течение %d дня</item>
     </plurals>
 
     <plurals name="calculatorSpoil">

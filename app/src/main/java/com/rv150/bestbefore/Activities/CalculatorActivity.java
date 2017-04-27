@@ -1,7 +1,9 @@
 package com.rv150.bestbefore.Activities;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -41,8 +43,14 @@ public class CalculatorActivity extends AppCompatActivity {
 
     private Spinner spinnerStorageLife;
     private TextView result;
+    private TextView help;
     private TextView resultBestBefore;
     private int currentTerm = -1;
+
+    private int visits;
+
+
+    private static final String CALC_VISITS = "calculator_visits";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +60,7 @@ public class CalculatorActivity extends AppCompatActivity {
 
         result = (TextView) findViewById(R.id.result);
         resultBestBefore = (TextView) findViewById(R.id.result_best_before);
+        help = (TextView) findViewById(R.id.help);
 
         Calendar now = Calendar.getInstance();
         DatePicker datePicker = (DatePicker) findViewById(R.id.date);
@@ -65,7 +74,12 @@ public class CalculatorActivity extends AppCompatActivity {
                 });
 
 
-
+        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        visits = sPrefs.getInt(CALC_VISITS, 0);
+        visits++;
+        SharedPreferences.Editor editor = sPrefs.edit();
+        editor.putInt(CALC_VISITS, visits);
+        editor.apply();
 
         spinnerStorageLife = (Spinner)findViewById(R.id.spinner_storage_life);
         String[] terms = new String[]{
@@ -114,6 +128,7 @@ public class CalculatorActivity extends AppCompatActivity {
     }
 
 
+
     private void makeCalculations() {
         if (currentTerm == -1) {
             result.setText("");
@@ -139,6 +154,10 @@ public class CalculatorActivity extends AppCompatActivity {
             result.setTextColor(getResources().getColor(R.color.md_red_500));
         } else if (days > 0){
             resultText = getResources().getQuantityString(R.plurals.calculatorFresh, days, days);
+            if (visits < 4) {
+                resultText += '*';
+                help.setVisibility(View.VISIBLE);
+            }
             if (days <= 2) {
                 result.setTextColor(Color.rgb(220, 180, 0));
             }
