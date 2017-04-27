@@ -1,21 +1,29 @@
 package com.rv150.bestbefore.Activities;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.rv150.bestbefore.R;
 
+import org.w3c.dom.Text;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by ivan on 27.04.17.
@@ -23,9 +31,17 @@ import java.util.Calendar;
 
 public class CalculatorActivity extends AppCompatActivity {
 
-    private final Calendar currentDate = Calendar.getInstance();
+    private final Calendar currentDate;
+
+    {
+        currentDate = Calendar.getInstance();
+        currentDate.set(Calendar.HOUR_OF_DAY, 23);
+        currentDate.set(Calendar.MINUTE, 59);
+    }
+
     private Spinner spinnerStorageLife;
     private TextView result;
+    private TextView resultBestBefore;
     private int currentTerm = -1;
 
     @Override
@@ -35,6 +51,7 @@ public class CalculatorActivity extends AppCompatActivity {
         setTitle(R.string.calculator);
 
         result = (TextView) findViewById(R.id.result);
+        resultBestBefore = (TextView) findViewById(R.id.result_best_before);
 
         Calendar now = Calendar.getInstance();
         DatePicker datePicker = (DatePicker) findViewById(R.id.date);
@@ -46,6 +63,9 @@ public class CalculatorActivity extends AppCompatActivity {
                         makeCalculations();
                     }
                 });
+
+
+
 
         spinnerStorageLife = (Spinner)findViewById(R.id.spinner_storage_life);
         String[] terms = new String[]{
@@ -97,6 +117,7 @@ public class CalculatorActivity extends AppCompatActivity {
     private void makeCalculations() {
         if (currentTerm == -1) {
             result.setText("");
+            resultBestBefore.setText("");
             return;
         }
         String textSpinner = spinnerStorageLife.getSelectedItem().toString();
@@ -115,13 +136,24 @@ public class CalculatorActivity extends AppCompatActivity {
         if (days < 0) {
             days *= -1;
             resultText = getResources().getQuantityString(R.plurals.calculatorSpoil, days, days);
+            result.setTextColor(getResources().getColor(R.color.md_red_500));
         } else if (days > 0){
             resultText = getResources().getQuantityString(R.plurals.calculatorFresh, days, days);
+            if (days <= 2) {
+                result.setTextColor(Color.rgb(220, 180, 0));
+            }
+            else {
+                result.setTextColor(getResources().getColor(R.color.md_green_500));
+            }
         }
         else {
             resultText = getString(R.string.today_is_the_last_day);
+            result.setTextColor(Color.rgb(220, 180, 0));
         }
         result.setText(resultText);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+        resultBestBefore.setText(dateFormat.format(resultDate.getTime()));
     }
 
 
@@ -136,7 +168,7 @@ public class CalculatorActivity extends AppCompatActivity {
             if (difference < 0) {
                 return -1;        // В первый день просрочки
             }
-            return 0;   // Последний день съесть
+            return 0;   // Последний день срока
         }
         return days;
     }

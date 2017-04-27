@@ -49,11 +49,11 @@
 
     <plurals name="calculatorFresh">
         <item quantity="zero">Сегодня последний день!</item>
-        <item quantity="one">Продукт годен в течение %d дня</item>
-        <item quantity="two">Продукт годен в течение %d дней</item>
-        <item quantity="few">Продукт годен в течение %d дней</item>
-        <item quantity="many">Продукт годен в течение %d дней</item>
-        <item quantity="other">Продукт годен в течение %d дня</item>
+        <item quantity="one">Продукт годен в течение %d дня*</item>
+        <item quantity="two">Продукт годен в течение %d дней*</item>
+        <item quantity="few">Продукт годен в течение %d дней*</item>
+        <item quantity="many">Продукт годен в течение %d дней*</item>
+        <item quantity="other">Продукт годен в течение %d дня*</item>
     </plurals>
 
     <plurals name="calculatorSpoil">
@@ -216,4 +216,5 @@
     <string name="temp_error_try_later">Превышен лимит запросов к Google Диску. Попробуйте повторить позже</string>
     <string name="error">Ошибка!</string>
     <string name="calculator">Калькулятор</string>
+    <string name="calculator_help">*Количество <b>полных</b> дней до конца срока годности</string>
 </resources>
