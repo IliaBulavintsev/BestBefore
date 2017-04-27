@@ -322,6 +322,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 .withName(R.string.settings)
                 .withSelectable(false)
                 .withIcon(GoogleMaterial.Icon.gmd_settings);
+
+
+        PrimaryDrawerItem calculator = new PrimaryDrawerItem()
+                .withIdentifier(Resources.ID_FOR_CALCULATOR)
+                .withName(R.string.calculator)
+                .withSelectable(false)
+                .withIcon(GoogleMaterial.Icon.gmd_date_range);
+
         PrimaryDrawerItem feedback = new PrimaryDrawerItem()
                 .withIdentifier(Resources.ID_FOR_FEEDBACK)
                 .withName(R.string.feedback)
@@ -351,6 +359,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                             trash,
                             new DividerDrawerItem(),
                             settings,
+                            calculator,
                             feedback,
                             about
                     )
@@ -438,6 +447,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
         if (id == Resources.ID_FOR_BILLING) {
             Intent intent = new Intent(this, BillingActivity.class);
+            startActivity(intent);
+            return;
+        }
+
+        if (id == Resources.ID_FOR_CALCULATOR) {
+            Intent intent = new Intent(this, CalculatorActivity.class);
             startActivity(intent);
             return;
         }
