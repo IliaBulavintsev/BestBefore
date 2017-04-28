@@ -33,7 +33,6 @@ import java.util.Locale;
  */
 
 public class CalculatorActivity extends AppCompatActivity {
-
     private final Calendar currentDate;
 
     {
@@ -44,12 +43,10 @@ public class CalculatorActivity extends AppCompatActivity {
 
     private Spinner spinnerStorageLife;
     private TextView result;
-    private TextView help;
     private TextView resultBestBefore;
     private int currentTerm = -1;
 
     private int visits;
-
 
     private static final String CALC_VISITS = "calculator_visits";
 
@@ -61,7 +58,7 @@ public class CalculatorActivity extends AppCompatActivity {
 
         result = (TextView) findViewById(R.id.result);
         resultBestBefore = (TextView) findViewById(R.id.result_best_before);
-        help = (TextView) findViewById(R.id.help);
+        TextView help = (TextView) findViewById(R.id.help);
 
         Calendar now = Calendar.getInstance();
         DatePicker datePicker = (DatePicker) findViewById(R.id.date);
@@ -81,6 +78,10 @@ public class CalculatorActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sPrefs.edit();
         editor.putInt(CALC_VISITS, visits);
         editor.apply();
+
+        if (visits < 4) {
+            help.setVisibility(View.VISIBLE);
+        }
 
         spinnerStorageLife = (Spinner)findViewById(R.id.spinner_storage_life);
         String[] terms = new String[]{
@@ -159,7 +160,6 @@ public class CalculatorActivity extends AppCompatActivity {
             resultText = getResources().getQuantityString(R.plurals.calculatorFresh, days, days);
             if (visits < 4) {
                 resultText += '*';
-                help.setVisibility(View.VISIBLE);
             }
             if (days <= 2) {
                 result.setTextColor(Color.rgb(220, 180, 0));
