@@ -178,12 +178,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             editor.apply();
         }
         else {
-            boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW_38, true);
+            boolean whatsNew = sPrefs.getBoolean(Resources.WHATS_NEW_40, true);
             if (whatsNew) {
                 new AlertDialog.Builder(this)
                         .setCancelable(false)
                         .setTitle(R.string.whats_new_title)
-                        .setMessage(R.string.whats_new_excel)
+                        .setMessage(R.string.whats_new_calculator)
                         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
@@ -194,13 +194,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             }
         }
 
-        editor.remove(Resources.NEED_MIGRATE);
-        editor.remove(Resources.CONGRATULATION);
-        editor.remove(Resources.PREF_SHOW_SYNC_WARNING);
-        editor.remove(Resources.WHATS_NEW_34);
-        editor.putBoolean(Resources.WHATS_NEW_38, false);
+        editor.remove(Resources.WHATS_NEW_38);
+        editor.putBoolean(Resources.WHATS_NEW_40, false);
         editor.apply();
-
         mShortAnimationDuration = getResources().getInteger(
                 android.R.integer.config_shortAnimTime);
     }

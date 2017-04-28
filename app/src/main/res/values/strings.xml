@@ -208,7 +208,7 @@
     <string name="choose_necess_attributes">Выберите нужные атрибуты</string>
     <string name="all_fresh_products">Все свежие продукты</string>
     <string name="choose_categories">Выберите категории</string>
-    <string name="whats_new_excel">Доступен экспорт данных в Excel-формате. \n\nНе забывайте оценить приложение :)</string>
+    <string name="whats_new_calculator">Добавлен калькулятор для сроков в боковом меню. Теперь посчитать сроки годности продуктов можно гораздо легче!</string>
     <string name="please_be_patient">Пожалуйста, будьте терпеливы&#8230;</string>
     <string name="failed_create_temp_file">Ошибка при создании временного файла!</string>
     <string name="failed_creating_file">Ошибка создания файла</string>
