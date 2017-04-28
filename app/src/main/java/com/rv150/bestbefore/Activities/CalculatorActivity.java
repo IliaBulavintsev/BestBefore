@@ -19,6 +19,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.rv150.bestbefore.R;
+import com.rv150.bestbefore.Services.StatService;
 
 import org.w3c.dom.Text;
 
@@ -125,6 +126,8 @@ public class CalculatorActivity extends AppCompatActivity {
                 makeCalculations();
             }
         });
+
+        StatService.openCalculator(this, visits);
     }
 
 
