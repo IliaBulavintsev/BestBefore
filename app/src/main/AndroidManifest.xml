@@ -62,6 +62,9 @@
         <activity android:name=".Activities.BillingActivity"
             android:screenOrientation="portrait" />
 
+        <activity android:name=".Activities.CalculatorActivity"
+            android:screenOrientation="portrait" />
+
 
         <receiver android:name=".Receivers.AutoStart">
             <intent-filter>

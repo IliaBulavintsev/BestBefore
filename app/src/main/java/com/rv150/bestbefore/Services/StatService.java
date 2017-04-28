@@ -37,9 +37,10 @@ public class StatService {
     private static final String ACTION_TRY_GOOGLE_RESTORE = "try_google_restore";
     private static final String ACTION_GOOGLE_CLEAR = "google_clear";
     private static final String ACTION_TRY_GOOGLE_CLEAR = "try_google_clear";
-
+    
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-
+    private static final String ACTION_CALCULATOR = "calculator";
+    private static final String VISITS = "visits";
 
     public static void tryingImport(Context context) {
         makeJob(context, ACTION_TRYING_IMPORT);
@@ -89,6 +90,18 @@ public class StatService {
         makeJob(context, ACTION_GOOGLE_CLEAR);
     }
 
+    public static void openCalculator(Context context, int visits) {
+        try {
+            JSONObject request = new JSONObject();
+            request.put(DEVICE_ID, getDeviceId(context));
+            request.put(ACTION, ACTION_CALCULATOR);
+            request.put(VISITS, visits);
+            executor.execute(new Request(serverURL + "stat", request));
+        }
+        catch (Exception ex) {
+            Log.e(StatService.class.getSimpleName(), ex.getMessage());
+        }
+    }
 
 
     private static void makeJob(Context context, String action) {

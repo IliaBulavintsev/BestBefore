@@ -653,8 +653,8 @@ public class AddActivity extends AppCompatActivity {
 
 
 
-        String text_spinner = spinnerStorageLife.getSelectedItem().toString();
-        boolean is_days = text_spinner.equals(getString(R.string.days_in_add_act));
+        String textSpinner = spinnerStorageLife.getSelectedItem().toString();
+        boolean isDays = textSpinner.equals(getString(R.string.days_in_add_act));
 
         Calendar currentDate = Calendar.getInstance();
         // Проверка "Даты изготовления"
@@ -686,7 +686,7 @@ public class AddActivity extends AppCompatActivity {
             }
 
             okayBefore = (Calendar) dateProduced.clone();
-            if (is_days) {
+            if (isDays) {
                 okayBefore.add(Calendar.DAY_OF_MONTH, (int) term);
             }
             else {
